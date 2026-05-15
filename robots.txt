@@ -1,1 +1,62 @@
+# =============================================
+# jaybharti.me — robots.txt
+# Policy: Allow crawling, indexing & search.
+#         Block AI model training.
+# =============================================
+
+# --- Default: Allow all crawlers ---
+User-agent: *
+Allow: /
+
+# --- Google ---
+# Googlebot (search indexing) — allowed by default rule above
+# Google-Extended (AI training, e.g. Gemini) — BLOCK
+User-agent: Google-Extended
+Disallow: /
+
+# --- OpenAI ---
+# GPTBot (used for model training) — BLOCK
+User-agent: GPTBot
+Disallow: /
+
+# OAI-SearchBot (ChatGPT search/browse) — ALLOW
+User-agent: OAI-SearchBot
+Allow: /
+
+# ChatGPT-User (ChatGPT real-time browsing) — ALLOW
+User-agent: ChatGPT-User
+Allow: /
+
+# --- Anthropic ---
+# ClaudeBot (AI training) — BLOCK
+User-agent: ClaudeBot
+Disallow: /
+
+# --- Common Crawl (used for training datasets) ---
+User-agent: CCBot
+Disallow: /
+
+# --- ByteDance ---
+User-agent: Bytespider
+Disallow: /
+
+# --- Apple ---
+# Applebot (Siri/search) — allowed by default rule above
+# Applebot-Extended (AI training) — BLOCK
+User-agent: Applebot-Extended
+Disallow: /
+
+# --- Amazon ---
+User-agent: Amazonbot
+Disallow: /
+
+# --- Meta ---
+User-agent: meta-externalagent
+Disallow: /
+
+# --- Perplexity ---
+# PerplexityBot (search) — ALLOW (appears in AI search results)
+User-agent: PerplexityBot
+Allow: /
+
 Sitemap: https://jaybharti.me/sitemap.xml
