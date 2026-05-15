@@ -25,7 +25,58 @@
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon.ico" sizes="32x32">
-  <link rel="stylesheet" href="index.css">
+
+  <!-- Font preconnect & load (non-blocking, replaces CSS @import) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+
+  <!-- Critical CSS inlined for above-the-fold rendering -->
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    :root {
+      --bg-primary: #0F0F0F; --bg-elevated: #1A1A18; --bg-surface: #242420;
+      --text-primary: #FAF7F0; --text-secondary: #B8B2A6; --text-muted: #7A756B;
+      --accent: #C9A84C; --accent-hover: #D4B65E; --accent-soft: rgba(201, 168, 76, 0.12);
+      --border: rgba(250, 247, 240, 0.08); --border-strong: rgba(250, 247, 240, 0.15);
+      --font-display: 'Outfit', -apple-system, sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-4xl: 128px;
+      --max-width: 1120px;
+      --transition-fast: 200ms ease; --transition-base: 300ms ease; --transition-theme: 400ms ease;
+    }
+    [data-theme="light"] {
+      --bg-primary: #FAF7F0; --bg-elevated: #FFFFFF; --bg-surface: #F0EDE4;
+      --text-primary: #1A1A18; --text-secondary: #4A4740; --text-muted: #8A857B;
+      --accent: #9E7C2E; --accent-hover: #B58E36; --accent-soft: rgba(158, 124, 46, 0.08);
+      --border: rgba(26, 26, 24, 0.08); --border-strong: rgba(26, 26, 24, 0.15);
+    }
+    body { font-family: var(--font-body); font-size: 16px; line-height: 1.65; color: var(--text-secondary); background-color: var(--bg-primary); overflow-x: hidden; }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--space-lg); }
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: var(--space-md) 0; transition: background-color var(--transition-base); }
+    .nav .container { display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: var(--font-display); font-weight: 600; font-size: 18px; color: var(--text-primary); text-decoration: none; }
+    .nav-links { display: flex; align-items: center; gap: var(--space-lg); list-style: none; }
+    .nav-links a { font-family: var(--font-body); font-size: 14px; color: var(--text-muted); text-decoration: none; }
+    .nav-mobile-toggle { display: none; background: none; border: none; color: var(--text-primary); cursor: pointer; padding: 8px; }
+    .theme-toggle { background: none; border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); }
+    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: var(--space-4xl) var(--space-lg); position: relative; }
+    .hero-content { max-width: 700px; }
+    .hero-name { font-family: var(--font-display); font-weight: 600; font-size: clamp(40px, 8vw, 64px); color: var(--text-primary); letter-spacing: -0.03em; line-height: 1.1; margin-bottom: var(--space-md); }
+    .hero-tagline { font-family: var(--font-body); font-size: clamp(16px, 2.5vw, 19px); color: var(--text-muted); font-weight: 300; margin-bottom: var(--space-xl); }
+    .hero-tagline .accent { color: var(--accent); }
+    .hero-links { display: flex; align-items: center; justify-content: center; gap: var(--space-lg); }
+    .hero-links a { color: var(--text-muted); display: flex; align-items: center; gap: 8px; font-size: 14px; text-decoration: none; }
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 600ms ease-out, transform 600ms ease-out; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 900px) { .nav-links { display: none; } .nav-mobile-toggle { display: flex; } .nav-links.open { display: flex; position: fixed; top: 56px; left: 0; right: 0; background: var(--bg-primary); border-bottom: 1px solid var(--border); flex-direction: column; padding: var(--space-lg); gap: var(--space-md); } }
+  </style>
+
+  <!-- Full stylesheet deferred (non-render-blocking) -->
+  <link rel="stylesheet" href="index.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="index.css"></noscript>
 
   <!-- Structured Data -->
   <script type="application/ld+json">
@@ -116,7 +167,19 @@
             <p class="about-signature">the wind, the trees, the sky<span class="closing">That's all there is. That's all there ever was.</span></p>
           </div>
           <div class="about-photo-wrapper reveal">
-            <img class="about-photo" src="photos/main photo_holing qimpro winning trophy.jpg" alt="Jay Bharti holding the QualTech Prize winning trophy and certificate at SAKCON 2025, Hyderabad" loading="lazy">
+            <picture>
+              <source
+                srcset="photos/main-photo-400w.webp 400w, photos/main-photo-800w.webp 800w"
+                sizes="(max-width: 900px) 320px, 380px"
+                type="image/webp">
+              <img class="about-photo"
+                src="photos/main-photo-800w.jpg"
+                alt="Jay Bharti holding the QualTech Prize winning trophy and certificate at SAKCON 2025, Hyderabad"
+                loading="lazy"
+                decoding="async"
+                width="800"
+                height="1066">
+            </picture>
           </div>
         </div>
         <div class="about-stats reveal">
@@ -322,6 +385,6 @@
     </div>
   </footer>
 
-  <script src="index.js"></script>
+  <script src="index.js" defer></script>
 </body>
 </html>
