@@ -941,8 +941,6 @@ a:hover {
 
 .project-card {
   display: grid;
-  grid-template-columns: 420px 1fr;
-  gap: var(--space-xl);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -957,10 +955,19 @@ a:hover {
   box-shadow: 0 8px 30px var(--shadow);
 }
 
+.project-card--screenshot {
+  grid-template-columns: 180px 1fr;
+  gap: var(--space-xl);
+}
+
+.project-card--code {
+  grid-template-columns: 420px 1fr;
+  gap: var(--space-xl);
+}
+
 .project-visual {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
   background: var(--bg-surface);
   border-radius: 6px;
   border: 1px solid var(--border);
@@ -968,6 +975,17 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.project-card--screenshot .project-visual {
+  height: 180px;
+  aspect-ratio: 1 / 1;
+  align-self: start;
+  flex-shrink: 0;
+}
+
+.project-card--code .project-visual {
+  aspect-ratio: 16 / 10;
 }
 
 .project-screenshot {
@@ -1163,7 +1181,18 @@ a:hover {
 
 /* --- Responsive for Side Projects --- */
 @media (max-width: 900px) {
-  .project-card {
+  .project-card--screenshot {
+    grid-template-columns: 140px 1fr;
+    gap: var(--space-md);
+    padding: var(--space-md);
+  }
+
+  .project-card--screenshot .project-visual {
+    height: 140px;
+    width: 140px;
+  }
+
+  .project-card--code {
     grid-template-columns: 1fr;
     gap: var(--space-lg);
     padding: var(--space-md);
@@ -1175,6 +1204,19 @@ a:hover {
 
   .project-links {
     margin-top: var(--space-md);
+  }
+}
+
+@media (max-width: 600px) {
+  .project-card--screenshot {
+    grid-template-columns: 110px 1fr;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+  }
+
+  .project-card--screenshot .project-visual {
+    height: 110px;
+    width: 110px;
   }
 }
 
@@ -1299,6 +1341,41 @@ a:hover {
   background: #ffffff;
   width: 12px;
   border-radius: 3px;
+}
+
+/* --- Small Carousel Overrides for Screenshots inside Cards --- */
+.project-card--screenshot .carousel-arrow {
+  width: 28px;
+  height: 28px;
+  background: rgba(15, 15, 15, 0.6);
+}
+
+.project-card--screenshot .carousel-arrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+.project-card--screenshot .carousel-arrow--left {
+  left: 6px;
+}
+
+.project-card--screenshot .carousel-arrow--right {
+  right: 6px;
+}
+
+.project-card--screenshot .carousel-indicators {
+  bottom: 8px;
+  gap: 4px;
+}
+
+.project-card--screenshot .carousel-dot {
+  width: 5px;
+  height: 5px;
+}
+
+.project-card--screenshot .carousel-dot.active {
+  width: 10px;
+  border-radius: 2px;
 }
 
 /* --- Lightbox Modal --- */
