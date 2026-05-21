@@ -1539,4 +1539,9 @@ a:hover {
   }
 }
 
+/* Focus on the lower portion of the Sensum keyboard image in the thumbnail view */
+.carousel[data-project="sensum"] .carousel-slide:first-child .project-screenshot {
+  object-position: bottom center;
+}
+
 
