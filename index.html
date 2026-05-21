@@ -24,8 +24,8 @@
   <meta name="twitter:description" content="Healthcare Administration graduate specializing in data analytics, process improvement, and strategic operations.">
   <meta name="twitter:image" content="https://jaybharti.me/assets/og-image.jpg">
 
-  <link rel="icon" href="assets/favicon.png" type="image/png">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/favicon.svg">
   <link rel="manifest" href="site.webmanifest">
 
   <!-- Font preconnect & load (non-blocking, replaces CSS @import) -->
@@ -121,6 +121,7 @@
       <ul class="nav-links" id="navLinks">
         <li><a href="#about">Who am I?</a></li>
         <li><a href="#experience">Experience</a></li>
+        <li><a href="#side-projects">Side Projects</a></li>
         <li><a href="#education">Education</a></li>
         <li><a href="#skills">Skills</a></li>
         <li><a href="#contact">Contact</a></li>
@@ -258,10 +259,153 @@
 
     <div class="section-sep"></div>
 
+    <!-- Side Projects -->
+    <section class="section" id="side-projects">
+      <div class="container">
+        <span class="section-label reveal">04</span>
+        <h2 class="section-title reveal">Side Projects</h2>
+        <p class="section-intro reveal">Outside of work and academia, I build things for the fun of it. Sometimes to solve my own problems. Sometimes just to see if I can.</p>
+        <div class="projects-list">
+
+          <!-- Sensum -->
+          <div class="project-card reveal">
+            <div class="project-visual project-visual--placeholder">
+              <div class="project-placeholder-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                <span>Sensum — Android</span>
+              </div>
+            </div>
+            <div class="project-info">
+              <div class="project-header">
+                <h3 class="project-name">Sensum</h3>
+                <div class="project-type">Android · Voice Keyboard</div>
+              </div>
+              <p class="project-desc">I built my own voice keyboard for Android because I was tired of the default options. Sensum uses Groq's Whisper API to transcribe speech near-instantly and inject it anywhere. It proved to me that shipping a polished native Android app in 2026 is completely within reach — no CS degree required.</p>
+              <div class="project-tags">
+                <span class="project-tag">Kotlin</span>
+                <span class="project-tag">Android</span>
+                <span class="project-tag">Groq API</span>
+                <span class="project-tag">Material Design 3</span>
+              </div>
+              <div class="project-links">
+                <a href="https://github.com/Jay-2212/IME" target="_blank" rel="noopener noreferrer" class="project-link project-link--github">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                  GitHub
+                </a>
+                <a href="https://github.com/Jay-2212/IME/releases/download/v1.0.0/sensum-debug.apk" target="_blank" rel="noopener noreferrer" class="project-link project-link--primary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download APK
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mac Orchestrator -->
+          <div class="project-card reveal">
+            <div class="project-visual project-visual--code">
+              <div class="project-code-block">
+                <div class="code-dot-row"><span class="code-dot code-dot--red"></span><span class="code-dot code-dot--yellow"></span><span class="code-dot code-dot--green"></span></div>
+                <pre class="code-snippet"><code><span class="code-comment"># AI Agent → Mac</span>
+AI Agent
+  → http://localhost:8000/mcp
+  → Mac Orchestrator
+  → macOS System APIs
+
+<span class="code-comment"># 18 lean MCP tools</span>
+mouse_action(x, y, action)
+get_screen_text()  <span class="code-comment"># OCR</span>
+run_terminal_command(cmd)
+execute_macro(actions)</code></pre>
+              </div>
+            </div>
+            <div class="project-info">
+              <div class="project-header">
+                <h3 class="project-name">Mac Orchestrator</h3>
+                <div class="project-type">macOS · MCP Server</div>
+              </div>
+              <p class="project-desc">An MCP server that gives any AI agent direct control over your Mac — mouse, keyboard, screen via OCR, files, everything. I forked and optimized this heavily, cutting the toolset from 46 down to 18 lean, expressive tools. It's what powers most of my agentic workflows.</p>
+              <div class="project-tags">
+                <span class="project-tag">Python</span>
+                <span class="project-tag">FastMCP</span>
+                <span class="project-tag">pyobjc</span>
+                <span class="project-tag">macOS</span>
+              </div>
+              <div class="project-links">
+                <a href="https://github.com/Jay-2212/mac-orchestrator" target="_blank" rel="noopener noreferrer" class="project-link project-link--github">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                  GitHub
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asptor -->
+          <div class="project-card reveal">
+            <div class="project-visual">
+              <img src="assets/projects/asptor-screenshot.png" alt="Asptor reading site screenshot" class="project-screenshot" loading="lazy">
+            </div>
+            <div class="project-info">
+              <div class="project-header">
+                <h3 class="project-name">Asptor</h3>
+                <div class="project-type">Web · Reading Site</div>
+              </div>
+              <p class="project-desc">A clean, ad-free reading site for CAT preparation. It pulls articles from The Hindu, The Caravan, and Fifty Two via a Python pipeline that runs on GitHub Actions every few hours, cleans them, deduplicates, and publishes a static site. Because reading well is a skill worth practicing properly.</p>
+              <div class="project-tags">
+                <span class="project-tag">Python</span>
+                <span class="project-tag">GitHub Actions</span>
+                <span class="project-tag">Static HTML</span>
+              </div>
+              <div class="project-links">
+                <a href="https://github.com/Jay-2212/Asptor" target="_blank" rel="noopener noreferrer" class="project-link project-link--github">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                  GitHub
+                </a>
+                <a href="https://jay-2212.github.io/Asptor/site/" target="_blank" rel="noopener noreferrer" class="project-link project-link--primary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Live Site
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aeon Reading -->
+          <div class="project-card reveal">
+            <div class="project-visual">
+              <img src="assets/projects/aeon-screenshot.png" alt="Aeon Reading distraction-free reader screenshot" class="project-screenshot" loading="lazy">
+            </div>
+            <div class="project-info">
+              <div class="project-header">
+                <h3 class="project-name">Aeon Reading</h3>
+                <div class="project-type">Web · Reader</div>
+              </div>
+              <p class="project-desc">Aeon publishes some of the best long-form essays on the internet. Their site, unfortunately, is full of distractions. So I built a wrapper that strips all of that away and gives you just the article — clean, full-width, nothing in the way.</p>
+              <div class="project-tags">
+                <span class="project-tag">JavaScript</span>
+                <span class="project-tag">GitHub Pages</span>
+              </div>
+              <div class="project-links">
+                <a href="https://github.com/Jay-2212/Aeon-Reading" target="_blank" rel="noopener noreferrer" class="project-link project-link--github">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                  GitHub
+                </a>
+                <a href="https://jay-2212.github.io/Aeon-Reading/" target="_blank" rel="noopener noreferrer" class="project-link project-link--primary">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Live Site
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <div class="section-sep"></div>
+
     <!-- Education -->
     <section class="section" id="education">
       <div class="container">
-        <span class="section-label reveal">04</span>
+        <span class="section-label reveal">05</span>
         <h2 class="section-title reveal">Education</h2>
         <div class="education-grid">
           <div class="edu-card reveal">
@@ -291,7 +435,7 @@
     <!-- Skills -->
     <section class="section" id="skills">
       <div class="container">
-        <span class="section-label reveal">05</span>
+        <span class="section-label reveal">06</span>
         <h2 class="section-title reveal">Skills & Certifications</h2>
         <div class="skills-grid">
           <div class="skill-category reveal">
@@ -349,7 +493,7 @@
     <!-- Awards -->
     <section class="section" id="awards">
       <div class="container">
-        <span class="section-label reveal">06</span>
+        <span class="section-label reveal">07</span>
         <h2 class="section-title reveal">Recognition</h2>
         <div class="awards-grid">
           <div class="award-card reveal">
@@ -373,7 +517,7 @@
     <!-- Contact -->
     <section class="section contact" id="contact">
       <div class="container">
-        <span class="section-label reveal">07</span>
+        <span class="section-label reveal">08</span>
         <h2 class="contact-heading reveal">Let's connect.</h2>
         <a class="contact-email reveal" href="mailto:jaybharti3000@gmail.com">jaybharti3000@gmail.com</a>
         <div class="contact-socials reveal">

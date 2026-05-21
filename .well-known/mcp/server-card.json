@@ -1,0 +1,17 @@
+{
+  "$schema": "https://schemas.cloudflare.com/mcp/server-card/v1",
+  "name": "Jay Bharti Context Server",
+  "description": "Context provider for Jay Bharti's web ecosystem.",
+  "version": "1.0.0",
+  "mcpVersions": ["2024-11-05"],
+  "capabilities": {
+    "resources": [
+      {
+        "uri": "https://jaybharti.me/index.md",
+        "name": "Core Profile Context",
+        "mimeType": "text/markdown",
+        "description": "Full semantic developer profile context."
+      }
+    ]
+  }
+}

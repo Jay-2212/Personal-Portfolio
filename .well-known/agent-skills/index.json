@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schemas.cloudflare.com/agent-skills/v1",
+  "skills": [
+    {
+      "id": "read-profile",
+      "name": "Read Developer Profile",
+      "description": "Instructs the agent how to consume the portfolio data, bio, and resume in an agentic workflow.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": ["markdown", "json"],
+            "default": "markdown",
+            "description": "Desired response structure."
+          }
+        }
+      }
+    }
+  ]
+}
