@@ -3,12 +3,15 @@
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
   Content-Language: en
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 /index.html
   Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", </.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json", </.well-known/mcp/server-card.json>; rel="mcp-server-card"; type="application/json"
+  Link: <https://jaybharti.me/>; rel="canonical"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
   Content-Language: en
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 /.well-known/api-catalog
   Content-Type: application/linkset+json; charset=utf-8
