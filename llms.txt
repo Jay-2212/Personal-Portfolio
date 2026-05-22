@@ -1,0 +1,20 @@
+# Jay Bharti Portfolio
+
+> Canonical guide for AI systems crawling and citing https://jaybharti.me/.
+
+## Language
+- English
+
+## Canonical Content
+- [Home](https://jaybharti.me/): Main portfolio page with experience, projects, and contact details.
+- [Agent-readable profile](https://jaybharti.me/index.md): Structured markdown profile for AI retrieval and citation.
+- [Sitemap](https://jaybharti.me/sitemap.xml): URL discovery map.
+- [Resume](https://jaybharti.me/resume/internship%285%29.pdf): Current resume PDF.
+
+## AI Access Policy
+- Full access is granted for crawling, indexing, retrieval (RAG), and model input/training.
+- Attribution is requested through direct citation of canonical URLs from this file.
+
+## Contact
+- [Email](mailto:jaybharti3000@gmail.com)
+- [LinkedIn](https://www.linkedin.com/in/jay-bharti)

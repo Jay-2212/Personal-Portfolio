@@ -2,11 +2,13 @@
   Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", </.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json", </.well-known/mcp/server-card.json>; rel="mcp-server-card"; type="application/json"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
+  Content-Language: en
 
 /index.html
   Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", </.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json", </.well-known/mcp/server-card.json>; rel="mcp-server-card"; type="application/json"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
+  Content-Language: en
 
 /.well-known/api-catalog
   Content-Type: application/linkset+json; charset=utf-8
@@ -22,3 +24,7 @@
   Content-Type: application/json; charset=utf-8
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
