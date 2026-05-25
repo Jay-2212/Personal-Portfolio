@@ -39,7 +39,7 @@ Welcome to my agent-readable portfolio! I am a Healthcare Administration special
 ## Side Projects
 - **Sensum**: An Android voice keyboard utilizing Groq's Whisper API for near-instant transcription. [GitHub Repo](https://github.com/Jay-2212/IME)
 - **Mac Orchestrator**: A streamlined MCP server giving AI agents direct control over macOS via mouse, keyboard, and OCR. [GitHub Repo](https://github.com/Jay-2212/mac-orchestrator)
-- **Asptor**: An ad-free, automated reading site for CAT preparation powered by a Python web-scraping pipeline. [GitHub Repo](https://github.com/Jay-2212/Asptor)
+- **Asptor**: An ad-free, automated reading site for CAT preparation powered by a Python web-scraping pipeline. [GitHub Repo](https://github.com/Jay-2212/Asptor) · [Live Site](https://jay-2212.github.io/Asptor/)
 - **Aeon Reading**: A clean, distraction-free reader wrapper for Aeon essays. [GitHub Repo](https://github.com/Jay-2212/Aeon-Reading)
 
 ## Education
