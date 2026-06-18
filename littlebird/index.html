@@ -37,6 +37,7 @@
       --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
       --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --measure: 68ch;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     html {
@@ -87,16 +88,6 @@
       max-width: var(--measure);
     }
 
-    blockquote {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-size: clamp(1.15rem, 2.5vw, 1.4rem);
-      line-height: 1.55;
-      color: var(--ink-soft);
-      padding-left: 1.5rem;
-      border-left: 2px solid var(--line);
-    }
-
     a {
       color: var(--ink);
       text-decoration-color: var(--line);
@@ -116,7 +107,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: clamp(3rem, 8vh, 6rem) clamp(1.5rem, 5vw, 3rem);
+      padding: clamp(4rem, 10vh, 8rem) clamp(1.5rem, 5vw, 3rem);
       position: relative;
     }
 
@@ -134,12 +125,13 @@
       margin-top: 2rem;
     }
 
-    /* ── Scroll reveal ── */
+    /* ── Scroll Reveal System ── */
 
     .reveal {
       opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 600ms ease-out, transform 600ms ease-out;
+      transform: translateY(80px);
+      transition: opacity 1s var(--ease-out),
+                  transform 1s var(--ease-out);
     }
 
     .reveal.visible {
@@ -147,15 +139,20 @@
       transform: translateY(0);
     }
 
-    .reveal:nth-child(2) { transition-delay: 80ms; }
-    .reveal:nth-child(3) { transition-delay: 160ms; }
-    .reveal:nth-child(4) { transition-delay: 240ms; }
-    .reveal:nth-child(5) { transition-delay: 320ms; }
+    .beat-inner > .reveal:nth-child(1) { transition-delay: 0ms; }
+    .beat-inner > .reveal:nth-child(2) { transition-delay: 150ms; }
+    .beat-inner > .reveal:nth-child(3) { transition-delay: 300ms; }
+    .beat-inner > .reveal:nth-child(4) { transition-delay: 450ms; }
+    .beat-inner > .reveal:nth-child(5) { transition-delay: 550ms; }
+    .beat-inner > .reveal:nth-child(6) { transition-delay: 650ms; }
+    .beat-inner > .reveal:nth-child(7) { transition-delay: 750ms; }
 
     @media (prefers-reduced-motion: reduce) {
-      .reveal {
+      .reveal,
+      .reveal-hero {
         opacity: 1;
         transform: none;
+        filter: none;
         transition: none;
       }
     }
@@ -176,7 +173,6 @@
     .hero p {
       font-size: clamp(1.05rem, 2vw, 1.2rem);
       color: var(--ink-soft);
-      margin-top: 1.5rem;
     }
 
     .hero-marker {
@@ -186,6 +182,32 @@
       background: var(--sky);
       border-radius: 50%;
       margin-bottom: 2rem;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: clamp(1.5rem, 4vh, 3rem);
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      animation: hint-in 1s 1.8s ease forwards;
+    }
+
+    .scroll-hint span {
+      display: block;
+      width: 1px;
+      height: 48px;
+      background: var(--line);
+      animation: scroll-pulse 2.5s 2.5s ease-in-out infinite;
+    }
+
+    @keyframes hint-in {
+      to { opacity: 1; }
+    }
+
+    @keyframes scroll-pulse {
+      0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.3; }
+      50% { transform: scaleY(1); transform-origin: top; opacity: 0.7; }
     }
 
     /* ── Beat 2: Thesis ── */
@@ -201,13 +223,93 @@
       line-height: 1.08;
     }
 
+    .reveal-hero {
+      opacity: 0;
+      transform: translateY(100px) scale(1.03);
+      filter: blur(10px);
+      transition: opacity 1.4s var(--ease-out),
+                  transform 1.4s var(--ease-out),
+                  filter 1.4s var(--ease-out);
+    }
+
+    .reveal-hero.visible {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+
     .thesis p {
       color: #B8B2A6;
       font-size: clamp(1.05rem, 2vw, 1.2rem);
-      margin-top: 2.5rem;
+      opacity: 0;
+      transform: translateY(60px);
+      transition: opacity 1s 0.3s var(--ease-out),
+                  transform 1s 0.3s var(--ease-out);
     }
 
-    /* ── Beat 3: Observation ── */
+    .thesis p.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── Beat 3: Category ($20) ── */
+
+    .category {
+      background: var(--paper-2);
+    }
+
+    /* ── Beat 4: Proof ── */
+
+    .proof h2 {
+      color: var(--ink);
+    }
+
+    .proof .sky-accent {
+      color: var(--sky);
+    }
+
+    .report-card {
+      display: block;
+      margin-top: 2.5rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      transition: transform 500ms var(--ease-out),
+                  box-shadow 500ms var(--ease-out);
+    }
+
+    .report-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(20, 19, 15, 0.08);
+    }
+
+    .report-card img {
+      width: 100%;
+      display: block;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .report-card-body {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .report-card-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 0.35rem;
+    }
+
+    .report-card-meta {
+      font-size: 0.82rem;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    /* ── Beat 5: Observation ── */
 
     .observation .lead {
       font-family: var(--font-display);
@@ -215,7 +317,6 @@
       font-style: italic;
       line-height: 1.45;
       color: var(--ink);
-      margin-bottom: 0.5rem;
     }
 
     .concept-tag {
@@ -229,41 +330,15 @@
       padding: 0.3rem 0.7rem;
       border: 1px solid var(--sky);
       border-radius: 100px;
-      margin-top: 1.5rem;
+      margin-top: 1rem;
     }
 
-    /* ── Beat 4: Category ── */
-
-    .category {
-      background: var(--paper-2);
-    }
-
-    /* ── Beat 5: Proof ── */
-
-    .proof h2 {
-      color: var(--ink);
-    }
-
-    .proof .sky-accent {
-      color: var(--sky);
-    }
-
-    .screenshot-placeholder {
-      margin-top: 2.5rem;
-      border: 2px dashed var(--line);
-      border-radius: 12px;
-      padding: 3rem 2rem;
-      text-align: center;
-      color: var(--ink-soft);
-      font-size: 0.9rem;
-      background: var(--paper-2);
-    }
-
-    .screenshot-placeholder img {
-      max-width: 100%;
-      border-radius: 8px;
-      display: block;
-      margin: 0 auto;
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--line);
+      border: none;
+      margin: 0;
     }
 
     /* ── Beat 6: Dream ── */
@@ -281,10 +356,15 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 200px;
+      height: 260px;
       background: linear-gradient(to bottom, var(--sky), transparent);
-      opacity: 0.08;
+      opacity: 0.07;
       pointer-events: none;
+    }
+
+    .dream .beat-inner {
+      position: relative;
+      z-index: 1;
     }
 
     .dream h2 {
@@ -297,9 +377,8 @@
       position: relative;
     }
 
-    .dream .beat-inner {
-      position: relative;
-      z-index: 1;
+    .dream .highlight {
+      color: var(--paper);
     }
 
     /* ── Beat 7: Close ── */
@@ -345,16 +424,6 @@
       border-color: var(--ink-soft);
     }
 
-    /* ── Divider ── */
-
-    .divider {
-      width: 40px;
-      height: 1px;
-      background: var(--line);
-      border: none;
-      margin: 0;
-    }
-
     /* ── Footer ── */
 
     footer {
@@ -372,15 +441,15 @@
       }
 
       .beat {
-        padding: clamp(2.5rem, 6vh, 4rem) 1.25rem;
+        padding: clamp(3rem, 6vh, 5rem) 1.25rem;
       }
 
       .beat-inner > * + * {
         margin-top: 1.25rem;
       }
 
-      blockquote {
-        padding-left: 1rem;
+      .report-card-body {
+        padding: 1rem 1.25rem;
       }
 
       .links {
@@ -397,19 +466,48 @@
     <div class="beat-inner">
       <div class="hero-marker reveal"></div>
       <h1 class="reveal">You asked what I've made that I'm most proud&nbsp;of.</h1>
-      <p class="reveal">I don't really live on LinkedIn. So instead of a post, I made you this&nbsp;— and spent the time thinking about where Littlebird goes&nbsp;next.</p>
+      <p class="reveal">I don't really live on LinkedIn. So apart from my tools, I made you this&nbsp;— my thoughts on where Littlebird goes&nbsp;next.</p>
     </div>
+    <div class="scroll-hint" aria-hidden="true"><span></span></div>
   </section>
 
   <!-- Beat 2 — Thesis -->
   <section class="beat thesis" aria-label="Thesis">
     <div class="beat-inner">
-      <h2 class="reveal">You can't out&#8209;model the&nbsp;labs.<br>You out&#8209;remember&nbsp;them.</h2>
-      <p class="reveal">The race for raw intelligence already has two trillion-dollar runners. Littlebird isn't in that race. It's in a quieter one&nbsp;— being the thing that remembers your life so you don't have&nbsp;to.</p>
+      <h2 class="reveal-hero">You can't out&#8209;model the&nbsp;labs.<br>You out&#8209;remember&nbsp;them.</h2>
+      <p>You know this. It's why you built what you built. The question is what comes&nbsp;next.</p>
     </div>
   </section>
 
-  <!-- Beat 3 — The Observation -->
+  <!-- Beat 3 — The $20 Question -->
+  <section class="beat category" aria-label="Category strategy">
+    <div class="beat-inner">
+      <h2 class="reveal">A user can hand the same $20 to Claude and get more&nbsp;done.<br>So why&nbsp;Littlebird?</h2>
+      <p class="reveal">Because they're not buying the same thing. Claude is brilliant and empty&nbsp;— it meets you fresh every morning. Littlebird already knows what you did yesterday, who matters this week, and what you're trying to build this&nbsp;year.</p>
+      <p class="reveal">As long as Littlebird is filed as "another chat app," it gets price-compared and loses. The moment it's <em>"the AI that remembers your&nbsp;life,"</em> there's no comparison.</p>
+      <p class="reveal">The repositioning is already underway. The strategy is making it&nbsp;unmistakable.</p>
+    </div>
+  </section>
+
+  <!-- Beat 4 — Proof of Work -->
+  <section class="beat proof" aria-label="Proof of work">
+    <div class="beat-inner">
+      <h2 class="reveal">Littlebird already watches my&nbsp;work. <span class="sky-accent">I gave it&nbsp;hands.</span></h2>
+      <p class="reveal">I built an MCP server that wires my whole Mac into Littlebird&nbsp;— a private tunnel, real filesystem access. "Find the file we mentioned in that meeting" isn't a search. It's an&nbsp;action.</p>
+      <p class="reveal">It could already think like you. Now it can act like you&nbsp;too.</p>
+      <p class="reveal">Littlebird can't hand files back directly, so I built <strong>Little Bird's Nest</strong>&nbsp;— a Telegram bot that gives it a way to reach me. One evening I asked it to look at everything I'd done that week. It wrote the report&nbsp;— charts, data, the works&nbsp;— and sent it to my&nbsp;phone.</p>
+      <a href="weekly-review.pdf" target="_blank" rel="noopener" class="report-card reveal" aria-label="View the weekly review PDF">
+        <img src="weekly-review-cover.png" alt="Cover page of Jay's Weekly Review for May 3–9, 2026 — generated by Littlebird via the mac-orchestrator MCP server and delivered via Telegram" width="1489" height="2105" loading="lazy">
+        <div class="report-card-body">
+          <div class="report-card-title">Weekly Review&nbsp;— May 3&ndash;9,&nbsp;2026</div>
+          <div class="report-card-meta">6 pages &middot; Generated by Littlebird via mac-orchestrator MCP &middot; Delivered via Little Bird's&nbsp;Nest</div>
+        </div>
+      </a>
+      <p class="reveal">Littlebird helped me build the thing that extends Littlebird. The context is already there. It just needs hands, and a reason to use&nbsp;them.</p>
+    </div>
+  </section>
+
+  <!-- Beat 5 — The Observation -->
   <section class="beat observation" aria-label="Product observation">
     <div class="beat-inner">
       <p class="lead reveal">I left a video paused on my screen for an hour. Littlebird thought I watched the whole&nbsp;thing.</p>
@@ -420,38 +518,13 @@
     </div>
   </section>
 
-  <!-- Beat 4 — The $20 Question -->
-  <section class="beat category" aria-label="Category strategy">
-    <div class="beat-inner">
-      <h2 class="reveal">A user can hand the same $20 to Claude and get more&nbsp;done.<br>So why&nbsp;Littlebird?</h2>
-      <p class="reveal">Because they're not buying the same thing. Claude is brilliant and empty&nbsp;— it meets you fresh every morning. Littlebird already knows what you did yesterday, who matters this week, and what you're trying to build this&nbsp;year.</p>
-      <p class="reveal">The moment Littlebird is "another chat app," it loses the price fight. The moment it's <em>"the AI that remembers your&nbsp;life,"</em> there's no fight&nbsp;— nobody else can be that.</p>
-      <p class="reveal">The repositioning is already underway. The job is to make it impossible to&nbsp;miss.</p>
-    </div>
-  </section>
-
-  <!-- Beat 5 — Proof of Work -->
-  <section class="beat proof" aria-label="Proof of work">
-    <div class="beat-inner">
-      <h2 class="reveal">Littlebird already watches my&nbsp;work. <span class="sky-accent">I gave it&nbsp;hands.</span></h2>
-      <p class="reveal">I built an MCP server that wires my whole Mac into Littlebird&nbsp;— a private tunnel, real filesystem access. Now "find the file we mentioned in that meeting" isn't a search. It's an&nbsp;action.</p>
-      <p class="reveal">Littlebird can't hand a file back, so I taught it Telegram. One evening I asked it to look at everything I'd done that week. It wrote the report&nbsp;— charts, data, the works&nbsp;— and sent it to my&nbsp;phone.</p>
-      <p class="reveal">Littlebird helped me build the thing that extends Littlebird. That's the whole pitch, really: the context is already there. It just needs hands, and a reason to use&nbsp;them.</p>
-      <!-- Jay: drop telegram-report.png in /littlebird/ and uncomment the img below -->
-      <div class="screenshot-placeholder reveal">
-        <!-- <img src="telegram-report.png" alt="Screenshot of a weekly report with charts, generated by Littlebird and delivered via Telegram"> -->
-        <p>Screenshot: the Telegram report Littlebird wrote and&nbsp;sent</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Beat 6 — The Dream -->
+  <!-- Beat 6 — Littlebird's Dream -->
   <section class="beat dream" aria-label="Forward vision">
     <div class="beat-inner">
       <h2 class="reveal">The best version of Littlebird works while you&nbsp;sleep.</h2>
-      <p class="reveal">Every night it reviews the day, connects what's connected, and wakes up knowing you a little better. Long-term: what you're building this year. Short-term: what's due Thursday. Not vibes&nbsp;— facts, with numbers&nbsp;attached.</p>
-      <p class="reveal">And then it stops waiting to be asked. It already knows everything. The only missing step is the nerve to say <em>hey, this matters today</em> before you do.</p>
-      <p class="reveal">Proactivity is the thing nobody's gotten right. Littlebird is the only one already holding the context to earn&nbsp;it.</p>
+      <p class="reveal">I built a routine I call <span class="highlight">Midnight Neuroplasticity</span>&nbsp;— every night it scans the day's context, triages what matters into long-term identity and short-term tasks, and delivers a morning&nbsp;briefing.</p>
+      <p class="reveal">The dream gets real when it's native. When Littlebird can update its own memory overnight&nbsp;— when context isn't just collected but actively refined. Long-term: what you're building this year. Short-term: what's due Thursday. Not vibes&nbsp;— facts, with numbers.</p>
+      <p class="reveal">And then it stops waiting to be asked. Proactivity is the thing nobody's gotten right. Littlebird is the only one already holding the context to earn&nbsp;it.</p>
     </div>
   </section>
 
@@ -482,11 +555,11 @@
           }
         });
       }, {
-        threshold: 0.15,
-        rootMargin: '0px 0px -60px 0px'
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
       });
 
-      document.querySelectorAll('.reveal').forEach(function (el) {
+      document.querySelectorAll('.reveal, .reveal-hero').forEach(function (el) {
         observer.observe(el);
       });
     })();
