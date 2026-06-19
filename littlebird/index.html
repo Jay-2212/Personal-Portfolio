@@ -744,7 +744,7 @@
 
   <!-- Progress Rail -->
   <nav class="progress-rail" aria-label="Slide navigation">
-    <button type="button" class="progress-dot active" data-slide="0" aria-label="Introduction" aria-current="true" style="--dot-color: #C4993D"></button>
+    <button type="button" class="progress-dot active" data-slide="0" aria-label="Introduction" aria-current="step" style="--dot-color: #C4993D"></button>
     <button type="button" class="progress-dot" data-slide="1" aria-label="Thesis" style="--dot-color: #DAA046"></button>
     <button type="button" class="progress-dot" data-slide="2" aria-label="Category" style="--dot-color: #C18540"></button>
     <button type="button" class="progress-dot" data-slide="3" aria-label="Proof of work" style="--dot-color: #4FA8E0"></button>
@@ -902,7 +902,7 @@
         dots.forEach(function (dot, i) {
           dot.classList.toggle('active', i === index);
           if (i === index) {
-            dot.setAttribute('aria-current', 'true');
+            dot.setAttribute('aria-current', 'step');
           } else {
             dot.removeAttribute('aria-current');
           }
