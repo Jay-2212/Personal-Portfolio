@@ -948,7 +948,7 @@
 
       dots.forEach(function (dot, i) {
         dot.addEventListener('click', function () {
-          slides[i].scrollIntoView({ behavior: 'smooth' });
+          slides[i].scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
         });
       });
 
