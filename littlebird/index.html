@@ -949,11 +949,9 @@
         });
       }
 
-      /* ── Initial state for fallback ── */
+      /* ── Initial state sync ── */
 
-      if (!hasSDA) {
-        slides[0].classList.add('is-active');
-      }
+      if (slides.length) setActiveSlide(0);
 
       /* ── Progress dot clicks ── */
 
