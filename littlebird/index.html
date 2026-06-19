@@ -28,9 +28,15 @@
 
     :root {
       --paper: #F2ECDB;
-      --paper-2: #ECE4CF;
+      --paper-2: #E8DCC8;
+      --paper-3: #EDE4D2;
+      --warm-white: #F8F2E6;
       --ink: #14130F;
+      --ink-2: #1C1A14;
+      --ink-3: #231F1A;
+      --ink-deep: #141210;
       --ink-soft: #57534A;
+      --muted: #B8B2A6;
       --line: #DED7C4;
       --sky: #4FA8E0;
       --leaf: #6FB36A;
@@ -41,24 +47,100 @@
     }
 
     html {
-      scroll-behavior: smooth;
       -webkit-text-size-adjust: 100%;
     }
 
     body {
       font-family: var(--font-body);
-      background: var(--paper);
+      background: var(--ink);
       color: var(--ink);
       line-height: 1.65;
       font-size: 18px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden;
+      overflow: hidden;
+      height: 100vh;
+      height: 100svh;
     }
 
     ::selection {
       background: rgba(79, 168, 224, 0.2);
       color: var(--ink);
+    }
+
+    /* ── Skip Link ── */
+
+    .skip-link {
+      position: fixed;
+      top: -100%;
+      left: 1rem;
+      z-index: 200;
+      background: var(--ink);
+      color: var(--paper);
+      padding: 0.6rem 1.2rem;
+      border-radius: 0 0 8px 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: top 200ms ease;
+    }
+
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* ── Deck (Scroll Container) ── */
+
+    .deck {
+      scroll-snap-type: y mandatory;
+      overflow-y: scroll;
+      height: 100vh;
+      height: 100svh;
+      scroll-behavior: smooth;
+    }
+
+    /* ── Slide ── */
+
+    .slide {
+      height: 100vh;
+      height: 100svh;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(4rem, 10vh, 8rem) clamp(1.5rem, 5vw, 3rem);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Scroll-Driven Crossfade (native) ── */
+
+    @supports (animation-timeline: view()) {
+      .slide {
+        animation: crossfade linear both;
+        animation-timeline: view();
+        animation-range: cover;
+      }
+    }
+
+    @keyframes crossfade {
+      0%   { opacity: 0; transform: scale(0.97); }
+      35%  { opacity: 1; transform: scale(1); }
+      65%  { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.03); }
+    }
+
+    /* ── Fallback Crossfade (.no-sda) ── */
+
+    .no-sda .slide {
+      opacity: 0;
+      transform: scale(0.98);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .no-sda .slide.is-active {
+      opacity: 1;
+      transform: scale(1);
     }
 
     /* ── Typography ── */
@@ -70,68 +152,38 @@
       letter-spacing: -0.01em;
     }
 
-    h1 {
-      font-size: clamp(2.4rem, 6vw, 4.2rem);
-      font-optical-sizing: auto;
-    }
+    h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); font-optical-sizing: auto; }
+    h2 { font-size: clamp(2rem, 5vw, 3.4rem); }
+    h3 { font-size: clamp(1.3rem, 3vw, 1.6rem); font-weight: 400; }
 
-    h2 {
-      font-size: clamp(2rem, 5vw, 3.4rem);
-    }
-
-    h3 {
-      font-size: clamp(1.3rem, 3vw, 1.6rem);
-      font-weight: 400;
-    }
-
-    p, blockquote {
-      max-width: var(--measure);
-    }
+    p, blockquote { max-width: var(--measure); }
 
     a {
-      color: var(--ink);
+      color: inherit;
       text-decoration-color: var(--line);
       text-underline-offset: 3px;
       transition: text-decoration-color 300ms ease;
     }
 
-    a:hover {
-      text-decoration-color: var(--ink);
-    }
+    a:hover { text-decoration-color: currentColor; }
 
-    /* ── Layout ── */
-
-    .beat {
-      min-height: 100vh;
-      min-height: 100svh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: clamp(4rem, 10vh, 8rem) clamp(1.5rem, 5vw, 3rem);
-      position: relative;
-    }
+    /* ── Beat Inner ── */
 
     .beat-inner {
       width: 100%;
       max-width: 720px;
     }
 
-    .beat-inner > * + * {
-      margin-top: 1.5rem;
-    }
-
+    .beat-inner > * + * { margin-top: 1.5rem; }
     .beat-inner > h1 + p,
-    .beat-inner > h2 + p {
-      margin-top: 2rem;
-    }
+    .beat-inner > h2 + p { margin-top: 2rem; }
 
-    /* ── Scroll Reveal System ── */
+    /* ── Within-Slide Reveals ── */
 
     .reveal {
       opacity: 0;
-      transform: translateY(80px);
-      transition: opacity 1s var(--ease-out),
-                  transform 1s var(--ease-out);
+      transform: translateY(60px);
+      transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
     }
 
     .reveal.visible {
@@ -140,37 +192,159 @@
     }
 
     .beat-inner > .reveal:nth-child(1) { transition-delay: 0ms; }
-    .beat-inner > .reveal:nth-child(2) { transition-delay: 150ms; }
-    .beat-inner > .reveal:nth-child(3) { transition-delay: 300ms; }
-    .beat-inner > .reveal:nth-child(4) { transition-delay: 450ms; }
-    .beat-inner > .reveal:nth-child(5) { transition-delay: 550ms; }
-    .beat-inner > .reveal:nth-child(6) { transition-delay: 650ms; }
-    .beat-inner > .reveal:nth-child(7) { transition-delay: 750ms; }
+    .beat-inner > .reveal:nth-child(2) { transition-delay: 120ms; }
+    .beat-inner > .reveal:nth-child(3) { transition-delay: 240ms; }
+    .beat-inner > .reveal:nth-child(4) { transition-delay: 360ms; }
+    .beat-inner > .reveal:nth-child(5) { transition-delay: 460ms; }
+    .beat-inner > .reveal:nth-child(6) { transition-delay: 560ms; }
+    .beat-inner > .reveal:nth-child(7) { transition-delay: 660ms; }
+    .beat-inner > .reveal:nth-child(8) { transition-delay: 760ms; }
 
-    @media (prefers-reduced-motion: reduce) {
-      .reveal,
-      .reveal-hero {
-        opacity: 1;
-        transform: none;
-        filter: none;
-        transition: none;
+    .reveal-hero {
+      opacity: 0;
+      transform: translateY(80px) scale(1.02);
+      filter: blur(8px);
+      transition: opacity 1.2s var(--ease-out),
+                  transform 1.2s var(--ease-out),
+                  filter 1.2s var(--ease-out);
+    }
+
+    .reveal-hero.visible {
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+
+    /* ── Progress Rail ── */
+
+    .progress-rail {
+      position: fixed;
+      right: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      z-index: 150;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .progress-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid var(--dot-color, #999);
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      transition: background 300ms ease, transform 300ms ease, border-color 300ms ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .progress-dot:hover {
+      transform: scale(1.4);
+    }
+
+    .progress-dot.active {
+      background: var(--dot-color, #999);
+      transform: scale(1.35);
+    }
+
+    /* ── Bird Cursor ── */
+
+    .bird-cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      color: var(--ink);
+      will-change: transform;
+      display: none;
+    }
+
+    .bird-active .bird-cursor {
+      display: block;
+    }
+
+    @media (pointer: fine) {
+      .bird-active,
+      .bird-active * {
+        cursor: none !important;
       }
+    }
+
+    .bird-cursor.flick .wing-l {
+      animation: flick-l 350ms ease;
+    }
+    .bird-cursor.flick .wing-r {
+      animation: flick-r 350ms ease;
+    }
+
+    @keyframes flick-l {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-22deg); }
+    }
+    @keyframes flick-r {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(22deg); }
+    }
+
+    /* ── Slide Colors ── */
+
+    .slide-hero {
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .slide-thesis {
+      background: var(--ink-2);
+      color: var(--paper);
+    }
+
+    .slide-category {
+      background: var(--paper-2);
+      color: var(--ink);
+    }
+
+    .slide-proof {
+      background: var(--warm-white);
+      color: var(--ink);
+    }
+
+    .slide-observation {
+      background: var(--paper-3);
+      color: var(--ink);
+    }
+
+    .slide-trust {
+      background: var(--ink-3);
+      color: var(--paper);
+    }
+
+    .slide-dream {
+      background: var(--ink-deep);
+      color: var(--paper);
+      overflow: hidden;
+    }
+
+    .slide-close {
+      background: var(--paper);
+      color: var(--ink);
     }
 
     /* ── Beat 1: Hero ── */
 
-    .hero {
-      min-height: 100vh;
-      min-height: 100svh;
-    }
-
-    .hero h1 {
+    .slide-hero h1 {
       font-weight: 400;
       font-size: clamp(2rem, 5vw, 3.2rem);
       line-height: 1.35;
     }
 
-    .hero p {
+    .slide-hero p {
       font-size: clamp(1.05rem, 2vw, 1.2rem);
       color: var(--ink-soft);
     }
@@ -201,9 +375,7 @@
       animation: scroll-pulse 2.5s 2.5s ease-in-out infinite;
     }
 
-    @keyframes hint-in {
-      to { opacity: 1; }
-    }
+    @keyframes hint-in { to { opacity: 1; } }
 
     @keyframes scroll-pulse {
       0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.3; }
@@ -212,72 +384,35 @@
 
     /* ── Beat 2: Thesis ── */
 
-    .thesis {
-      background: var(--ink);
-      color: var(--paper);
-    }
-
-    .thesis h2 {
+    .slide-thesis h2 {
       font-size: clamp(2.4rem, 7vw, 4.8rem);
       font-weight: 500;
       line-height: 1.08;
     }
 
-    .reveal-hero {
-      opacity: 0;
-      transform: translateY(100px) scale(1.03);
-      filter: blur(10px);
-      transition: opacity 1.4s var(--ease-out),
-                  transform 1.4s var(--ease-out),
-                  filter 1.4s var(--ease-out);
-    }
-
-    .reveal-hero.visible {
-      opacity: 1;
-      transform: none;
-      filter: blur(0);
-    }
-
-    .thesis p {
-      color: #B8B2A6;
+    .slide-thesis p {
+      color: var(--muted);
       font-size: clamp(1.05rem, 2vw, 1.2rem);
-      opacity: 0;
-      transform: translateY(60px);
-      transition: opacity 1s 0.3s var(--ease-out),
-                  transform 1s 0.3s var(--ease-out);
     }
 
-    .thesis p.visible {
-      opacity: 1;
-      transform: none;
-    }
+    /* ── Beat 3: Category ── */
 
-    /* ── Beat 3: Category ($20) ── */
-
-    .category {
-      background: var(--paper-2);
-    }
+    /* Uses default text styles */
 
     /* ── Beat 4: Proof ── */
 
-    .proof h2 {
-      color: var(--ink);
-    }
-
-    .proof .sky-accent {
-      color: var(--sky);
-    }
+    .slide-proof .sky-accent { color: var(--sky); }
 
     .report-card {
       display: block;
-      margin-top: 2.5rem;
+      margin-top: 2rem;
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 16px;
       overflow: hidden;
       text-decoration: none;
-      transition: transform 500ms var(--ease-out),
-                  box-shadow 500ms var(--ease-out);
+      color: var(--ink);
+      transition: transform 500ms var(--ease-out), box-shadow 500ms var(--ease-out);
     }
 
     .report-card:hover {
@@ -287,31 +422,32 @@
 
     .report-card img {
       width: 100%;
+      max-height: 260px;
+      object-fit: cover;
+      object-position: top;
       display: block;
       border-bottom: 1px solid var(--line);
     }
 
-    .report-card-body {
-      padding: 1.25rem 1.5rem;
-    }
+    .report-card-body { padding: 1rem 1.25rem; }
 
     .report-card-title {
       font-family: var(--font-display);
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 500;
       color: var(--ink);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.25rem;
     }
 
     .report-card-meta {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--ink-soft);
       line-height: 1.5;
     }
 
     /* ── Beat 5: Observation ── */
 
-    .observation .lead {
+    .slide-observation .lead {
       font-family: var(--font-display);
       font-size: clamp(1.25rem, 3vw, 1.6rem);
       font-style: italic;
@@ -330,7 +466,7 @@
       padding: 0.3rem 0.7rem;
       border: 1px solid var(--sky);
       border-radius: 100px;
-      margin-top: 1rem;
+      margin-top: 0.5rem;
     }
 
     .divider {
@@ -341,16 +477,79 @@
       margin: 0;
     }
 
-    /* ── Beat 6: Dream ── */
+    /* Sparkline Comparison */
 
-    .dream {
-      background: var(--ink);
-      color: var(--paper);
-      position: relative;
-      overflow: hidden;
+    .sparkline-compare {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1.5rem;
     }
 
-    .dream::before {
+    .sparkline-panel {
+      flex: 1;
+    }
+
+    .sparkline-panel svg {
+      width: 100%;
+      height: 56px;
+      display: block;
+    }
+
+    .sparkline-panel svg polyline {
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .sparkline-flat polyline { opacity: 0.3; }
+
+    .sparkline-label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--ink-soft);
+      margin-top: 0.4rem;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Beat 6: Trust ── */
+
+    .slide-trust h2 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    .slide-trust p {
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.2rem);
+    }
+
+    .slide-trust .highlight {
+      color: var(--paper);
+    }
+
+    .trust-list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+    }
+
+    .trust-list li {
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      color: var(--muted);
+      padding: 0.35rem 0.8rem;
+      border: 1px solid rgba(184, 178, 166, 0.25);
+      border-radius: 100px;
+    }
+
+    /* ── Beat 7: Dream ── */
+
+    .slide-dream::before {
       content: '';
       position: absolute;
       top: 0;
@@ -362,49 +561,42 @@
       pointer-events: none;
     }
 
-    .dream .beat-inner {
+    .slide-dream .beat-inner {
       position: relative;
       z-index: 1;
     }
 
-    .dream h2 {
-      position: relative;
-    }
+    .slide-dream h2 { position: relative; }
 
-    .dream p {
-      color: #B8B2A6;
+    .slide-dream p {
+      color: var(--muted);
       font-size: clamp(1.05rem, 2vw, 1.2rem);
       position: relative;
     }
 
-    .dream .highlight {
-      color: var(--paper);
-    }
+    .slide-dream .highlight { color: var(--paper); }
 
-    /* ── Beat 7: Close ── */
+    /* ── Beat 8: Close + CTA ── */
 
-    .close-section {
-      min-height: 80vh;
-    }
-
-    .close-section h2 {
+    .slide-close h2 {
       font-size: clamp(1.8rem, 4vw, 2.6rem);
     }
 
-    .close-section .sign-off {
+    .slide-close .sign-off {
       font-family: var(--font-display);
       font-size: clamp(1.1rem, 2vw, 1.3rem);
       font-style: italic;
       color: var(--ink-soft);
       line-height: 1.55;
-      margin-top: 2.5rem;
+      margin-top: 2rem;
     }
 
     .links {
       display: flex;
-      gap: 1rem;
-      margin-top: 2.5rem;
+      gap: 0.8rem;
+      margin-top: 2rem;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .links a {
@@ -424,143 +616,396 @@
       border-color: var(--ink-soft);
     }
 
+    .cta-btn {
+      display: inline-block;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--paper);
+      background: var(--ink);
+      text-decoration: none;
+      padding: 0.65rem 1.6rem;
+      border-radius: 100px;
+      transition: background 300ms ease, transform 300ms ease;
+    }
+
+    .cta-btn:hover {
+      background: #2C2A25;
+      transform: translateY(-1px);
+    }
+
     /* ── Footer ── */
 
-    footer {
-      text-align: center;
-      padding: 3rem 1.5rem;
-      font-size: 0.85rem;
+    .footer-line {
+      font-size: 0.78rem;
       color: var(--ink-soft);
+      margin-top: 2.5rem;
+      opacity: 0.7;
+    }
+
+    /* ── Reduced Motion ── */
+
+    @media (prefers-reduced-motion: reduce) {
+      body {
+        overflow-y: auto;
+        height: auto;
+      }
+
+      .deck {
+        height: auto;
+        overflow: visible;
+        scroll-snap-type: none;
+        scroll-behavior: auto;
+      }
+
+      .slide {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100svh;
+        scroll-snap-align: none;
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+
+      .reveal,
+      .reveal-hero {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+      }
+
+      .scroll-hint { display: none; }
+
+      .no-sda .slide {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
     }
 
     /* ── Responsive ── */
 
     @media (max-width: 600px) {
-      body {
-        font-size: 17px;
-      }
+      body { font-size: 17px; }
 
-      .beat {
+      .slide {
         padding: clamp(3rem, 6vh, 5rem) 1.25rem;
       }
 
-      .beat-inner > * + * {
-        margin-top: 1.25rem;
-      }
+      .beat-inner > * + * { margin-top: 1.2rem; }
 
-      .report-card-body {
-        padding: 1rem 1.25rem;
+      .report-card img { max-height: 180px; }
+      .report-card-body { padding: 0.8rem 1rem; }
+
+      .sparkline-compare {
+        flex-direction: column;
+        gap: 1.2rem;
       }
 
       .links {
         flex-direction: column;
         align-items: flex-start;
       }
+
+      .progress-rail {
+        right: 0.75rem;
+        gap: 10px;
+      }
+
+      .progress-dot {
+        width: 8px;
+        height: 8px;
+      }
+
+      .trust-list {
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .trust-list li {
+        width: fit-content;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Beat 1 — Hero -->
-  <section class="beat hero" aria-label="Introduction">
-    <div class="beat-inner">
-      <div class="hero-marker reveal"></div>
-      <h1 class="reveal">You asked what I've made that I'm most proud&nbsp;of.</h1>
-      <p class="reveal">I don't really live on LinkedIn. So apart from my tools, I made you this&nbsp;— my thoughts on where Littlebird goes&nbsp;next.</p>
-    </div>
-    <div class="scroll-hint" aria-hidden="true"><span></span></div>
-  </section>
+  <!-- Skip Link -->
+  <a class="skip-link" href="#close">Skip to end</a>
 
-  <!-- Beat 2 — Thesis -->
-  <section class="beat thesis" aria-label="Thesis">
-    <div class="beat-inner">
-      <h2 class="reveal-hero">You can't out&#8209;model the&nbsp;labs.<br>You out&#8209;remember&nbsp;them.</h2>
-      <p>You know this. It's why you built what you built. The question is what comes&nbsp;next.</p>
-    </div>
-  </section>
+  <!-- Progress Rail -->
+  <nav class="progress-rail" aria-label="Slide navigation">
+    <button class="progress-dot active" data-slide="0" aria-label="Introduction"   style="--dot-color: #C4993D"></button>
+    <button class="progress-dot"        data-slide="1" aria-label="Thesis"          style="--dot-color: #DAA046"></button>
+    <button class="progress-dot"        data-slide="2" aria-label="Category"        style="--dot-color: #C18540"></button>
+    <button class="progress-dot"        data-slide="3" aria-label="Proof of work"   style="--dot-color: #4FA8E0"></button>
+    <button class="progress-dot"        data-slide="4" aria-label="Observation"     style="--dot-color: #D4915C"></button>
+    <button class="progress-dot"        data-slide="5" aria-label="Trust"           style="--dot-color: #A89068"></button>
+    <button class="progress-dot"        data-slide="6" aria-label="Vision"          style="--dot-color: #5AADE0"></button>
+    <button class="progress-dot"        data-slide="7" aria-label="About"           style="--dot-color: #C4993D"></button>
+  </nav>
 
-  <!-- Beat 3 — The $20 Question -->
-  <section class="beat category" aria-label="Category strategy">
-    <div class="beat-inner">
-      <h2 class="reveal">A user can hand the same $20 to Claude and get more&nbsp;done.<br>So why&nbsp;Littlebird?</h2>
-      <p class="reveal">Because they're not buying the same thing. Claude is brilliant and empty&nbsp;— it meets you fresh every morning. Littlebird already knows what you did yesterday, who matters this week, and what you're trying to build this&nbsp;year.</p>
-      <p class="reveal">As long as Littlebird is filed as "another chat app," it gets price-compared and loses. The moment it's <em>"the AI that remembers your&nbsp;life,"</em> there's no comparison.</p>
-      <p class="reveal">The repositioning is already underway. The strategy is making it&nbsp;unmistakable.</p>
-    </div>
-  </section>
+  <!-- Bird Cursor -->
+  <div class="bird-cursor" aria-hidden="true">
+    <svg width="24" height="20" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g class="wing-l" style="transform-origin: 12px 10px">
+        <path d="M12 10 Q7 3 2 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </g>
+      <g class="wing-r" style="transform-origin: 12px 10px">
+        <path d="M12 10 Q17 3 22 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </g>
+      <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+    </svg>
+  </div>
 
-  <!-- Beat 4 — Proof of Work -->
-  <section class="beat proof" aria-label="Proof of work">
-    <div class="beat-inner">
-      <h2 class="reveal">Littlebird already watches my&nbsp;work. <span class="sky-accent">I gave it&nbsp;hands.</span></h2>
-      <p class="reveal">I built an MCP server that wires my whole Mac into Littlebird&nbsp;— a private tunnel, real filesystem access. "Find the file we mentioned in that meeting" isn't a search. It's an&nbsp;action.</p>
-      <p class="reveal">It could already think like you. Now it can act like you&nbsp;too.</p>
-      <p class="reveal">Littlebird can't hand files back directly, so I built <strong>Little Bird's Nest</strong>&nbsp;— a Telegram bot that gives it a way to reach me. One evening I asked it to look at everything I'd done that week. It wrote the report&nbsp;— charts, data, the works&nbsp;— and sent it to my&nbsp;phone.</p>
-      <a href="weekly-review.pdf" target="_blank" rel="noopener" class="report-card reveal" aria-label="View the weekly review PDF">
-        <img src="weekly-review-cover.png" alt="Cover page of Jay's Weekly Review for May 3–9, 2026 — generated by Littlebird via the mac-orchestrator MCP server and delivered via Telegram" width="1489" height="2105" loading="lazy">
-        <div class="report-card-body">
-          <div class="report-card-title">Weekly Review&nbsp;— May 3&ndash;9,&nbsp;2026</div>
-          <div class="report-card-meta">6 pages &middot; Generated by Littlebird via mac-orchestrator MCP &middot; Delivered via Little Bird's&nbsp;Nest</div>
-        </div>
-      </a>
-      <p class="reveal">Littlebird helped me build the thing that extends Littlebird. The context is already there. It just needs hands, and a reason to use&nbsp;them.</p>
-    </div>
-  </section>
+  <!-- Deck -->
+  <div class="deck" id="deck">
 
-  <!-- Beat 5 — The Observation -->
-  <section class="beat observation" aria-label="Product observation">
-    <div class="beat-inner">
-      <p class="lead reveal">I left a video paused on my screen for an hour. Littlebird thought I watched the whole&nbsp;thing.</p>
-      <hr class="divider reveal">
-      <p class="reveal">Littlebird sees <em>what's</em> on screen, but not <em>how present I was with&nbsp;it.</em> A document I'm typing into and a tab I forgot to close look the same.</p>
-      <p class="reveal">The fix isn't more screen-reading. It's reading <strong>engagement</strong>&nbsp;— inferring real attention from how much the screen is actually changing. A frozen frame means I walked away. Scrolling, typing, clicking means I'm in it.</p>
-      <span class="concept-tag reveal">Engagement-weighted attention</span>
-    </div>
-  </section>
-
-  <!-- Beat 6 — Littlebird's Dream -->
-  <section class="beat dream" aria-label="Forward vision">
-    <div class="beat-inner">
-      <h2 class="reveal">The best version of Littlebird works while you&nbsp;sleep.</h2>
-      <p class="reveal">I built a routine I call <span class="highlight">Midnight Neuroplasticity</span>&nbsp;— every night it scans the day's context, triages what matters into long-term identity and short-term tasks, and delivers a morning&nbsp;briefing.</p>
-      <p class="reveal">The dream gets real when it's native. When Littlebird can update its own memory overnight&nbsp;— when context isn't just collected but actively refined. Long-term: what you're building this year. Short-term: what's due Thursday. Not vibes&nbsp;— facts, with numbers.</p>
-      <p class="reveal">And then it stops waiting to be asked. Proactivity is the thing nobody's gotten right. Littlebird is the only one already holding the context to earn&nbsp;it.</p>
-    </div>
-  </section>
-
-  <!-- Beat 7 — Close -->
-  <section class="beat close-section" aria-label="About Jay">
-    <div class="beat-inner">
-      <h2 class="reveal">I'm&nbsp;Jay.</h2>
-      <p class="reveal">I build small tools that take weight off my own life&nbsp;— a memory system, a few MCP servers, a calculator that thinks in 3D. I'm applying because Littlebird is the first product I've used that's trying to do that for&nbsp;everyone.</p>
-      <p class="sign-off reveal">The labs are chasing how smart a machine can be. Littlebird is chasing something I care about more: how much it can carry for&nbsp;you.</p>
-      <div class="links reveal">
-        <a href="https://github.com/Jay-2212" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://jaybharti.me" target="_blank" rel="noopener">jaybharti.me</a>
+    <!-- Slide 1 — Hero -->
+    <section class="slide slide-hero" aria-label="Introduction">
+      <div class="beat-inner">
+        <div class="hero-marker reveal"></div>
+        <h1 class="reveal">You asked what I've made that I'm most proud&nbsp;of.</h1>
+        <p class="reveal">I don't really live on LinkedIn. So apart from my tools, I made you this&nbsp;— my thoughts on where Littlebird goes&nbsp;next.</p>
       </div>
-    </div>
-  </section>
+      <div class="scroll-hint" aria-hidden="true"><span></span></div>
+    </section>
 
-  <footer>
-    <p>Built with care, not a framework.</p>
-  </footer>
+    <!-- Slide 2 — Thesis -->
+    <section class="slide slide-thesis" aria-label="Thesis">
+      <div class="beat-inner">
+        <h2 class="reveal-hero">You can't out&#8209;model the&nbsp;labs.<br>You out&#8209;remember&nbsp;them.</h2>
+        <p class="reveal">You know this. It's why you built what you built. The question is what comes&nbsp;next.</p>
+      </div>
+    </section>
+
+    <!-- Slide 3 — The $20 Question -->
+    <section class="slide slide-category" aria-label="Category strategy">
+      <div class="beat-inner">
+        <h2 class="reveal">A user can hand the same $20 to Claude and get more&nbsp;done.<br>So why&nbsp;Littlebird?</h2>
+        <p class="reveal">Because they're not buying the same thing. Claude is brilliant and empty&nbsp;— it meets you fresh every morning. Littlebird already knows what you did yesterday, who matters this week, and what you're trying to build this&nbsp;year.</p>
+        <p class="reveal">As long as Littlebird is filed as "another chat app," it gets price-compared and loses. The moment it's <em>"the AI that remembers your&nbsp;life,"</em> there's no comparison.</p>
+        <p class="reveal">The repositioning is already underway. The strategy is making it&nbsp;unmistakable.</p>
+      </div>
+    </section>
+
+    <!-- Slide 4 — Proof of Work -->
+    <section class="slide slide-proof" aria-label="Proof of work">
+      <div class="beat-inner">
+        <h2 class="reveal">Littlebird already watches my&nbsp;work. <span class="sky-accent">I gave it&nbsp;hands.</span></h2>
+        <p class="reveal">I built an MCP server that wires my whole Mac into Littlebird&nbsp;— a private tunnel, real filesystem access. "Find the file we mentioned in that meeting" isn't a search. It's an&nbsp;action.</p>
+        <p class="reveal">Littlebird can't hand files back directly, so I built <strong>Little Bird's Nest</strong>&nbsp;— a Telegram bot that gives it a way to reach me. One evening I asked it to look at everything I'd done that week. It wrote the report&nbsp;— charts, data, the works&nbsp;— and sent it to my&nbsp;phone.</p>
+        <a href="weekly-review.pdf" target="_blank" rel="noopener" class="report-card reveal" aria-label="View the weekly review PDF">
+          <img src="weekly-review-cover.png" alt="Cover page of Jay's Weekly Review for May 3–9, 2026 — generated by Littlebird via the mac-orchestrator MCP server and delivered via Telegram" width="1489" height="2105" loading="lazy">
+          <div class="report-card-body">
+            <div class="report-card-title">Weekly Review&nbsp;— May 3&ndash;9,&nbsp;2026</div>
+            <div class="report-card-meta">6 pages &middot; Generated by Littlebird via mac-orchestrator MCP &middot; Delivered via Little Bird's&nbsp;Nest</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Slide 5 — The Observation -->
+    <section class="slide slide-observation" aria-label="Product observation">
+      <div class="beat-inner">
+        <p class="lead reveal">I left a video paused on my screen for an hour. Littlebird thought I watched the whole&nbsp;thing.</p>
+        <hr class="divider reveal">
+        <p class="reveal">Littlebird sees <em>what's</em> on screen, but not <em>how present I was with&nbsp;it.</em> A document I'm typing into and a tab I forgot to close look the same.</p>
+        <p class="reveal">The fix isn't more screen-reading. It's reading <strong>engagement</strong>&nbsp;— inferring real attention from how much the screen is actually changing.</p>
+        <span class="concept-tag reveal">Engagement-weighted attention</span>
+        <div class="sparkline-compare reveal">
+          <div class="sparkline-panel sparkline-flat">
+            <svg viewBox="0 0 200 56" aria-hidden="true">
+              <polyline points="0,44 20,44 40,43 60,44 80,44 100,43 120,44 140,44 160,43 180,44 200,44"/>
+            </svg>
+            <span class="sparkline-label">Frozen frame, 10 min</span>
+          </div>
+          <div class="sparkline-panel sparkline-active">
+            <svg viewBox="0 0 200 56" aria-hidden="true">
+              <polyline points="0,38 8,18 16,34 24,8 32,30 40,14 48,36 56,6 64,32 72,20 80,40 88,10 96,28 104,4 112,36 120,16 128,42 136,8 144,30 152,18 160,34 168,6 176,28 184,12 192,38 200,22"/>
+            </svg>
+            <span class="sparkline-label">Scrolling, typing, clicking, 10 min</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6 — Trust -->
+    <section class="slide slide-trust" aria-label="Privacy and trust">
+      <div class="beat-inner">
+        <h2 class="reveal">What it doesn't&nbsp;watch.</h2>
+        <p class="reveal">Littlebird ignores private and incognito windows, minimized apps, anything you close. <span class="highlight">Your data is yours to delete on command, and it's never used to train&nbsp;models.</span></p>
+        <ul class="trust-list reveal">
+          <li>Private windows ignored</li>
+          <li>Minimized apps skipped</li>
+          <li>Delete on command</li>
+          <li>Never trains on your data</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Slide 7 — Dream -->
+    <section class="slide slide-dream" aria-label="Forward vision">
+      <div class="beat-inner">
+        <h2 class="reveal">The best version of Littlebird works while you&nbsp;sleep.</h2>
+        <p class="reveal">I built a routine I call <span class="highlight">Midnight Neuroplasticity</span>&nbsp;— every night it scans the day's context, triages what matters into long-term identity and short-term tasks, and delivers a morning&nbsp;briefing.</p>
+        <p class="reveal">The dream gets real when it's native. When Littlebird can update its own memory overnight&nbsp;— when context isn't just collected but actively refined. Long-term: what you're building this year. Short-term: what's due Thursday. Not vibes&nbsp;— facts, with numbers.</p>
+        <p class="reveal">And then it stops waiting to be asked. Proactivity is the thing nobody's gotten right. Littlebird is the only one already holding the context to earn&nbsp;it.</p>
+      </div>
+    </section>
+
+    <!-- Slide 8 — Close + CTA -->
+    <section class="slide slide-close" id="close" aria-label="About Jay">
+      <div class="beat-inner">
+        <h2 class="reveal">I'm&nbsp;Jay.</h2>
+        <p class="reveal">I build small tools that take weight off my own life&nbsp;— a memory system, a few MCP servers, a calculator that thinks in 3D. I'm applying because Littlebird is the first product I've used that's trying to do that for&nbsp;everyone.</p>
+        <p class="sign-off reveal">The labs are chasing how smart a machine can be. Littlebird is chasing something I care about more: how much it can carry for&nbsp;you.</p>
+        <div class="links reveal">
+          <a class="cta-btn" href="mailto:jaybharti3000@gmail.com?subject=Let's%20talk%20%E2%80%94%20Littlebird">Let's talk — 20&nbsp;minutes</a>
+          <a href="https://github.com/Jay-2212" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://jaybharti.me" target="_blank" rel="noopener">jaybharti.me</a>
+        </div>
+        <p class="footer-line reveal">Vanilla HTML/CSS/JS. No builder.</p>
+      </div>
+    </section>
+
+  </div>
 
   <script>
     (function () {
-      var observer = new IntersectionObserver(function (entries) {
+      var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var hasSDA = CSS && CSS.supports && CSS.supports('animation-timeline', 'view()');
+      var deck = document.getElementById('deck');
+      var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+      var dots = Array.prototype.slice.call(document.querySelectorAll('.progress-dot'));
+      var bird = document.querySelector('.bird-cursor');
+      var activeIndex = 0;
+      var darkSlides = [1, 5, 6];
+
+      if (!hasSDA) document.body.classList.add('no-sda');
+
+      /* ── Active Slide Tracking ── */
+
+      function setActiveSlide(index) {
+        if (index === activeIndex) return;
+        activeIndex = index;
+
+        dots.forEach(function (dot, i) {
+          dot.classList.toggle('active', i === index);
+        });
+
+        if (bird && document.body.classList.contains('bird-active')) {
+          bird.style.color = darkSlides.indexOf(index) !== -1 ? '#F2ECDB' : '#14130F';
+        }
+
+        if (!hasSDA) {
+          slides.forEach(function (s, i) {
+            s.classList.toggle('is-active', i === index);
+          });
+        }
+      }
+
+      /* ── IntersectionObserver: slides ── */
+
+      var slideObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            var idx = slides.indexOf(entry.target);
+            if (idx !== -1) setActiveSlide(idx);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      slides.forEach(function (s) { slideObserver.observe(s); });
+
+      /* ── IntersectionObserver: within-slide reveals ── */
+
+      var revealObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
             entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
+            revealObserver.unobserve(entry.target);
           }
         });
-      }, {
-        threshold: 0.12,
-        rootMargin: '0px 0px -40px 0px'
+      }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+
+      if (!prefersReducedMotion) {
+        document.querySelectorAll('.reveal, .reveal-hero').forEach(function (el) {
+          revealObserver.observe(el);
+        });
+      }
+
+      /* ── Initial state for fallback ── */
+
+      if (!hasSDA) {
+        slides[0].classList.add('is-active');
+      }
+
+      /* ── Progress dot clicks ── */
+
+      dots.forEach(function (dot, i) {
+        dot.addEventListener('click', function () {
+          slides[i].scrollIntoView({ behavior: 'smooth' });
+        });
       });
 
-      document.querySelectorAll('.reveal, .reveal-hero').forEach(function (el) {
-        observer.observe(el);
+      /* ── Keyboard navigation ── */
+
+      if (!prefersReducedMotion) {
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            var next = e.key === 'ArrowDown' ? activeIndex + 1 : activeIndex - 1;
+            if (next >= 0 && next < slides.length) {
+              slides[next].scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        });
+      }
+
+      /* ── Bird cursor ── */
+
+      var isPointerFine = window.matchMedia('(pointer: fine)').matches;
+
+      if (isPointerFine && !prefersReducedMotion) {
+        document.body.classList.add('bird-active');
+
+        var mouseX = 0, mouseY = 0;
+        var birdX = 0, birdY = 0;
+        var lerp = 0.14;
+
+        document.addEventListener('mousemove', function (e) {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        });
+
+        function animateBird() {
+          birdX += (mouseX - birdX) * lerp;
+          birdY += (mouseY - birdY) * lerp;
+          bird.style.transform = 'translate(' + (birdX - 12) + 'px, ' + (birdY - 12) + 'px)';
+          requestAnimationFrame(animateBird);
+        }
+        animateBird();
+
+        document.addEventListener('click', function () {
+          bird.classList.remove('flick');
+          void bird.offsetWidth;
+          bird.classList.add('flick');
+          setTimeout(function () { bird.classList.remove('flick'); }, 400);
+        });
+
+        bird.style.color = '#14130F';
+      }
+
+      /* ── Skip link: fix scroll target inside deck ── */
+
+      document.querySelector('.skip-link').addEventListener('click', function (e) {
+        e.preventDefault();
+        var target = document.getElementById('close');
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
       });
     })();
   </script>
