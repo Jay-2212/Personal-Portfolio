@@ -195,10 +195,10 @@
     .beat-inner > .reveal:nth-child(2) { transition-delay: 120ms; }
     .beat-inner > .reveal:nth-child(3) { transition-delay: 240ms; }
     .beat-inner > .reveal:nth-child(4) { transition-delay: 360ms; }
-    .beat-inner > .reveal:nth-child(5) { transition-delay: 460ms; }
-    .beat-inner > .reveal:nth-child(6) { transition-delay: 560ms; }
-    .beat-inner > .reveal:nth-child(7) { transition-delay: 660ms; }
-    .beat-inner > .reveal:nth-child(8) { transition-delay: 760ms; }
+    .beat-inner > .reveal:nth-child(5) { transition-delay: 480ms; }
+    .beat-inner > .reveal:nth-child(6) { transition-delay: 600ms; }
+    .beat-inner > .reveal:nth-child(7) { transition-delay: 720ms; }
+    .beat-inner > .reveal:nth-child(8) { transition-delay: 840ms; }
 
     .reveal-hero {
       opacity: 0;
@@ -246,6 +246,12 @@
 
     .progress-dot:hover {
       transform: scale(1.4);
+    }
+
+    .progress-dot:focus-visible {
+      outline: 2px solid var(--dot-color, #999);
+      outline-offset: 4px;
+      box-shadow: 0 0 0 2px rgba(20, 19, 15, 0.7), 0 0 0 5px var(--dot-color, #999);
     }
 
     .progress-dot.active {
@@ -738,14 +744,14 @@
 
   <!-- Progress Rail -->
   <nav class="progress-rail" aria-label="Slide navigation">
-    <button class="progress-dot active" data-slide="0" aria-label="Introduction"   style="--dot-color: #C4993D"></button>
-    <button class="progress-dot"        data-slide="1" aria-label="Thesis"          style="--dot-color: #DAA046"></button>
-    <button class="progress-dot"        data-slide="2" aria-label="Category"        style="--dot-color: #C18540"></button>
-    <button class="progress-dot"        data-slide="3" aria-label="Proof of work"   style="--dot-color: #4FA8E0"></button>
-    <button class="progress-dot"        data-slide="4" aria-label="Observation"     style="--dot-color: #D4915C"></button>
-    <button class="progress-dot"        data-slide="5" aria-label="Trust"           style="--dot-color: #A89068"></button>
-    <button class="progress-dot"        data-slide="6" aria-label="Vision"          style="--dot-color: #5AADE0"></button>
-    <button class="progress-dot"        data-slide="7" aria-label="About"           style="--dot-color: #C4993D"></button>
+    <button type="button" class="progress-dot active" data-slide="0" aria-label="Introduction" aria-current="true" style="--dot-color: #C4993D"></button>
+    <button type="button" class="progress-dot" data-slide="1" aria-label="Thesis" style="--dot-color: #DAA046"></button>
+    <button type="button" class="progress-dot" data-slide="2" aria-label="Category" style="--dot-color: #C18540"></button>
+    <button type="button" class="progress-dot" data-slide="3" aria-label="Proof of work" style="--dot-color: #4FA8E0"></button>
+    <button type="button" class="progress-dot" data-slide="4" aria-label="Observation" style="--dot-color: #D4915C"></button>
+    <button type="button" class="progress-dot" data-slide="5" aria-label="Trust" style="--dot-color: #A89068"></button>
+    <button type="button" class="progress-dot" data-slide="6" aria-label="Vision" style="--dot-color: #5AADE0"></button>
+    <button type="button" class="progress-dot" data-slide="7" aria-label="About" style="--dot-color: #C4993D"></button>
   </nav>
 
   <!-- Bird Cursor -->
@@ -877,12 +883,12 @@
   <script>
     (function () {
       var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var hasSDA = CSS && CSS.supports && CSS.supports('animation-timeline', 'view()');
+      var hasSDA = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'view()');
       var deck = document.getElementById('deck');
       var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
       var dots = Array.prototype.slice.call(document.querySelectorAll('.progress-dot'));
       var bird = document.querySelector('.bird-cursor');
-      var activeIndex = 0;
+      var activeIndex = -1;
       var darkSlides = [1, 5, 6];
 
       if (!hasSDA) document.body.classList.add('no-sda');
@@ -895,6 +901,11 @@
 
         dots.forEach(function (dot, i) {
           dot.classList.toggle('active', i === index);
+          if (i === index) {
+            dot.setAttribute('aria-current', 'true');
+          } else {
+            dot.removeAttribute('aria-current');
+          }
         });
 
         if (bird && document.body.classList.contains('bird-active')) {
@@ -955,7 +966,17 @@
       /* ── Keyboard navigation ── */
 
       if (!prefersReducedMotion) {
+        function isInteractiveTarget(target) {
+          if (!target || target === document.body) return false;
+          if (target.isContentEditable) return true;
+          if (/^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(target.tagName)) return true;
+          return typeof target.closest === 'function' &&
+            !!target.closest('a, button, input, textarea, select, [contenteditable="true"]');
+        }
+
         document.addEventListener('keydown', function (e) {
+          if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+          if (isInteractiveTarget(e.target)) return;
           if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
             e.preventDefault();
             var next = e.key === 'ArrowDown' ? activeIndex + 1 : activeIndex - 1;
