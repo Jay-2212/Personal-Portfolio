@@ -1002,11 +1002,20 @@
 
       /* ── Skip link: fix scroll target inside deck ── */
 
-      document.querySelector('.skip-link').addEventListener('click', function (e) {
-        e.preventDefault();
-        var target = document.getElementById('close');
-        if (target) target.scrollIntoView({ behavior: 'smooth' });
-      });
+      var skipLink = document.querySelector('.skip-link');
+      if (skipLink) {
+        skipLink.addEventListener('click', function (e) {
+          e.preventDefault();
+          var target = document.getElementById('close');
+          if (!target) return;
+
+          target.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+
+          if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+          target.focus({ preventScroll: true });
+          window.location.hash = 'close';
+        });
+      }
     })();
   </script>
 </body>
