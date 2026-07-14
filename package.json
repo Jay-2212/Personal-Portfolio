@@ -1,0 +1,34 @@
+{
+  "name": "capexiq",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CapexIQ — know if it pays for itself, before you buy it.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "docx": "^9.7.1",
+    "exceljs": "^4.4.0",
+    "jszip": "^3.10.1",
+    "lucide-react": "^1.24.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.0.3",
+    "hyperformula": "^3.3.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.10"
+  }
+}
