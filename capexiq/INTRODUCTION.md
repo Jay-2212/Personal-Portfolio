@@ -16,8 +16,11 @@ cash-flow timing, revenue realization, working capital gaps, and export-ready
 Excel/Word proposals.
 
 Renamed from the placeholder "Healthcare Capex Decision Support Tool" on 2026-07-05.
-It lives as its own subdomain (linked from the portfolio), not a path inside it — see
-`HANDOFF.md`'s 2026-07-05 entry for the full rebrand rationale.
+It's served at its own subdomain, not a path under jaybharti.me — see `HANDOFF.md`'s
+2026-07-05 entry for the full rebrand rationale. As of 2026-07-14, its source moved from
+a standalone repo into this `capexiq/` folder inside the `Personal-Portfolio` repo (still
+deployed separately, to the same subdomain — the merge is a source-organization change,
+not a URL change).
 
 For anything about *what the product does or why* — go to `SPEC.md`. Don't ask "what is
 this project" again once you've read this file; the answer lives there in full, with an
@@ -95,15 +98,11 @@ given task doesn't touch works against that.
 
 ## What's already done vs. what's next
 
-Visual/design assets, `data-requirements.md`, the rebrand to CapexIQ, a skeletal
-Next.js code structure (build-verified — `npm install && npm run build` both succeed),
-the GitHub repo, and this documentation system including `CONVENTIONS.md` and
-`agent-build-plan.md` are all in place — see DIRECTORY.md for the map.
-
-Not yet built: everything in `agent-build-plan.md`'s phases — real equipment data,
-formula implementations, content/copy, the wizard UI, the dashboard, exports. Check
-`HANDOFF.md`'s Current State block and `agent-build-plan.md` for exactly which phase is
-next and why.
+This section is stale — check `HANDOFF.md`'s Current State block for what's actually
+built (as of 2026-07-14 that includes the wizard UI, results dashboard, and Excel/Word/ZIP
+exports; formerly this said nothing past a skeletal build was done, which is no longer
+true). This project's source now lives in `capexiq/` inside the `Personal-Portfolio`
+GitHub repo rather than its own repo — see DIRECTORY.md for the code map.
 
 ---
 

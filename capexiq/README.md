@@ -8,11 +8,13 @@ payback, NPV, IRR, break-even usage, cash-flow timing, revenue realization, work
 capital gaps, and export-ready Excel/Word proposals. Simple enough for an administrator,
 detailed enough for a CFO.
 
-Live at [`capexiq.jaybharti.me`](https://capexiq.jaybharti.me) (once deployed — see
-`ISSUES.md`). Part of [jaybharti.me](https://jaybharti.me).
+Live at [`capexiq.jaybharti.me`](https://capexiq.jaybharti.me). Source lives in this
+folder inside [jaybharti.me's portfolio repo](https://github.com/Jay-2212/Personal-Portfolio) —
+formerly its own repo, merged in and still deployed to its own subdomain (not a path
+under jaybharti.me).
 
-**Status:** early scaffold. The design system and product spec are complete; the
-application itself is a skeleton with no working calculations yet.
+**Status:** wizard flow, results dashboard, and Excel/Word/ZIP export are built (Phase 8
+complete). See `HANDOFF.md` for current state.
 
 ---
 
