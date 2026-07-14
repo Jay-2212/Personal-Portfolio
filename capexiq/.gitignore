@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# testing
+coverage/
+
+# misc
+.DS_Store
+*.pem
+.env*.local
+.env
+
+# editor
+.vscode/
+.idea/
+
+# claude code local-only config (skills/ under .claude/ IS tracked)
+.claude/settings.local.json
+.claude/worktrees/
+
+# vercel/cloudflare
+.vercel/
+.wrangler/
