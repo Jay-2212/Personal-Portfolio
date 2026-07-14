@@ -38,6 +38,14 @@ export function StepNav({
       // first thing."
       dispatch({ type: "ATTEMPT_STEP", step });
       const invalidPath = firstInvalidFieldOnStep(step, state);
+      if (invalidPath?.startsWith("advanced.")) {
+        // `advanced.*` fields only exist in the DOM once AdvancedPanel is open AND
+        // showing the owning group's tab — a plain getElementById/focus silently
+        // no-ops otherwise (the dead "Continue" click this fixes). AdvancedPanel
+        // itself opens, switches tabs, and focuses the field on seeing this.
+        dispatch({ type: "REQUEST_ADVANCED_FOCUS", path: invalidPath });
+        return;
+      }
       const element = invalidPath ? document.getElementById(invalidPath) : null;
       element?.focus();
       element?.scrollIntoView({ block: "center" });

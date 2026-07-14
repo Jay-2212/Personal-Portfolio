@@ -176,6 +176,43 @@ describe("ATTEMPT_STEP (wizard-state.md §2's Next-click reveal, ISS-25)", () =>
   });
 });
 
+describe("REQUEST_ADVANCED_FOCUS / CLEAR_ADVANCED_FOCUS (dead 'Continue' click fix)", () => {
+  it("makes the Advanced panel visible via advancedPanelForcedOpen, WITHOUT flipping advancedOpen", () => {
+    // advancedOpen also selects toAssessmentInputs.ts's Advanced-mode maintenance/
+    // utilization formulas — forcing it true here would silently swap a Custom-
+    // equipment user's Basic AMC/CMC rate for equipment-defaults() numbers that are
+    // null for Custom, zeroing their maintenance cost. Panel visibility must be a
+    // separate flag from formula precedence.
+    const state = wizardReducer(emptyWizardState(), {
+      type: "REQUEST_ADVANCED_FOCUS",
+      path: "advanced.F.usefulLifeYears",
+    });
+    expect(state.advancedPanelForcedOpen).toBe(true);
+    expect(state.advancedOpen).toBe(false);
+    expect(state.pendingAdvancedFocusPath).toBe("advanced.F.usefulLifeYears");
+  });
+
+  it("clears the pending path once AdvancedPanel has focused it, without closing the panel", () => {
+    const requested = wizardReducer(emptyWizardState(), {
+      type: "REQUEST_ADVANCED_FOCUS",
+      path: "advanced.F.usefulLifeYears",
+    });
+    const state = wizardReducer(requested, { type: "CLEAR_ADVANCED_FOCUS" });
+    expect(state.pendingAdvancedFocusPath).toBeNull();
+    expect(state.advancedPanelForcedOpen).toBe(true);
+  });
+
+  it("TOGGLE_ADVANCED (Close Advanced Mode) closes a force-opened panel entirely", () => {
+    const forced = wizardReducer(emptyWizardState(), {
+      type: "REQUEST_ADVANCED_FOCUS",
+      path: "advanced.F.usefulLifeYears",
+    });
+    const state = wizardReducer(forced, { type: "TOGGLE_ADVANCED" });
+    expect(state.advancedPanelForcedOpen).toBe(false);
+    expect(state.advancedOpen).toBe(false);
+  });
+});
+
 describe("RESTORE_DRAFT / ACKNOWLEDGE_RESTORED_DRAFT (wizard-state.md §6.5, §7.2)", () => {
   it("restores the given state and records the announcement timestamp", () => {
     const draftState = wizardReducer(emptyWizardState(), {
@@ -203,6 +240,32 @@ describe("RESTORE_DRAFT / ACKNOWLEDGE_RESTORED_DRAFT (wizard-state.md §6.5, §7
       savedAt: "2026-07-13T00:00:00.000Z",
     });
     expect(state.attemptedSteps).toEqual({});
+  });
+
+  it("resets pendingAdvancedFocusPath on restore — same ephemeral-session-UI reasoning as attemptedSteps", () => {
+    const requestedDraft = wizardReducer(emptyWizardState(), {
+      type: "REQUEST_ADVANCED_FOCUS",
+      path: "advanced.F.usefulLifeYears",
+    });
+    const state = wizardReducer(emptyWizardState(), {
+      type: "RESTORE_DRAFT",
+      state: requestedDraft,
+      savedAt: "2026-07-13T00:00:00.000Z",
+    });
+    expect(state.pendingAdvancedFocusPath).toBeNull();
+  });
+
+  it("resets advancedPanelForcedOpen on restore — a restored draft shouldn't carry over a stale forced-open panel", () => {
+    const requestedDraft = wizardReducer(emptyWizardState(), {
+      type: "REQUEST_ADVANCED_FOCUS",
+      path: "advanced.F.usefulLifeYears",
+    });
+    const state = wizardReducer(emptyWizardState(), {
+      type: "RESTORE_DRAFT",
+      state: requestedDraft,
+      savedAt: "2026-07-13T00:00:00.000Z",
+    });
+    expect(state.advancedPanelForcedOpen).toBe(false);
   });
 
   it("acknowledging clears the restored-draft flag without touching other state", () => {

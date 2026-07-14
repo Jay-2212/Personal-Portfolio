@@ -10,6 +10,7 @@ function CompactNumber({ path, label }: { path: string; label: string }) {
   const field = useFieldController(path);
   return (
     <input
+      id={path}
       type="number"
       aria-label={label}
       value={field.value ?? ""}

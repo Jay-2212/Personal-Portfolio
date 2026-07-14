@@ -24,7 +24,9 @@ export type WizardAction =
   | { type: "MARK_HYDRATED" }
   | { type: "START_OVER" }
   | { type: "SET_MAINTENANCE_SCHEDULE_YEAR"; yearIndex: number; value: number | null }
-  | { type: "ATTEMPT_STEP"; step: Exclude<WizardStep, "results"> };
+  | { type: "ATTEMPT_STEP"; step: Exclude<WizardStep, "results"> }
+  | { type: "REQUEST_ADVANCED_FOCUS"; path: string }
+  | { type: "CLEAR_ADVANCED_FOCUS" };
 
 function resizeMaintenanceArray(
   state: WizardState,
@@ -67,7 +69,14 @@ export function wizardReducer(
     }
 
     case "TOGGLE_ADVANCED": {
-      return { ...state, advancedOpen: !state.advancedOpen };
+      // The button toggles combined visibility (advancedOpen OR the force-open flag
+      // REQUEST_ADVANCED_FOCUS sets) — closing from either state clears both, since
+      // "Close Advanced Mode" should mean closed regardless of how it got opened.
+      // Opening for real is always a genuine advancedOpen:true opt-in.
+      const visible = state.advancedOpen || state.advancedPanelForcedOpen;
+      return visible
+        ? { ...state, advancedOpen: false, advancedPanelForcedOpen: false }
+        : { ...state, advancedOpen: true };
     }
 
     case "SET_CURRENCY_UNIT": {
@@ -112,6 +121,8 @@ export function wizardReducer(
           installationCost: "Lakh",
         },
         attemptedSteps: {},
+        pendingAdvancedFocusPath: null,
+        advancedPanelForcedOpen: false,
         restoredDraftSavedAt: action.savedAt,
         hasHydrated: true,
       };
@@ -129,6 +140,21 @@ export function wizardReducer(
       // Client-side reset, not a reload — there's no localStorage draft left to wait
       // on (clearDraft() already ran), so RouteGuard must not block on hydration again.
       return { ...emptyWizardState(), hasHydrated: true };
+    }
+
+    case "REQUEST_ADVANCED_FOCUS": {
+      // advancedPanelForcedOpen, not advancedOpen — this only needs to make the field
+      // reachable in the DOM, not opt the user into Advanced Mode's own precedence
+      // rules (toAssessmentInputs.ts's maintenance-rate/mature-utilization branches
+      // key off advancedOpen specifically; flipping it here would silently swap a
+      // Custom-equipment user's Basic AMC/CMC rate for equipment-defaults() numbers
+      // that don't exist for Custom, zeroing their maintenance cost).
+      return { ...state, advancedPanelForcedOpen: true, pendingAdvancedFocusPath: action.path };
+    }
+
+    case "CLEAR_ADVANCED_FOCUS": {
+      if (state.pendingAdvancedFocusPath === null) return state;
+      return { ...state, pendingAdvancedFocusPath: null };
     }
 
     case "ATTEMPT_STEP": {

@@ -79,6 +79,7 @@ export function emptyWizardState(): WizardState {
       amcCmcCostPostWarranty: null,
     },
     advancedOpen: false,
+    advancedPanelForcedOpen: false,
     currencyUnits: {
       purchaseCost: "Crore",
       installationCost: "Lakh",
@@ -132,6 +133,7 @@ export function emptyWizardState(): WizardState {
     transitionInFlight: false,
     restoredDraftSavedAt: null,
     hasHydrated: false,
+    pendingAdvancedFocusPath: null,
   };
 }
 

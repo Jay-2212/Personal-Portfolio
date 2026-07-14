@@ -1193,6 +1193,10 @@ a { color: var(--accent-interactive); }
 .question-section__heading { margin-bottom:22px; }
 .question-section__heading span { font-size:17px; font-weight:750; }
 .question-section__heading p { margin:5px 0 0; font-size:13px; color:var(--text-secondary); }
+.smart-input-notice { display:flex; gap:10px; align-items:flex-start; margin-top:22px; padding:14px 18px; border-radius:14px; background:var(--status-caution-bg); border:1px solid #f0dcb4; }
+.smart-input-notice > svg { flex-shrink:0; margin-top:2px; color:var(--status-caution); }
+.smart-input-notice span { font-size:13px; line-height:1.55; color:#3a3936; }
+.smart-input-notice + .smart-input-notice { margin-top:12px; }
 .step-nav { justify-content:space-between; align-items:center; margin-top:28px; }
 
 /* Basic / Advanced decision and focused workspace */
