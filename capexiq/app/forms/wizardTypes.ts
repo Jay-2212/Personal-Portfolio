@@ -126,7 +126,21 @@ export interface WizardState {
   currentStep: WizardStep;
   preStep: PreStepFields;
   basic: BasicFields;
+  /** True only once the user has themselves chosen to enter Advanced Mode (the
+   *  "Enter Advanced Mode" button) — toAssessmentInputs.ts's Basic-vs-Advanced
+   *  precedence branches (maintenance rate, mature-utilization baseline) key off this
+   *  exact flag, so it must reflect genuine opt-in, not mere panel visibility. See
+   *  advancedPanelForcedOpen below for the visibility-only counterpart. */
   advancedOpen: boolean;
+  /** Makes AdvancedPanel visible without opting into advancedOpen's formula
+   *  precedence — the disabled-"Next" focus behavior (ISS-25) needs an `advanced.*`
+   *  field's group to be mounted so it can be found and focused, but that's a UI
+   *  necessity, not the user deciding Advanced Mode's numbers should now win over
+   *  Basic Mode's (a Custom-equipment or Loan/Lease user bounced here for one
+   *  required field must not have their Basic Mode AMC/CMC rate silently zeroed out
+   *  by equipment-defaults()'s Advanced-mode maintenance branch). Ephemeral UI state,
+   *  reset on RESTORE_DRAFT/START_OVER like attemptedSteps. */
+  advancedPanelForcedOpen: boolean;
   advanced: AdvancedFields;
   currencyUnits: {
     purchaseCost: CurrencyUnit;
@@ -151,4 +165,11 @@ export interface WizardState {
    *  not a draft existed to restore). RouteGuard must not evaluate step-completeness
    *  before this flips true, or it redirects on the pre-restore blank state. */
   hasHydrated: boolean;
+  /** Set when the disabled-"Next" focus behavior (ISS-25) needs to reach an
+   *  `advanced.*` field — those only exist in the DOM once AdvancedPanel is open AND
+   *  showing the owning group's tab, so a plain getElementById/focus (which works for
+   *  every Basic-Mode field) silently no-ops for them. AdvancedPanel opens itself,
+   *  switches to the right group, focuses the field, then clears this. Ephemeral UI
+   *  state, reset on RESTORE_DRAFT/START_OVER like attemptedSteps. */
+  pendingAdvancedFocusPath: string | null;
 }

@@ -7,6 +7,7 @@ import { PreviewStrip } from "../../../components/PreviewStrip";
 import { StepNav } from "../../../components/StepNav";
 import { isStepComplete } from "../../../forms/wizardValidation";
 import { AdvancedPanel } from "../../../advanced/AdvancedPanel";
+import { CostMarginNotice } from "../../../components/CostMarginNotice";
 
 export default function CostsStepPage() {
   const { state } = useWizard();
@@ -29,6 +30,7 @@ export default function CostsStepPage() {
             <NumberField path="basic.professionalFeePerUse" />
             <NumberField path="basic.otherVariableCostPerUse" />
           </div>
+          <CostMarginNotice />
         </div>
         <div className="question-section">
           <div className="question-section__heading"><span>Monthly overhead</span><p>The fixed cost of keeping the service ready.</p></div>
