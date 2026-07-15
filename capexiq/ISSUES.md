@@ -12,17 +12,6 @@ Status values: **open** (needs action), **accepted** (known, deliberately not fi
 
 ## Open
 
-### ISS-28 — Live deploy (`capexiq.jaybharti.me`) is badly stale
-**Area:** deployment
-**What was found:** 2026-07-13, during Phase 7 browser QA. The live Cloudflare Pages
-site still serves the pre-Phase-6 scaffold placeholder ("This is a scaffold...") —
-none of Phase 6's wizard, Phase 4-13's redesign, or Phase 7's dashboard are live.
-`/assess` 404s directly (static-export routing not configured for direct navigation,
-separate from the staleness). Likely Cloudflare Pages isn't auto-deploying from
-`origin/main` pushes, or the last successful deploy predates Phase 6 entirely.
-**Not fixed this session:** deployment configuration is outside this session's scope
-and may be an intentional pause — flagged for Jay to decide, not silently changed.
-
 No other open issues from the 2026-07-13 visual audit. Phase 7 formula/export items
 remain tracked below under their existing IDs.
 
@@ -174,6 +163,24 @@ is a placeholder only, safe to replace once real product screenshots exist.
 ---
 
 ## Resolved
+
+### ISS-30 — Basic Continue silently blocked by a required field inside collapsed Advanced Mode
+**Resolved:** 2026-07-15. A live restored Cath Lab draft used Loan acquisition mode,
+which made Advanced Group C's Down payment required. The visible Operating Costs table
+was valid, but the missing Advanced field kept the result gate closed while the panel
+was collapsed, so the user could not see what needed attention. The fix merged through
+PR #14: `StepNav` dispatches `REQUEST_ADVANCED_FOCUS` for an `advanced.*` blocker;
+`AdvancedPanel` opens to the owning topic, focuses the field, and reveals the existing
+validation message without changing `advancedOpen` or the calculation's Basic/Advanced
+precedence. Verified on the merged `main` tree with 255 tests, clean TypeScript, and a
+clean static build.
+
+### ISS-28 — Live deploy (`capexiq.jaybharti.me`) was badly stale
+**Resolved:** 2026-07-15. The CapexIQ source migration merged into the
+Personal-Portfolio repository through PR #13, followed by Cloudflare Pages trigger
+commits and PR #14's dead-click fix. The live domain now serves the full app; live QA
+reached the results dashboard from a restored draft and Jay confirmed the Excel model
+download completed.
 
 ### ISS-29 — `computeAssessment.ts` ramped realized revenue and variable cost by `utilizationRamp` but never ramped billed revenue
 **Resolved:** 2026-07-14. Surfaced during Phase 8's Excel export monthly-breakdown work

@@ -11,8 +11,8 @@ of *how* we got here.
 
 ## Current State
 
-*(Last updated: 2026-07-14, Phase 8 exports built + verified, ISS-29 resolved, IRR
-spot-checked against real LibreOffice; Phase 7's chart-tooltip gap closed)*
+*(Last updated: 2026-07-15, live-domain validation/export QA complete; the Basic
+Mode dead-click fix is merged to `main` and deployed)*
 
 **The warm-beige "calm clinical intelligence" redesign and Phase 7's results dashboard
 depth are both implemented and verified live.** The canonical calculation pipeline and
@@ -35,6 +35,12 @@ Crore-based financial contracts are unchanged throughout.
   with one active topic; payer assumptions use a compact table. Help and Methodology no
   longer expose repository/code language; Methodology is a two-column doc layout with
   its own sticky table of contents (`app/methodology/page.tsx`).
+- A blocked **Continue with Basic** no longer fails silently when the missing required
+  value lives in a collapsed Advanced topic (for example, Loan mode with no Down
+  payment). `StepNav` dispatches `REQUEST_ADVANCED_FOCUS`; `AdvancedPanel` opens without
+  opting the calculation into Advanced precedence, selects the owning topic, focuses
+  the field, and shows its existing validation message. This fix is on `main` via PR
+  #14 and the live domain now serves the migrated app.
 - `/results` leads with a human outlook, score, NPV/IRR/payback, and supporting
   metrics, then **Phase 7's new depth**: a break-even comparison bar
   (`app/charts/BreakEvenBar.tsx`), a cumulative cash-flow bar chart
@@ -54,7 +60,7 @@ Crore-based financial contracts are unchanged throughout.
   "Caution" to 65/"Moderate" and NPV from −₹9.0L to +₹1.12Cr instantly). All four are
   pure-presentational/dispatch-only and read `AssessmentResult`/
   `InvestmentOutlookResult`/the wizard reducer directly — no calculation logic inline.
-- Root verification: **196 tests passing across 33 files, clean TypeScript, clean
+- Root verification: **255 tests passing across 39 files, clean TypeScript, clean
   static-export build.** A Phase 4-D contrast check (computed WCAG contrast ratios via
   `getComputedStyle`, not eyeballing) found and fixed one real failure: the cash-flow
   chart's small year labels were `--text-muted` at 3.29:1 against the card background,
@@ -71,8 +77,8 @@ render, or (b) direct `getComputedStyle`/CSS-source inspection bypassing the ext
 entirely — never on an un-locked screenshot. Future sessions using `claude-in-chrome`
 for visual QA should do the same, or ask Jay to disable the extension for `localhost`.
 
-**Two things flagged, not silently decided:**
-1. **The "red validation box before a field is filled" behavior Jay asked to have
+**One historical QA note:**
+**The "red validation box before a field is filled" behavior Jay asked to have
    fixed was already resolved** before this session started — independently, by two
    different uncommitted/unmerged efforts that both landed on the same touched/attempt
    gating (see the Change Log entry below for how they were reconciled). This session
@@ -82,11 +88,11 @@ for visual QA should do the same, or ask Jay to disable the extension for `local
    component keys its red state off the gated `error`/`data-invalid`, never off raw
    `required`. Re-open if Jay still sees it — that would mean a component or browser
    this session didn't reach.
-2. **`capexiq.jaybharti.me` (the live Cloudflare Pages deployment) is badly stale** —
-   it still serves the pre-Phase-6 scaffold placeholder ("This is a scaffold...instead
-   of the built product. Likely means Cloudflare Pages isn't auto-deploying from
-   `origin/main` pushes, or the last deploy predates Phase 6 entirely. Worth Jay's
-   attention independent of this session's work.
+The former stale-deployment warning is resolved: `capexiq.jaybharti.me` now serves the
+full migrated app from the Personal-Portfolio repository. Live QA on 2026-07-15 reached
+the Cath Lab results dashboard from a restored draft and confirmed the Excel export
+downloads successfully. The apparent export miss during automation was a tab/click
+mismatch, not an export-generator defect.
 
 **2026-07-14 session — Phase 8 (Excel/Word/ZIP exports) built, plus Phase 7's last
 open item:**
@@ -177,6 +183,25 @@ before <date>.` This keeps HANDOFF.md fast to read no matter how old the project
 ## Change Log
 
 *(most recent first)*
+
+### 2026-07-15 — Live Basic-mode blocker diagnosed; deployed fix and Excel export verified
+**What was found:** Jay's restored Cath Lab draft used Loan acquisition mode. Every
+visible Operating Costs value was valid, but Advanced Group C's required Down payment
+was blank. The collapsed UI still said the Basic assessment was complete, so the
+blocked Continue click gave no useful explanation on the deployed version being tested.
+
+**Resolution:** the exact fix had already been implemented on
+`fix-basic-mode-dead-click` and was merged to `main` through PR #14 while this QA was in
+progress. It routes any hidden `advanced.*` blocker through `REQUEST_ADVANCED_FOCUS`,
+opens the correct topic without changing formula precedence, focuses the missing field,
+and reveals the normal validation copy. The repository migration and two Cloudflare
+deploy-trigger commits are also on `main`; local `main` was fast-forwarded to the same
+commit (`7f32557`).
+
+**Export check:** direct live-browser QA reached `/results`; Jay confirmed the Excel
+download completed. No export code change was needed. Verification on the merged tree:
+255 tests across 39 files, clean `tsc --noEmit`, and a successful Next.js static-export
+build.
 
 ### 2026-07-14 — Phase 8 follow-up: ISS-29 resolved, LibreOffice IRR spot-check
 **What changed:** Jay asked to resolve the two items Phase 8 left open (see the entry
