@@ -12,7 +12,7 @@ of *how* we got here.
 ## Current State
 
 *(Last updated: 2026-07-15, live-domain validation/export QA complete; the Basic
-Mode dead-click fix is merged to `main` and deployed)*
+Mode dead-click fix is merged to `main`, but the Cloudflare deployment is behind it)*
 
 **The warm-beige "calm clinical intelligence" redesign and Phase 7's results dashboard
 depth are both implemented and verified live.** The canonical calculation pipeline and
@@ -40,7 +40,7 @@ Crore-based financial contracts are unchanged throughout.
   payment). `StepNav` dispatches `REQUEST_ADVANCED_FOCUS`; `AdvancedPanel` opens without
   opting the calculation into Advanced precedence, selects the owning topic, focuses
   the field, and shows its existing validation message. This fix is on `main` via PR
-  #14 and the live domain now serves the migrated app.
+  #14; the live domain still serves the migrated app's pre-fix JavaScript bundle.
 - `/results` leads with a human outlook, score, NPV/IRR/payback, and supporting
   metrics, then **Phase 7's new depth**: a break-even comparison bar
   (`app/charts/BreakEvenBar.tsx`), a cumulative cash-flow bar chart
@@ -88,11 +88,13 @@ for visual QA should do the same, or ask Jay to disable the extension for `local
    component keys its red state off the gated `error`/`data-invalid`, never off raw
    `required`. Re-open if Jay still sees it — that would mean a component or browser
    this session didn't reach.
-The former stale-deployment warning is resolved: `capexiq.jaybharti.me` now serves the
-full migrated app from the Personal-Portfolio repository. Live QA on 2026-07-15 reached
-the Cath Lab results dashboard from a restored draft and confirmed the Excel export
-downloads successfully. The apparent export miss during automation was a tab/click
-mismatch, not an export-generator defect.
+The former scaffold-only deployment is resolved: `capexiq.jaybharti.me` now serves the
+full migrated app from the Personal-Portfolio repository. It is nevertheless behind
+`main`: direct inspection of the live `/assess/costs` JavaScript bundle on 2026-07-15
+showed the pre-PR-#14 `StepNav`/`AdvancedPanel` implementation, with no
+`REQUEST_ADVANCED_FOCUS` path. Live QA still confirmed that the Excel export itself
+downloads successfully; the apparent export miss during automation was a tab/click
+mismatch, not an export-generator defect. Deployment freshness remains ISS-28.
 
 **2026-07-14 session — Phase 8 (Excel/Word/ZIP exports) built, plus Phase 7's last
 open item:**
@@ -184,19 +186,21 @@ before <date>.` This keeps HANDOFF.md fast to read no matter how old the project
 
 *(most recent first)*
 
-### 2026-07-15 — Live Basic-mode blocker diagnosed; deployed fix and Excel export verified
+### 2026-07-15 — Live Basic-mode blocker diagnosed; merged fix and Excel export verified
 **What was found:** Jay's restored Cath Lab draft used Loan acquisition mode. Every
 visible Operating Costs value was valid, but Advanced Group C's required Down payment
 was blank. The collapsed UI still said the Basic assessment was complete, so the
 blocked Continue click gave no useful explanation on the deployed version being tested.
 
-**Resolution:** the exact fix had already been implemented on
+**Code resolution:** the exact fix had already been implemented on
 `fix-basic-mode-dead-click` and was merged to `main` through PR #14 while this QA was in
 progress. It routes any hidden `advanced.*` blocker through `REQUEST_ADVANCED_FOCUS`,
 opens the correct topic without changing formula precedence, focuses the missing field,
 and reveals the normal validation copy. The repository migration and two Cloudflare
 deploy-trigger commits are also on `main`; local `main` was fast-forwarded to the same
-commit (`7f32557`).
+commit (`7f32557`). A subsequent direct check of the live route's actual JavaScript
+bundle found the older implementation, so the code is merged but not yet deployed;
+see ISS-28.
 
 **Export check:** direct live-browser QA reached `/results`; Jay confirmed the Excel
 download completed. No export code change was needed. Verification on the merged tree:

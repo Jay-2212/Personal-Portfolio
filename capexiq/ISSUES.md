@@ -12,6 +12,18 @@ Status values: **open** (needs action), **accepted** (known, deliberately not fi
 
 ## Open
 
+### ISS-28 — Live deploy is the full app but remains behind `main`
+**Area:** deployment
+**What was found:** the original scaffold-only staleness is resolved, but a direct
+inspection of `capexiq.jaybharti.me/assess/costs` on 2026-07-15 found that its served
+JavaScript bundle still contains the pre-PR-#14 `StepNav` and `AdvancedPanel` code. The
+dead-click fix has been on GitHub `main` since commit `7f32557` (2026-07-14), and the
+documentation follow-up `4538610` also pushed successfully, but the live bundle has no
+`REQUEST_ADVANCED_FOCUS` path. GitHub Pages reports its own deployment successful for
+`4538610`; that is not the separate Cloudflare Pages deployment serving the CapexIQ
+subdomain. Cloudflare must be rebuilt from current `main` before the live fix can be
+called complete.
+
 No other open issues from the 2026-07-13 visual audit. Phase 7 formula/export items
 remain tracked below under their existing IDs.
 
@@ -174,13 +186,6 @@ PR #14: `StepNav` dispatches `REQUEST_ADVANCED_FOCUS` for an `advanced.*` blocke
 validation message without changing `advancedOpen` or the calculation's Basic/Advanced
 precedence. Verified on the merged `main` tree with 255 tests, clean TypeScript, and a
 clean static build.
-
-### ISS-28 — Live deploy (`capexiq.jaybharti.me`) was badly stale
-**Resolved:** 2026-07-15. The CapexIQ source migration merged into the
-Personal-Portfolio repository through PR #13, followed by Cloudflare Pages trigger
-commits and PR #14's dead-click fix. The live domain now serves the full app; live QA
-reached the results dashboard from a restored draft and Jay confirmed the Excel model
-download completed.
 
 ### ISS-29 — `computeAssessment.ts` ramped realized revenue and variable cost by `utilizationRamp` but never ramped billed revenue
 **Resolved:** 2026-07-14. Surfaced during Phase 8's Excel export monthly-breakdown work
