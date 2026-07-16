@@ -11,8 +11,52 @@ of *how* we got here.
 
 ## Current State
 
-*(Last updated: 2026-07-15, live-domain validation/export QA complete; the Basic
-Mode dead-click fix is merged to `main`, but the Cloudflare deployment is behind it)*
+*(Last updated: 2026-07-16, first hands-on post-launch QA pass across Basic + Advanced
+Mode + a second equipment type; a systemic input-validation-timing bug found and fixed,
+plus Excel export personalization; a real data-corruption bug found in Cath
+Lab/Dialysis defaults and flagged for Jay, not yet fixed)*
+
+**2026-07-16 QA pass — first session to actually drive the product end to end (Basic +
+all 6 Advanced groups + Loan financing + a second equipment type + Results quick
+settings + all 3 exports) with realistic data instead of reading code.** Full writeup
+in `/Users/jay/.claude/plans/can-you-create-a-structured-sundae.md` (Jay's copy, not
+tracked in this repo). Two kinds of findings:
+- **Fixed this session (small, display/content-only, verified live + via tests):** a
+  systemic eager-validation bug — every `NumberField`/`SliderField`/`CurrencyUnitField`
+  dispatched on every keystroke with no debounce, so clearing a pre-filled "Typical"
+  value (or typing a fresh multi-digit number past a min threshold) flashed a red error
+  before the user finished editing. Fixed via `useDeferredFieldError`
+  (`app/forms/useFieldController.ts`) — display defers to blur, but an ATTEMPT_STEP
+  (blocked "Continue") still reveals immediately, unchanged. Also: ~12 ambiguous
+  "X can't be negative" error messages reworded to state the actual range; the step
+  breadcrumb (`ProgressStepper`) is now clickable for completed/current steps; a
+  duplicated tooltip ("EMI start month" / "Moratorium period" shared one entry) split
+  in two; the AMC/CMC blended default now rounds to its own declared decimal
+  precision instead of displaying `4.90625`; the Excel export now receives
+  `{hospitalName, equipmentCategory}` (previously only Word did) and personalizes its
+  Assumptions-sheet title; all three export filenames now include hospital + equipment
+  + date instead of a shared hardcoded name (previously colliding — confirmed
+  empirically as `Financial Model.xlsx` / `Financial Model (1).xlsx` in `~/Downloads`).
+  262 tests passing (up from 255), clean `tsc --noEmit`, clean static-export build.
+- **Found, NOT fixed — flagged for Jay's sign-off, per the methodology-change
+  carve-out:** (1) **a verified data-corruption bug** — `app/forms/equipmentDefaults.ts`
+  always divides `purchaseCost.typical` by one crore assuming raw INR, but Cath Lab's
+  and Dialysis's equipment-data files declare their figure in Crore/Lakh units
+  respectively; selecting Cath Lab loads a Purchase Cost default of literal `9e-7`
+  (₹9 Cr → 9e-7 Cr) instead of the real sourced figure. MRI/CT/Ultrasound never hit this
+  path (`purchaseCost.typical` is `null` for all three), which is why no prior session
+  caught it — this was the first session to actually pick Cath Lab. (2) opening
+  Advanced Mode alone, with zero new input, silently recalculates the score (verified:
+  96→100, Payback 2.7yr→2.0yr on an untouched MRI assessment) because
+  `toAssessmentInputs.ts` switches the maintenance-cost source and the usage-per-day
+  source the instant `advancedOpen` flips true, discarding the user's Basic-Mode
+  answers in favor of equipment defaults that were silently pre-populated at
+  equipment-selection time. (3) switching equipment mid-draft overwrites cost/usage
+  defaults with no warning to the user. All three share one root
+  (`applyEquipmentDefaults`, `app/forms/initialState.ts`) — see the plan doc for full
+  repro steps and proposed fix directions. **Do not fix any of these three without
+  Jay's explicit go-ahead** — (1) changes every historical Cath Lab/Dialysis result,
+  (2)/(3) are real precedence decisions, not obvious bugs.
 
 **The warm-beige "calm clinical intelligence" redesign and Phase 7's results dashboard
 depth are both implemented and verified live.** The canonical calculation pipeline and
@@ -146,14 +190,20 @@ open item:**
   `npm run build` (confirmed via build output that exceljs/docx/jszip stay in lazy
   chunks — `/results` grew ~1KB, not the ~1MB+ eager-bundling would add).
 
-**Next:** a visual QA pass across the other equipment types and a Strong/Weak outcome
-(only MRI at Caution/Moderate has been live-tested) remains Phase 7's one open item.
+**Next:** the highest-priority open item is Jay's decision on the three flagged
+findings above (Cath Lab/Dialysis purchase-cost corruption; Advanced Mode's silent
+recompute; equipment-switch overwrite with no warning) — see ISS-31/ISS-32/ISS-33. A
+visual QA pass across the remaining equipment types (CT, Ultrasound) and a Strong/Weak
+outcome (only MRI and, this session, Cath Lab have been live-tested) remains open.
 Phase 8's remaining fast-follow is chart images (now unblocked by LibreOffice being
 available, but not yet built). Phase 9 (sensitivity/scenario comparison) hasn't been
 started. A dedicated real-user copy pass and the Dark-Reader-free device QA pass noted
-above remain open. Do not return Advanced Mode to a six-group continuous scroll,
-expose internal field/formula identifiers in public UI, or fix the stale live-deploy
-issue without checking with Jay first (it may be intentional, e.g. mid-migration).
+above remain open. This session's `resize_window` calls did not actually change the
+browser viewport (`window.innerWidth` stayed at 1470 despite requesting 390px) — mobile/
+responsive QA is still untested by any live browser session, not just deferred. Do not
+return Advanced Mode to a six-group continuous scroll, expose internal field/formula
+identifiers in public UI, or fix the stale live-deploy issue without checking with Jay
+first (it may be intentional, e.g. mid-migration).
 
 ---
 
@@ -185,6 +235,71 @@ before <date>.` This keeps HANDOFF.md fast to read no matter how old the project
 ## Change Log
 
 *(most recent first)*
+
+### 2026-07-16 — First hands-on QA pass: eager-validation UX bug fixed, Excel personalized, Cath Lab data-corruption bug found
+**What happened:** Jay asked for a first-pass post-launch improvement plan, but
+specifically asked it be grounded in actually using the product (Basic + Advanced
+Mode, realistic data, pushed to edge cases), not a code read — prompted by his own
+report of a "prefilled value → clear it → red warning → retype" friction pattern. Ran
+`npm run dev` and drove a full MRI assessment for "Sunrise Multispecialty Hospital"
+through every wizard step, all 6 Advanced groups, Loan financing, a second equipment
+type (Cath Lab), Results quick-settings, and all three exports — via `claude-in-chrome`
+browser automation, not just reading source.
+**Findings and fixes, safe/small bucket (implemented, tested, live-verified):**
+1. Reproduced Jay's exact pattern and generalized it: clearing a pre-filled "Typical"
+   value, or typing a fresh multi-digit number past a field's `min`, flashed a red
+   error on every keystroke before the user finished editing — because every
+   `NumberField`/`SliderField`/`CurrencyUnitField` dispatches on every keystroke with
+   no debounce, and `useFieldController`'s touched-gate flips true on the very edit
+   that triggers the problem. Fixed with a new `useDeferredFieldError` hook
+   (`app/forms/useFieldController.ts`): display defers to blur; an `ATTEMPT_STEP`
+   (blocked "Continue") still reveals every blocked field immediately, unchanged
+   (regression-tested in `tests/wizard/components.test.tsx`).
+2. ~12 fields' error copy ("X can't be negative") reused the same string for
+   missing/too-low/too-high — misleading in 2 of 3 cases (e.g. an empty required Down
+   Payment showed "can't be negative"). Reworded to state the actual range in
+   `content/inputs-metadata.json`.
+3. The step breadcrumb (`ProgressStepper`) looked like tab navigation but had no
+   interactive elements — now clickable for the current/completed steps.
+4. "EMI start month" and "Moratorium period" shared one tooltip entry with identical
+   copy — split into two in `content/tooltip-copy.md`, regenerated via
+   `scripts/generateTooltipCopy.mjs`.
+5. Basic Mode's blended AMC/CMC default displayed as `4.90625` (false precision) —
+   rounded to the field's own declared decimal place in `equipmentDefaults.ts`.
+6. Jay asked directly whether the Excel export could be personalized, and whether
+   "Excel isn't perfect" too. Unzipped an actual downloaded workbook
+   (`xl/sharedStrings.xml`) and confirmed the hospital name appeared nowhere — Word
+   already received a `{hospitalName, equipmentCategory}` context object,
+   `generateExcelWorkbook` didn't even accept one. Threaded it through
+   (`exports/excel-generator.ts`, `exports/workbookPlan.ts`'s Assumptions-sheet title,
+   `workbook.title`/`.subject` metadata); new tests in
+   `tests/exports/excel-generator.test.ts`. All three export filenames were also
+   hardcoded and generic ("Financial Model.xlsx" etc.) — confirmed empirically
+   colliding in `~/Downloads` across this session's own repeated downloads. New
+   `buildExportFilename` in `app/components/ExportPanel.tsx` builds one from hospital +
+   equipment + date; regression-tested in `tests/wizard/exportFilename.test.ts`.
+7. Verification: 262 tests passing (up from 255), clean `tsc --noEmit`, clean
+   static-export `npm run build`. Live browser re-verification of every fix above
+   against its original repro. Automated-browser file downloads didn't land in
+   `~/Downloads` in this environment during re-verification (same class of limitation
+   HANDOFF.md's 2026-07-15 entry already noted — "a tab/click mismatch, not an export-
+   generator defect"); relied on the new deterministic byte-level tests instead, which
+   is strictly stronger evidence than a filesystem check.
+**Found, NOT fixed — flagged for Jay, methodology-change carve-out:** see ISS-31,
+ISS-32, ISS-33 below. All three trace to one root, `applyEquipmentDefaults`
+(`app/forms/initialState.ts`), which unconditionally overwrites Basic Mode's
+already-answered fields with the newly-selected equipment's benchmark defaults.
+ISS-31 is the most severe: a real unit-conversion bug that corrupts Cath Lab's and
+Dialysis's Purchase Cost default to ~1e-6 of the real value.
+**Files touched:** `app/forms/useFieldController.ts`, `app/components/NumberField.tsx`,
+`app/components/SliderField.tsx`, `app/components/CurrencyUnitField.tsx`,
+`app/components/FieldShell.tsx`, `app/components/ProgressStepper.tsx`,
+`app/globals.css`, `app/forms/equipmentDefaults.ts`, `content/inputs-metadata.json`,
+`content/tooltip-copy.md`, `content/tooltip-copy.generated.json`,
+`exports/excel-generator.ts`, `exports/workbookPlan.ts`,
+`app/components/ExportPanel.tsx`, plus new/updated tests in
+`tests/wizard/components.test.tsx`, `tests/exports/excel-generator.test.ts`,
+`tests/wizard/exportFilename.test.ts`.
 
 ### 2026-07-15 — Live Basic-mode blocker diagnosed; merged fix and Excel export verified
 **What was found:** Jay's restored Cath Lab draft used Loan acquisition mode. Every

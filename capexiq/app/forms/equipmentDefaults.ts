@@ -102,9 +102,15 @@ export function equipmentDefaults(
     const postWarrantyYears = usefulLifeYears - warrantyYears;
     const cmcPortionYears = Math.min(cmcYears, postWarrantyYears);
     const amcPortionYears = postWarrantyYears - cmcPortionYears;
-    amcCmcCostPostWarranty =
+    const blendedRate =
       (cmcPortionYears * cmcAnnualPct + amcPortionYears * amcAnnualPct) /
       postWarrantyYears;
+    // Rounded to the field's own displayed precision (inputs-metadata.json's
+    // amcCmcCostPostWarranty#decimalPlaces) — this is a suggested starting point, not
+    // a traced-to-spec figure, so a raw division result like 4.90625 reads as false
+    // precision. Doesn't change the sourced cmcAnnualPct/amcAnnualPct inputs or the
+    // blend formula itself (ISS-16), only the presented suggestion.
+    amcCmcCostPostWarranty = Math.round(blendedRate * 10) / 10;
   }
 
   return {

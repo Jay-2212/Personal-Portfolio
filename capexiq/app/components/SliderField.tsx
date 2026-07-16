@@ -12,7 +12,7 @@
 // its source.
 
 import { useEffect, useRef, useState } from "react";
-import { useFieldController, getFieldDefinition } from "../forms/useFieldController";
+import { useFieldController, useDeferredFieldError, getFieldDefinition } from "../forms/useFieldController";
 import { FieldShell } from "./FieldShell";
 
 const DRAG_DEBOUNCE_MS = 120;
@@ -20,6 +20,7 @@ const DRAG_DEBOUNCE_MS = 120;
 export function SliderField({ path }: { path: string }) {
   const field = useFieldController(path);
   const def = getFieldDefinition(path);
+  const deferred = useDeferredFieldError(field);
   // null means "genuinely unset" (required field with no sourced default) — kept
   // distinct from a real number throughout, rather than masking it as `def.min`.
   // The range thumb still needs a numeric position to render at, so it falls back to
@@ -68,7 +69,7 @@ export function SliderField({ path }: { path: string }) {
       label={field.label}
       required={field.required}
       isTypical={field.isTypical}
-      error={field.error}
+      error={deferred.error}
       tooltipKey={field.tooltipKey}
       unit={def.unit}
       renderControl={({ id, describedBy }) => (
@@ -82,7 +83,7 @@ export function SliderField({ path }: { path: string }) {
             step={def.sliderStep ?? 1}
             value={localValue ?? def.min ?? 0}
             aria-describedby={describedBy || undefined}
-            aria-invalid={field.error !== null}
+            aria-invalid={deferred.error !== null}
             onKeyDown={(event) => {
               if (KEYS_THAT_CHANGE_VALUE.has(event.key)) {
                 isKeyboardInteraction.current = true;
@@ -95,7 +96,10 @@ export function SliderField({ path }: { path: string }) {
             }}
             onPointerUp={flush}
             onTouchEnd={flush}
-            onBlur={flush}
+            onBlur={() => {
+              flush();
+              deferred.onBlur();
+            }}
           />
           <input
             type="number"
@@ -105,12 +109,14 @@ export function SliderField({ path }: { path: string }) {
             step={def.decimalPlaces ? 1 / 10 ** def.decimalPlaces : (def.sliderStep ?? 1)}
             value={localValue ?? ""}
             aria-label={`${field.label}, exact value`}
+            aria-invalid={deferred.error !== null}
             onChange={(event) => {
               const raw = event.target.value;
               const numeric = raw === "" ? null : Number(raw);
               setLocalValue(numeric);
               field.setValue(numeric);
             }}
+            onBlur={deferred.onBlur}
           />
         </div>
       )}
