@@ -243,6 +243,33 @@ a:hover {
   transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.nav-cta:hover {
+  color: var(--accent);
+  border-color: var(--accent-soft);
+  background-color: var(--accent-soft);
+}
+
+.nav-cta svg {
+  width: 13px;
+  height: 13px;
+}
+
 .theme-toggle:hover {
   color: var(--accent);
   border-color: var(--accent-soft);
