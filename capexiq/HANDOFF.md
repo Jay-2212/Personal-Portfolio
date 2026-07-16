@@ -12,17 +12,19 @@ of *how* we got here.
 ## Current State
 
 *(Last updated: 2026-07-16, first hands-on post-launch QA pass across Basic + Advanced
-Mode + a second equipment type; a systemic input-validation-timing bug found and fixed,
-plus Excel export personalization; a real data-corruption bug found in Cath
-Lab/Dialysis defaults and flagged for Jay, not yet fixed)*
+Mode + a second equipment type; a systemic input-validation-timing bug fixed, Excel
+export personalized, and — after Jay reviewed and explicitly approved the flagged
+writeup — a real data-corruption bug in Cath Lab/Dialysis defaults plus two
+precedence bugs also fixed, all in the same PR)*
 
 **2026-07-16 QA pass — first session to actually drive the product end to end (Basic +
 all 6 Advanced groups + Loan financing + a second equipment type + Results quick
 settings + all 3 exports) with realistic data instead of reading code.** Full writeup
 in `/Users/jay/.claude/plans/can-you-create-a-structured-sundae.md` (Jay's copy, not
-tracked in this repo). Two kinds of findings:
-- **Fixed this session (small, display/content-only, verified live + via tests):** a
-  systemic eager-validation bug — every `NumberField`/`SliderField`/`CurrencyUnitField`
+tracked in this repo). PR: `qol-input-validation-and-export-personalization`. Two
+rounds of fixes, both now complete:
+- **Round 1 (small, display/content-only, verified live + via tests):** a systemic
+  eager-validation bug — every `NumberField`/`SliderField`/`CurrencyUnitField`
   dispatched on every keystroke with no debounce, so clearing a pre-filled "Typical"
   value (or typing a fresh multi-digit number past a min threshold) flashed a red error
   before the user finished editing. Fixed via `useDeferredFieldError`
@@ -37,26 +39,26 @@ tracked in this repo). Two kinds of findings:
   Assumptions-sheet title; all three export filenames now include hospital + equipment
   + date instead of a shared hardcoded name (previously colliding — confirmed
   empirically as `Financial Model.xlsx` / `Financial Model (1).xlsx` in `~/Downloads`).
-  262 tests passing (up from 255), clean `tsc --noEmit`, clean static-export build.
-- **Found, NOT fixed — flagged for Jay's sign-off, per the methodology-change
-  carve-out:** (1) **a verified data-corruption bug** — `app/forms/equipmentDefaults.ts`
-  always divides `purchaseCost.typical` by one crore assuming raw INR, but Cath Lab's
-  and Dialysis's equipment-data files declare their figure in Crore/Lakh units
-  respectively; selecting Cath Lab loads a Purchase Cost default of literal `9e-7`
-  (₹9 Cr → 9e-7 Cr) instead of the real sourced figure. MRI/CT/Ultrasound never hit this
-  path (`purchaseCost.typical` is `null` for all three), which is why no prior session
-  caught it — this was the first session to actually pick Cath Lab. (2) opening
-  Advanced Mode alone, with zero new input, silently recalculates the score (verified:
-  96→100, Payback 2.7yr→2.0yr on an untouched MRI assessment) because
-  `toAssessmentInputs.ts` switches the maintenance-cost source and the usage-per-day
-  source the instant `advancedOpen` flips true, discarding the user's Basic-Mode
-  answers in favor of equipment defaults that were silently pre-populated at
-  equipment-selection time. (3) switching equipment mid-draft overwrites cost/usage
-  defaults with no warning to the user. All three share one root
-  (`applyEquipmentDefaults`, `app/forms/initialState.ts`) — see the plan doc for full
-  repro steps and proposed fix directions. **Do not fix any of these three without
-  Jay's explicit go-ahead** — (1) changes every historical Cath Lab/Dialysis result,
-  (2)/(3) are real precedence decisions, not obvious bugs.
+- **Round 2 (Jay reviewed the flagged writeup and approved all three — see ISS-31/32/33
+  in `ISSUES.md`'s Resolved section for full detail):** (1) **the data-corruption bug**
+  — `equipmentDefaults.ts` always divided `purchaseCost.typical` by one crore assuming
+  raw INR, but Cath Lab's/Dialysis's equipment-data files declare Crore/Lakh units
+  respectively (Cath Lab loaded `9e-7` instead of ₹9 Cr). Fixed with a
+  `toCanonicalCrore()` helper that branches on the file's own declared unit — restores
+  the already-cited S13 figure, invents nothing new. (2) Advanced Mode's silent
+  recompute — the maintenance-cost and usage-per-day precedence switches now gate on
+  `state.touched["advanced.E.cmcYears"]` / `state.touched["advanced.B.
+  expectedMatureUtilization"]` (the same `touched` map used everywhere else in the
+  wizard) instead of on `advancedOpen` alone, so opening the panel with zero new input
+  no longer changes the score. (3) equipment-switch mid-draft now requires a second
+  confirming click (`app/(assessment)/assess/page.tsx`), mirroring `StartOver.tsx`'s
+  existing pattern, before overwriting already-answered cost/usage fields.
+- **Verification:** 271 tests passing (up from 255 at session start), clean
+  `tsc --noEmit`, clean static-export build. Every fix live-re-verified in the browser
+  against its original repro, including a full MRI→Cath Lab equipment-switch flow
+  confirming Purchase Cost now loads as `9` (Crore) not `9e-7`, and confirming the
+  Payback/score figure is byte-identical before and after opening Advanced Mode until
+  a field is actually edited.
 
 **The warm-beige "calm clinical intelligence" redesign and Phase 7's results dashboard
 depth are both implemented and verified live.** The canonical calculation pipeline and
@@ -190,9 +192,8 @@ open item:**
   `npm run build` (confirmed via build output that exceljs/docx/jszip stay in lazy
   chunks — `/results` grew ~1KB, not the ~1MB+ eager-bundling would add).
 
-**Next:** the highest-priority open item is Jay's decision on the three flagged
-findings above (Cath Lab/Dialysis purchase-cost corruption; Advanced Mode's silent
-recompute; equipment-switch overwrite with no warning) — see ISS-31/ISS-32/ISS-33. A
+**Next:** ISS-31/32/33 are resolved (see above and ISSUES.md's Resolved section) —
+Jay still needs to merge PR `qol-input-validation-and-export-personalization`. A
 visual QA pass across the remaining equipment types (CT, Ultrasound) and a Strong/Weak
 outcome (only MRI and, this session, Cath Lab have been live-tested) remains open.
 Phase 8's remaining fast-follow is chart images (now unblocked by LibreOffice being
@@ -235,6 +236,45 @@ before <date>.` This keeps HANDOFF.md fast to read no matter how old the project
 ## Change Log
 
 *(most recent first)*
+
+### 2026-07-16 (round 2, same session) — ISS-31/32/33 approved and fixed: Cath Lab data corruption, Advanced Mode silent recompute, equipment-switch overwrite
+**What happened:** immediately after the round-1 QA/fix session below and its PR, Jay
+reviewed the three flagged-but-not-fixed findings (ISS-31/32/33) and explicitly
+approved fixing all three in the same PR: *"the bug is real, catlab and dialysis one,
+advanced mode silently recalculating is just waste of compute, and the third one makes
+sense too, please fix all three, add them in this pr."*
+1. **ISS-31 (real bug):** `app/forms/equipmentDefaults.ts` added a `toCanonicalCrore(value,
+   unit)` helper that branches on `data.purchaseCost.unit` ("INR (Crore)" used as-is,
+   "INR (Lakh)" divided by 100, plain "INR" divided by 1 crore) instead of always
+   dividing by 1 crore. `installationCost` now derives from the already-converted
+   Crore figure rather than re-deriving from the raw value. Live-verified: Cath Lab's
+   Purchase Cost now loads as `9` (Crore) and Installation Cost as `225` (Lakh).
+2. **ISS-32:** `app/forms/toAssessmentInputs.ts`'s maintenance-cost and usage-per-day
+   precedence switches now gate on `state.touched["advanced.E.cmcYears"]` /
+   `state.touched["advanced.B.expectedMatureUtilization"]` instead of
+   `state.advancedOpen` alone — the same `touched` map `useFieldController` already
+   uses everywhere else as the "did the user actually engage with this field" signal,
+   set only by a real `SET_FIELD` dispatch, never by `applyEquipmentDefaults`' silent
+   pre-population. Live-verified on a full Cath Lab assessment: Payback/score
+   (4.3yr/81) identical before and after opening Advanced Mode; editing Group E's CMC
+   coverage period afterward correctly recalculated to 4.4yr.
+3. **ISS-33:** `app/(assessment)/assess/page.tsx` now requires a second confirming
+   click before switching away from an already-selected equipment type — mirrors
+   `StartOver.tsx`'s existing inline "click again to confirm" pattern (armed state
+   shown as an amber tile with "Click again to confirm — resets cost & usage
+   defaults"). The very first equipment pick and re-clicking the already-selected tile
+   both apply immediately, no confirmation needed. Live-verified: MRI stays selected
+   on a first click on Cath Lab; a second click actually switches.
+4. **Verification:** 271 tests passing (up from 262 after round 1; new files
+   `tests/wizard/equipmentDefaults.test.ts` plus new cases in
+   `tests/wizard/toAssessmentInputs.test.ts` and `tests/wizard/components.test.tsx`),
+   clean `tsc --noEmit`, clean static-export build. All three fixes live-re-verified
+   in the browser, not just via tests.
+**Files touched (round 2):** `app/forms/equipmentDefaults.ts`,
+`app/forms/toAssessmentInputs.ts`, `app/(assessment)/assess/page.tsx`,
+`app/globals.css`, plus new/updated tests in `tests/wizard/equipmentDefaults.test.ts`
+(new), `tests/wizard/toAssessmentInputs.test.ts`, `tests/wizard/components.test.tsx`.
+Same PR as round 1 (`qol-input-validation-and-export-personalization`), not yet merged.
 
 ### 2026-07-16 — First hands-on QA pass: eager-validation UX bug fixed, Excel personalized, Cath Lab data-corruption bug found
 **What happened:** Jay asked for a first-pass post-launch improvement plan, but

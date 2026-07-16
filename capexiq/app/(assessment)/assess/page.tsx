@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ArrowRight, Puzzle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useWizard } from "../../forms/WizardContext";
@@ -24,6 +25,30 @@ export default function PreStepPage() {
   const router = useRouter();
   const selected = EQUIPMENT_TILES.find((tile) => tile.category === state.preStep.equipmentCategory);
   const complete = isStepComplete("preStep", state);
+
+  // ISS-33: SELECT_EQUIPMENT_CATEGORY (applyEquipmentDefaults, app/forms/
+  // initialState.ts) unconditionally overwrites purchase cost, installation cost,
+  // usage/day, and several Advanced-Mode defaults with the newly-picked equipment's
+  // benchmarks — live-verified as a silent part-old/part-new hybrid with no notice
+  // when switching mid-draft (e.g. MRI -> Cath Lab after already answering
+  // Investment/Usage/Costs). Mirrors StartOver.tsx's existing inline "click again to
+  // confirm" pattern (this project's convention against native confirm() dialogs)
+  // rather than a browser dialog. Only armed when swapping away from an
+  // already-picked equipment type — the very first pick has nothing to lose.
+  const [pendingSwitch, setPendingSwitch] = useState<EquipmentCategory | null>(null);
+
+  const handleTileClick = (category: EquipmentCategory) => {
+    if (category === state.preStep.equipmentCategory) {
+      setPendingSwitch(null);
+      return;
+    }
+    if (state.preStep.equipmentCategory !== null && pendingSwitch !== category) {
+      setPendingSwitch(category);
+      return;
+    }
+    setPendingSwitch(null);
+    dispatch({ type: "SELECT_EQUIPMENT_CATEGORY", category });
+  };
 
   // ISS-25: mirrors StepNav.goNext exactly (audit F7's disabled-"Next"
   // discoverability, plus the ATTEMPT_STEP reveal) — this page predates StepNav's
@@ -52,26 +77,33 @@ export default function PreStepPage() {
       </section>
 
       <div className="equipment-tile-grid" role="radiogroup" aria-label="Equipment category">
-        {EQUIPMENT_TILES.map((tile) => (
-          <button
-            key={tile.category}
-            type="button"
-            role="radio"
-            aria-checked={state.preStep.equipmentCategory === tile.category}
-            className="equipment-tile"
-            data-selected={state.preStep.equipmentCategory === tile.category}
-            onClick={() => dispatch({ type: "SELECT_EQUIPMENT_CATEGORY", category: tile.category })}
-          >
-            {tile.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={tile.image} alt="" className="equipment-tile__image" />
-            ) : (
-              <div className="equipment-tile__icon"><Puzzle aria-hidden="true" size={34} /></div>
-            )}
-            <span className="equipment-tile__name">{tile.category}</span>
-            <span className="equipment-tile__note">{tile.note}</span>
-          </button>
-        ))}
+        {EQUIPMENT_TILES.map((tile) => {
+          const confirming = pendingSwitch === tile.category;
+          return (
+            <button
+              key={tile.category}
+              type="button"
+              role="radio"
+              aria-checked={state.preStep.equipmentCategory === tile.category}
+              className="equipment-tile"
+              data-selected={state.preStep.equipmentCategory === tile.category}
+              data-confirming={confirming}
+              onClick={() => handleTileClick(tile.category)}
+              onBlur={() => setPendingSwitch((current) => (current === tile.category ? null : current))}
+            >
+              {tile.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={tile.image} alt="" className="equipment-tile__image" />
+              ) : (
+                <div className="equipment-tile__icon"><Puzzle aria-hidden="true" size={34} /></div>
+              )}
+              <span className="equipment-tile__name">{tile.category}</span>
+              <span className="equipment-tile__note">
+                {confirming ? "Click again to confirm — resets cost & usage defaults" : tile.note}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {selected && (

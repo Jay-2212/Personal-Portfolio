@@ -17,6 +17,23 @@ import type { EquipmentCategory } from "./wizardTypes";
 
 const CRORE = 10_000_000;
 
+// ISS-31: equipment-data/*.json's purchaseCost.typical is denominated in whatever unit
+// that field's own `unit` string declares (confirmed by inspecting every file directly
+// — cath-lab.json says "INR (Crore)" with typical:9, meaning ₹9 Cr; dialysis.json says
+// "INR (Lakh)" with typical:11.5, meaning ₹11.5L; mri/ct/ultrasound/custom all say
+// plain "INR"). The conversion to basic.purchaseCost's own canonical Crore unit must
+// branch on that declared unit, not assume every file is raw INR — assuming INR
+// unconditionally previously divided an already-Crore figure by 1 crore again,
+// producing a purchase-cost default of 9e-7 Cr for Cath Lab (should be 9 Cr) and
+// 1.15e-6 Cr for Dialysis (should be 0.115 Cr). This restores the already-researched,
+// already-cited source figures (S13, S36) — it does not invent a new benchmark.
+function toCanonicalCrore(value: number | null, unit: string): number | null {
+  if (value === null) return null;
+  if (unit === "INR (Crore)") return value;
+  if (unit === "INR (Lakh)") return value / 100;
+  return value / CRORE; // plain "INR" — raw rupees
+}
+
 // Every equipment-data/*.json file shares this shape (verified 2026-07-13 — all six
 // files have identical top-level keys); each file's literal JSON type differs slightly
 // (which fields happen to be null vs. populated, cmcAnnualCostPercentage's optional
@@ -26,6 +43,7 @@ interface RangeField {
   low: number | null;
   typical: number | null;
   high: number | null;
+  unit: string;
 }
 interface SingleValueField {
   value: number | null;
@@ -81,7 +99,7 @@ export function equipmentDefaults(
   category: EquipmentCategory
 ): EquipmentDefaults {
   const data = EQUIPMENT_DATA_BY_CATEGORY[category];
-  const purchaseCostInr = data.purchaseCost.typical;
+  const purchaseCostCrore = toCanonicalCrore(data.purchaseCost.typical, data.purchaseCost.unit);
   const installationPct = data.installationAndAncillaryCostPercentage.typical;
   const warrantyYears = data.warrantyYears.typical;
   const usefulLifeYears = data.usefulLifeYears.value;
@@ -114,10 +132,10 @@ export function equipmentDefaults(
   }
 
   return {
-    purchaseCost: purchaseCostInr !== null ? purchaseCostInr / CRORE : null,
+    purchaseCost: purchaseCostCrore,
     installationCost:
-      purchaseCostInr !== null && installationPct !== null
-        ? (purchaseCostInr * (installationPct / 100)) / CRORE
+      purchaseCostCrore !== null && installationPct !== null
+        ? purchaseCostCrore * (installationPct / 100)
         : null,
     launchDelayMonths: data.launchDelayMonths.typical,
     usagePerDay: data.typicalUtilization.usagePerDay,

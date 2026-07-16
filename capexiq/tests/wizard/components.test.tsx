@@ -157,6 +157,54 @@ describe("PreStepPage — blocked \"Begin the assessment\" reveals its own requi
   });
 });
 
+describe("ISS-33 — switching equipment mid-draft requires a second confirming click", () => {
+  it("the very first equipment pick applies immediately, with no confirmation needed", () => {
+    render(
+      <WizardProvider>
+        <PreStepPage />
+      </WizardProvider>
+    );
+
+    fireEvent.click(screen.getByText("MRI"));
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("switching to a different equipment type after one is already selected requires a second click, and leaves the original selected until then", () => {
+    render(
+      <WizardProvider>
+        <PreStepPage />
+      </WizardProvider>
+    );
+
+    fireEvent.click(screen.getByText("MRI"));
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "true");
+
+    // First click on a different tile only arms the confirmation — MRI stays selected.
+    fireEvent.click(screen.getByText("Cath Lab"));
+    expect(screen.getByText(/Click again to confirm/)).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: /Cath Lab/ })).toHaveAttribute("aria-checked", "false");
+
+    // Second click actually switches.
+    fireEvent.click(screen.getByText(/Click again to confirm/));
+    expect(screen.getByRole("radio", { name: /Cath Lab/ })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("re-clicking the already-selected tile is a no-op, not an armed confirmation", () => {
+    render(
+      <WizardProvider>
+        <PreStepPage />
+      </WizardProvider>
+    );
+
+    fireEvent.click(screen.getByText("MRI"));
+    fireEvent.click(screen.getByText("MRI"));
+    expect(screen.queryByText(/Click again to confirm/)).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "true");
+  });
+});
+
 describe("ISS-25 — red validation state is gated by touch/attempt, not shown on a fresh load", () => {
   it("shows no error on an untouched required field, even though it's genuinely invalid underneath", () => {
     render(

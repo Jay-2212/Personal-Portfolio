@@ -129,6 +129,25 @@ describe("toAssessmentInputs — utilization ramp-up wiring (ISS-19)", () => {
     expect(inputs.utilizationRamp).toBeUndefined();
   });
 
+  it("ISS-32: opening Advanced Mode alone, with zero new input, does not change usagePerDay", () => {
+    // applyEquipmentDefaults pre-populates advanced.B.expectedMatureUtilization with
+    // MRI's equipment default (23) the moment equipment is selected — before Advanced
+    // Mode is ever opened. Merely opening the panel must not switch to that silently
+    // pre-populated value; only an actual user edit of expectedMatureUtilization
+    // should (see the next test).
+    let state = baseMriState();
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "basic.usagePerDay",
+      value: 18,
+    });
+    const beforeOpen = toAssessmentInputs(state).usagePerDay;
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    const afterOpen = toAssessmentInputs(state).usagePerDay;
+    expect(afterOpen).toBe(beforeOpen);
+    expect(afterOpen).toBe(18);
+  });
+
   it("Advanced Mode with every ramp period filled in applies the full schedule", () => {
     let state = baseMriState();
     state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
@@ -181,9 +200,28 @@ describe("toAssessmentInputs — Basic vs Advanced maintenance path (PBA-4)", ()
     expect(inputs.maintenance.amcAnnualCost).toBeGreaterThan(0);
   });
 
-  it("Advanced Mode (opened) uses cmcYears + equipment-sourced CMC/AMC rates instead of the flat blend", () => {
+  it("ISS-32: opening Advanced Mode alone, with zero new input, still uses the flat blend — not the granular schedule", () => {
+    // advanced.E.cmcYears is pre-populated with MRI's equipment default the moment
+    // equipment is selected (applyEquipmentDefaults), before Advanced Mode is ever
+    // opened. Merely opening the panel must not switch the maintenance calculation —
+    // live-verified this used to move an untouched MRI assessment's score 96->100.
+    let state = baseMriState();
+    const beforeOpen = toAssessmentInputs(state).maintenance;
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    const afterOpen = toAssessmentInputs(state).maintenance;
+    expect(afterOpen).toEqual(beforeOpen);
+    expect(afterOpen.cmcYears).toBe(0);
+    expect(afterOpen.cmcAnnualCost).toBe(0);
+  });
+
+  it("Advanced Mode, once the user edits Group E's cmcYears, uses the granular equipment-sourced CMC/AMC rates instead of the flat blend", () => {
     let state = baseMriState();
     state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.E.cmcYears",
+      value: 2,
+    });
     const inputs = toAssessmentInputs(state);
     expect(inputs.maintenance.cmcYears).toBeGreaterThan(0);
     expect(inputs.maintenance.cmcAnnualCost).toBeGreaterThan(0);

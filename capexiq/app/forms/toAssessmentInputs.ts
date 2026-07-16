@@ -24,10 +24,29 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
   let cmcAnnualCost: number;
   let amcAnnualCost: number;
 
-  if (!state.advancedOpen) {
-    // Basic Mode: one flat blended rate for the whole post-warranty period
+  // ISS-32: `advanced.E.cmcYears` is pre-populated with the equipment's default the
+  // moment equipment is selected (applyEquipmentDefaults, app/forms/initialState.ts) —
+  // long before Advanced Mode is ever opened, let alone this specific field edited. So
+  // `advancedOpen` alone (the previous gate) switched to the granular CMC/AMC schedule
+  // the instant the panel opened, silently discarding the user's Basic-Mode blended
+  // answer with zero new input — live-verified: MRI's score moved 96→100 just from
+  // clicking "Enter Advanced Mode". `state.touched` (already the source of truth for
+  // every other "has the user actually engaged with this field" check in the wizard,
+  // e.g. useFieldController's own error-display gate) is the correct, existing signal
+  // — it's only set true by an actual SET_FIELD dispatch, never by
+  // applyEquipmentDefaults' silent pre-population. Matches Group B's ramp-up ("only
+  // applies once every period has a user-entered value") and Group C's financing
+  // (only relevant once acquisition mode is Loan/Lease): Advanced precedence should
+  // require the user to have actually done something in that group, not merely opened
+  // the panel.
+  const cmcYearsTouched = state.touched["advanced.E.cmcYears"] === true;
+
+  if (!cmcYearsTouched) {
+    // Basic Mode's flat blended rate for the whole post-warranty period
     // (capexiq-prebuild-assurance PBA-4) — cmcYears is 0 so the schedule goes
-    // straight from warranty to a flat "amc" rate equal to the blended figure.
+    // straight from warranty to a flat "amc" rate equal to the blended figure. Stays
+    // in effect even with Advanced Mode open, until the user actually edits Group E's
+    // CMC coverage period.
     cmcYears = 0;
     cmcAnnualCost = 0;
     amcAnnualCost = ((basic.amcCmcCostPostWarranty ?? 0) / 100) * purchaseCost;
@@ -58,14 +77,21 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
           }
         : { type: "cash" };
 
-  // ISS-19: Advanced Group B's expectedMatureUtilization defaults to basic.usagePerDay
-  // (content/inputs-metadata.json's own defaultSource note) but is independently
-  // editable once Advanced Mode is open — once a user has deliberately entered a
-  // separate mature-utilization figure there, that supersedes the Basic Mode number
-  // as the ramp's 100% baseline. Basic-Mode-only users are unaffected (advancedOpen
-  // false), matching every other Basic/Advanced precedence rule in this pipeline.
+  // ISS-19 / ISS-32: Advanced Group B's expectedMatureUtilization defaults to
+  // basic.usagePerDay (content/inputs-metadata.json's own defaultSource note) but is
+  // independently editable once Advanced Mode is open — once a user has deliberately
+  // entered a separate mature-utilization figure there, that supersedes the Basic Mode
+  // number as the ramp's 100% baseline. The gate is `touched`, not `advancedOpen`:
+  // applyEquipmentDefaults pre-populates expectedMatureUtilization with the equipment
+  // default the moment equipment is selected, so gating on advancedOpen alone silently
+  // reverted a user's hand-typed Basic Mode answer (verified: 18 reverted to MRI's
+  // 23-scan default) the instant the panel opened, before the user touched Group B at
+  // all. Basic-Mode-only users, and Advanced-Mode users who haven't edited this
+  // specific field, are both unaffected.
   const usagePerDay =
-    (state.advancedOpen ? advanced.B.expectedMatureUtilization : null) ??
+    (state.touched["advanced.B.expectedMatureUtilization"] === true
+      ? advanced.B.expectedMatureUtilization
+      : null) ??
     basic.usagePerDay ??
     0;
 

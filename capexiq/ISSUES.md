@@ -12,70 +12,6 @@ Status values: **open** (needs action), **accepted** (known, deliberately not fi
 
 ## Open
 
-### ISS-31 — Cath Lab/Dialysis Purchase Cost default corrupted to ~1e-6 of the real value (unit-conversion bug)
-**Area:** data / formulas
-**Status:** open, flagged for Jay — methodology-change carve-out, do not fix without his sign-off.
-**What was found (2026-07-16, first live QA session to select Cath Lab):**
-`app/forms/equipmentDefaults.ts` (lines ~84/111) always divides
-`data.purchaseCost.typical` by `CRORE` (10,000,000), assuming the source JSON always
-stores raw INR. But `equipment-data/*.json` stores the figure in whichever unit that
-file's own `"unit"` field declares: `cath-lab.json` declares `"unit": "INR (Crore)"`
-with `typical: 9` (₹9 Cr, sourced S13) — the code computes `9 / 1e7 = 9e-7`, and the
-Purchase Cost field loads showing literal `9e-7` (confirmed both on screen and in the
-raw `localStorage` draft: `"purchaseCost":9e-7`). `dialysis.json` declares
-`"unit": "INR (Lakh)"`, `typical: 11.5` — same bug, produces `1.15e-6`.
-`installationCost`'s default is derived from the same corrupted number, so it's
-equally wrong. MRI/CT/Ultrasound all have `purchaseCost.typical: null`, so they never
-execute this path — this is why no earlier session caught it; HANDOFF.md's own QA
-notes confirm only MRI had ever been live-tested before this session.
-**Severity:** for 2 of 5 equipment types, the tool currently defaults to an
-effectively-free machine (a purchase cost of a few rupees) unless the user manually
-overrides Purchase Cost — every downstream ROI/NPV/IRR/payback number for anyone who
-doesn't is wrong.
-**Proposed fix (not yet implemented):** make the conversion respect each file's
-declared `unit` (Crore/Lakh/INR) instead of assuming INR. This restores an
-already-researched, already-cited figure (₹9 Cr, S13) — it does not invent a new
-benchmark — but it changes every Cath Lab/Dialysis result the tool has ever produced,
-so it needs Jay's explicit confirmation first, not just an advisor pass.
-
-### ISS-32 — Opening Advanced Mode silently recalculates the result with zero new user input
-**Area:** formulas / product precedence
-**Status:** open, flagged for Jay — a real precedence decision, not an obvious bug fix.
-**What was found (2026-07-16):** live-verified on an otherwise-complete MRI
-assessment — clicking "Enter Advanced Mode" alone, before touching any Advanced field,
-moved Payback from 2.7yr to 2.0yr and the score from 96 to 100. Two independent causes
-in `app/forms/toAssessmentInputs.ts`, both gated only on `state.advancedOpen`:
-(1) lines ~27-43: Basic Mode's one flat blended AMC/CMC rate (the user's own confirmed
-answer) is unconditionally replaced by the raw, unblended equipment-default CMC/AMC
-split the instant `advancedOpen` is true, even though Advanced Group E's own field
-still shows an untouched "Typical" tag; (2) line ~68: `usagePerDay` sources from
-`advanced.B.expectedMatureUtilization` ahead of `basic.usagePerDay` the instant
-`advancedOpen` is true — verified directly, a hand-entered `18` scans/day reverted to
-MRI's `23`-scan equipment default the moment Advanced Mode opened, because
-`applyEquipmentDefaults` had already silently pre-populated
-`expectedMatureUtilization` at equipment-selection time. Both contradict this same
-file's own comment describing Basic-Mode-only users as "unaffected... matching every
-other Basic/Advanced precedence rule" — unlike Group B's ramp-up (only activates once
-every period is filled) and Group C's financing (only relevant once acquisition mode
-is Loan/Lease), these two switch unconditionally on `advancedOpen` alone.
-**Proposed fix (not yet implemented):** gate both switches the same way ramp-up and
-financing already are — take effect only once the user has actually
-entered/touched the relevant Advanced field, not merely because the panel is open.
-Needs Jay's call on which source should win and when, not a unilateral fix.
-
-### ISS-33 — Switching equipment mid-draft silently overwrites cost/usage defaults with no warning
-**Area:** product / UX
-**Status:** open, flagged for Jay (smaller than ISS-31/32, but shares the same root — `applyEquipmentDefaults`, worth deciding together).
-**What was found (2026-07-16):** selecting a different equipment tile after already
-answering Investment/Usage/Costs (tested: MRI → Cath Lab) silently overwrites purchase
-cost, installation cost, launch delay, usage/day, the Advanced usage-ramp baseline,
-financing rate, warranty, and maintenance rate with the new equipment's benchmarks,
-while leaving other already-answered fields (staff cost, consumable cost, professional
-fee, any financing figures already typed) untouched from the old equipment — a silent
-part-old/part-new hybrid with no indication anything changed.
-**Proposed fix (not yet implemented):** a lightweight confirmation on equipment switch
-mirroring the existing inline double-click confirm already used for "Start over."
-
 ### ISS-28 — Live deploy is the full app but remains behind `main`
 **Area:** deployment
 **What was found:** the original scaffold-only staleness is resolved, but a direct
@@ -239,6 +175,81 @@ is a placeholder only, safe to replace once real product screenshots exist.
 ---
 
 ## Resolved
+
+### ISS-31 — Cath Lab/Dialysis Purchase Cost default corrupted to ~1e-6 of the real value (unit-conversion bug)
+**Resolved:** 2026-07-16, Jay approved the fix after reviewing the flagged writeup.
+**Area:** data / formulas
+**What was found (first live QA session to select Cath Lab):**
+`app/forms/equipmentDefaults.ts` (lines ~84/111) always divided
+`data.purchaseCost.typical` by `CRORE` (10,000,000), assuming the source JSON always
+stores raw INR. But `equipment-data/*.json` stores the figure in whichever unit that
+file's own `"unit"` field declares: `cath-lab.json` declares `"unit": "INR (Crore)"`
+with `typical: 9` (₹9 Cr, sourced S13) — the code computed `9 / 1e7 = 9e-7`, and the
+Purchase Cost field loaded showing literal `9e-7` (confirmed both on screen and in the
+raw `localStorage` draft: `"purchaseCost":9e-7`). `dialysis.json` declares
+`"unit": "INR (Lakh)"`, `typical: 11.5` — same bug, produced `1.15e-6`.
+`installationCost`'s default is derived from the same corrupted number, so it was
+equally wrong. MRI/CT/Ultrasound all have `purchaseCost.typical: null`, so they never
+executed this path — this is why no earlier session caught it; HANDOFF.md's own QA
+notes confirm only MRI had ever been live-tested before this session.
+**Fix:** added `toCanonicalCrore(value, unit)` in `equipmentDefaults.ts`, branching on
+the equipment-data file's own declared `purchaseCost.unit` ("INR (Crore)" → used
+as-is, "INR (Lakh)" → divide by 100, plain "INR" → divide by 1 crore) instead of
+assuming every file is raw INR. `installationCost` now derives from the already-
+converted Crore figure. This restores the already-researched, already-cited figure
+(₹9 Cr, S13) — no new benchmark invented. Live-verified: Cath Lab's Purchase Cost now
+loads as `9` (Crore), Installation Cost as `225` (Lakh, = 9 Cr × 25%). New tests in
+`tests/wizard/equipmentDefaults.test.ts` cover Cath Lab, Dialysis, MRI's null case,
+and a regression guard against any equipment category producing a near-zero default.
+
+### ISS-32 — Opening Advanced Mode silently recalculates the result with zero new user input
+**Resolved:** 2026-07-16, Jay approved the fix after reviewing the flagged writeup.
+**Area:** formulas / product precedence
+**What was found:** live-verified on an otherwise-complete MRI assessment — clicking
+"Enter Advanced Mode" alone, before touching any Advanced field, moved Payback from
+2.7yr to 2.0yr and the score from 96 to 100. Two independent causes in
+`app/forms/toAssessmentInputs.ts`, both previously gated only on `state.advancedOpen`:
+(1) Basic Mode's one flat blended AMC/CMC rate (the user's own confirmed answer) was
+unconditionally replaced by the raw, unblended equipment-default CMC/AMC split the
+instant `advancedOpen` was true, even though Advanced Group E's own field still showed
+an untouched "Typical" tag; (2) `usagePerDay` sourced from
+`advanced.B.expectedMatureUtilization` ahead of `basic.usagePerDay` the instant
+`advancedOpen` was true — verified directly, a hand-entered `18` scans/day reverted to
+MRI's `23`-scan equipment default the moment Advanced Mode opened, because
+`applyEquipmentDefaults` had already silently pre-populated
+`expectedMatureUtilization` at equipment-selection time.
+**Fix:** both switches now gate on `state.touched["advanced.E.cmcYears"]` /
+`state.touched["advanced.B.expectedMatureUtilization"]` respectively — the same
+`touched` map `useFieldController` already uses everywhere else in the wizard as the
+"has the user actually engaged with this field" signal, and one only ever set `true`
+by a real `SET_FIELD` dispatch, never by `applyEquipmentDefaults`' silent
+pre-population. Matches Group B's ramp-up and Group C's financing, which already only
+activate once the user has genuinely provided input. Live-verified: opening Advanced
+Mode on an untouched Cath Lab assessment left Payback/score unchanged (4.3yr/81 before
+and after); editing Group E's CMC coverage period afterward correctly recalculated
+(4.3yr → 4.4yr). New regression tests in `tests/wizard/toAssessmentInputs.test.ts`
+assert both "opening Advanced Mode alone changes nothing" and "an explicit edit does
+take effect."
+
+### ISS-33 — Switching equipment mid-draft silently overwrites cost/usage defaults with no warning
+**Resolved:** 2026-07-16, Jay approved the fix after reviewing the flagged writeup.
+**Area:** product / UX
+**What was found:** selecting a different equipment tile after already answering
+Investment/Usage/Costs (tested: MRI → Cath Lab) silently overwrote purchase cost,
+installation cost, launch delay, usage/day, the Advanced usage-ramp baseline,
+financing rate, warranty, and maintenance rate with the new equipment's benchmarks,
+while leaving other already-answered fields (staff cost, consumable cost, professional
+fee, any financing figures already typed) untouched from the old equipment — a silent
+part-old/part-new hybrid with no indication anything changed.
+**Fix:** `app/(assessment)/assess/page.tsx` now requires a second confirming click
+before switching away from an already-selected equipment type, mirroring
+`StartOver.tsx`'s existing inline "click again to confirm" pattern (this project's own
+convention against native `confirm()` dialogs) — the first click on a different tile
+arms an amber "Click again to confirm — resets cost & usage defaults" state without
+changing the selection; a second click on the same tile (or blur) either confirms or
+cancels. The very first equipment pick, and re-clicking the already-selected tile,
+apply immediately with no confirmation (nothing to lose). New regression tests in
+`tests/wizard/components.test.tsx`.
 
 ### ISS-30 — Basic Continue silently blocked by a required field inside collapsed Advanced Mode
 **Resolved:** 2026-07-15. A live restored Cath Lab draft used Loan acquisition mode,
