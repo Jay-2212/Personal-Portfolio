@@ -14,14 +14,19 @@ import { buildWorkbookPlan } from "./workbookPlan";
 
 export async function generateExcelWorkbook(
   inputs: AssessmentInputs,
-  result: AssessmentResult
+  result: AssessmentResult,
+  context?: { hospitalName: string; equipmentCategory: string }
 ): Promise<Uint8Array> {
   const monthly = buildMonthlySeries(inputs);
-  const plan = buildWorkbookPlan(inputs, result, monthly);
+  const plan = buildWorkbookPlan(inputs, result, monthly, context);
 
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "CapexIQ";
   workbook.created = new Date();
+  if (context?.hospitalName) {
+    workbook.title = `${context.hospitalName} — ${context.equipmentCategory} Financial Model`;
+    workbook.subject = context.equipmentCategory;
+  }
 
   const sheets = new Map<string, ExcelJS.Worksheet>();
   for (const name of plan.sheetOrder) {

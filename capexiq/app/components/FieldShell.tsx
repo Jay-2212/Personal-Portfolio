@@ -1,8 +1,10 @@
 "use client";
 
 // Common chrome around every field control: label, the "Typical" tag (ux-product-spec
-// §6), the wizard tooltip (§4.B), and the live error message (wizard-state.md §2 —
-// shown immediately, no debounce, cleared the instant the value becomes valid).
+// §6), the wizard tooltip (§4.B), and the error message (wizard-state.md §2). The
+// `error` prop is caller-gated: NumberField/SliderField pass their own
+// useDeferredFieldError-gated value (held back until blur, or immediately on an
+// ATTEMPT_STEP), not the raw touched/attempted error from useFieldController.
 
 import type { ReactNode } from "react";
 import { WizardFieldTooltip } from "./WizardFieldTooltip";

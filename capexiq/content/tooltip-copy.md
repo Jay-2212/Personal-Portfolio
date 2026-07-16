@@ -315,8 +315,17 @@ equipment's data file at render time.
 - **How to estimate:** Use your actual lender's fee schedule.
 - **Why it matters:** Adds to upfront cost alongside purchase and installation.
 
-#### EMI start month / Moratorium period
-- **Definition:** When repayment begins, and any grace period before it does.
+#### EMI start month
+- **Definition:** How many months after disbursal the first EMI is due — 0 means EMIs start immediately.
+- **Direction:** A later start delays cash outflow but may accrue interest in the meantime — context-dependent.
+- **Default/typical value:** No benchmark — loan-specific.
+- **Confidence:** Unavailable.
+- **Source note:** N/A.
+- **How to estimate:** Use your actual loan sanction terms.
+- **Why it matters:** Common for equipment with a launch delay before revenue starts; shifts when EMI first hits cash flow.
+
+#### Moratorium period
+- **Definition:** The grace period, in months, during which no EMI is due before repayment begins.
 - **Direction:** A longer moratorium delays cash outflow but may accrue interest in the meantime — context-dependent.
 - **Default/typical value:** No benchmark — loan-specific.
 - **Confidence:** Unavailable.

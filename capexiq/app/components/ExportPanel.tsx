@@ -30,6 +30,23 @@ function downloadBlob(bytes: Uint8Array, filename: string, mimeType: string) {
   URL.revokeObjectURL(url);
 }
 
+// Filenames default to "Financial Model.xlsx" etc. with no hospital/equipment
+// identity, so evaluating more than one equipment type produces indistinguishable,
+// colliding downloads ("Financial Model (1).xlsx", "(2).xlsx", ...). Build one from
+// the hospital name, equipment type, and today's date instead — sanitized for
+// filesystem-unsafe characters (Windows/macOS both reject / \ : * ? " < > |).
+export function buildExportFilename(
+  hospitalName: string,
+  equipmentCategory: string,
+  suffix: string,
+  extension: string
+): string {
+  const safeHospital = hospitalName.trim().replace(/[/\\:*?"<>|]/g, "-");
+  const date = new Date().toISOString().slice(0, 10);
+  const prefix = safeHospital ? `${safeHospital} — ${equipmentCategory}` : equipmentCategory;
+  return `${prefix} — ${suffix} — ${date}.${extension}`;
+}
+
 export function ExportPanel({
   inputs,
   result,
@@ -60,10 +77,10 @@ export function ExportPanel({
   const handleExcel = () =>
     withPending("excel", async () => {
       const { generateExcelWorkbook } = await import("../../exports/excel-generator");
-      const bytes = await generateExcelWorkbook(inputs, result);
+      const bytes = await generateExcelWorkbook(inputs, result, context);
       downloadBlob(
         bytes,
-        "Financial Model.xlsx",
+        buildExportFilename(hospitalName, equipmentCategory, "Financial Model", "xlsx"),
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       );
     });
@@ -72,7 +89,11 @@ export function ExportPanel({
     withPending("word", async () => {
       const { generateWordProposal } = await import("../../exports/word-generator");
       const bytes = await generateWordProposal(inputs, result, context);
-      downloadBlob(bytes, "Proposal Report.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      downloadBlob(
+        bytes,
+        buildExportFilename(hospitalName, equipmentCategory, "Proposal Report", "docx"),
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      );
     });
 
   const handleZip = () =>
@@ -83,11 +104,15 @@ export function ExportPanel({
         import("../../exports/zip-generator"),
       ]);
       const [excelBytes, wordBytes] = await Promise.all([
-        generateExcelWorkbook(inputs, result),
+        generateExcelWorkbook(inputs, result, context),
         generateWordProposal(inputs, result, context),
       ]);
       const zipBytes = await generateExportZip(excelBytes, wordBytes);
-      downloadBlob(zipBytes, "CapexIQ Export.zip", "application/zip");
+      downloadBlob(
+        zipBytes,
+        buildExportFilename(hospitalName, equipmentCategory, "CapexIQ Export", "zip"),
+        "application/zip"
+      );
     });
 
   const buttons: [ExportKind, () => void][] = [

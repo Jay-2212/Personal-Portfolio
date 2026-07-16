@@ -1,11 +1,12 @@
 "use client";
 
-import { useFieldController, getFieldDefinition } from "../forms/useFieldController";
+import { useFieldController, useDeferredFieldError, getFieldDefinition } from "../forms/useFieldController";
 import { FieldShell } from "./FieldShell";
 
 export function NumberField({ path }: { path: string }) {
   const field = useFieldController(path);
   const def = getFieldDefinition(path);
+  const deferred = useDeferredFieldError(field);
 
   return (
     <FieldShell
@@ -13,7 +14,7 @@ export function NumberField({ path }: { path: string }) {
       label={field.label}
       required={field.required}
       isTypical={field.isTypical}
-      error={field.error}
+      error={deferred.error}
       tooltipKey={field.tooltipKey}
       unit={def.unit}
       renderControl={({ id, describedBy }) => (
@@ -26,11 +27,12 @@ export function NumberField({ path }: { path: string }) {
           max={def.max}
           step={def.decimalPlaces ? 1 / 10 ** def.decimalPlaces : 1}
           aria-describedby={describedBy || undefined}
-          aria-invalid={field.error !== null}
+          aria-invalid={deferred.error !== null}
           onChange={(event) => {
             const raw = event.target.value;
             field.setValue(raw === "" ? null : Number(raw));
           }}
+          onBlur={deferred.onBlur}
         />
       )}
     />

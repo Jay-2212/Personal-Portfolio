@@ -81,6 +81,31 @@ describe("generateExcelWorkbook", () => {
     await expect(generateExcelWorkbook(lossyInputs, result)).resolves.toBeInstanceOf(Uint8Array);
   });
 
+  it("personalizes the Assumptions sheet title and workbook metadata when hospital/equipment context is passed", async () => {
+    const result = computeAssessment(inputs);
+    const context = { hospitalName: "Sunrise Multispecialty Hospital", equipmentCategory: "MRI" };
+    const buffer = await generateExcelWorkbook(inputs, result, context);
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(Buffer.from(buffer) as any); // eslint-disable-line @typescript-eslint/no-explicit-any -- exceljs's Buffer type vs. workspace @types/node Buffer generic skew, runtime-safe
+
+    const assumptions = workbook.getWorksheet("Assumptions")!;
+    expect(String(assumptions.getCell("A1").value)).toContain("Sunrise Multispecialty Hospital");
+    expect(String(assumptions.getCell("A1").value)).toContain("MRI");
+    expect(workbook.title).toContain("Sunrise Multispecialty Hospital");
+  });
+
+  it("falls back to the generic, unpersonalized title when no context is passed (backward compatible)", async () => {
+    const result = computeAssessment(inputs);
+    const buffer = await generateExcelWorkbook(inputs, result);
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(Buffer.from(buffer) as any); // eslint-disable-line @typescript-eslint/no-explicit-any -- exceljs's Buffer type vs. workspace @types/node Buffer generic skew, runtime-safe
+
+    const assumptions = workbook.getWorksheet("Assumptions")!;
+    expect(assumptions.getCell("A1").value).toBe("CapexIQ — Assumptions");
+  });
+
   it("never throws for an undefined IRR (all-negative cash flows)", async () => {
     const losingInputs: AssessmentInputs = { ...inputs, fixedCostPerMonth: 10_000_000 };
     const result = computeAssessment(losingInputs);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useWizard } from "../forms/WizardContext";
-import { useFieldController } from "../forms/useFieldController";
+import { useFieldController, useDeferredFieldError } from "../forms/useFieldController";
 import { FieldShell } from "./FieldShell";
 import type { CurrencyUnit } from "../forms/wizardTypes";
 
@@ -15,6 +15,7 @@ export function CurrencyUnitField({
   field: "purchaseCost" | "installationCost";
 }) {
   const controller = useFieldController(path);
+  const deferred = useDeferredFieldError(controller);
   const { state, dispatch } = useWizard();
   const fallback: CurrencyUnit = field === "purchaseCost" ? "Crore" : "Lakh";
   const unit = state.currencyUnits?.[field] ?? fallback;
@@ -31,7 +32,7 @@ export function CurrencyUnitField({
       label={controller.label}
       required={controller.required}
       isTypical={controller.isTypical}
-      error={controller.error}
+      error={deferred.error}
       tooltipKey={controller.tooltipKey}
       renderControl={({ id, describedBy }) => (
         <div className="currency-unit-field">
@@ -45,13 +46,14 @@ export function CurrencyUnitField({
             step={0.01}
             inputMode="decimal"
             aria-describedby={describedBy || undefined}
-            aria-invalid={controller.error !== null}
+            aria-invalid={deferred.error !== null}
             onChange={(event) => {
               const raw = event.target.value;
               if (raw === "") return controller.setValue(null);
               const numeric = Number(raw);
               controller.setValue(unit === "Lakh" ? numeric / LAKH_PER_CRORE : numeric);
             }}
+            onBlur={deferred.onBlur}
           />
           <div className="currency-unit-field__units" aria-label={`${controller.label} unit`}>
             {(["Lakh", "Crore"] as CurrencyUnit[]).map((option) => (

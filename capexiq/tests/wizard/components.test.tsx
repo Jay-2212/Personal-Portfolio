@@ -45,7 +45,7 @@ describe("NumberField — the 'Typical' tag (ux-product-spec.md §6)", () => {
 });
 
 describe("SliderField — never shows a fake value for a genuinely unset required field", () => {
-  it("displays the paired number input empty (not def.min) when MRI's billedTariffPerUse has no sourced default; the required-error stays suppressed until touched (ISS-25), then tracks the value", () => {
+  it("displays the paired number input empty (not def.min) when MRI's billedTariffPerUse has no sourced default; the required-error stays suppressed until blur (this session's fix), then tracks the value", () => {
     render(
       <WizardProvider>
         <SelectMri />
@@ -63,15 +63,36 @@ describe("SliderField — never shows a fake value for a genuinely unset require
     // touched it yet on this fresh render — no red state before interaction.
     expect(screen.queryByText(/Enter a billed amount between/)).not.toBeInTheDocument();
 
-    // Touching the field (entering a still-out-of-range value) marks it touched and
-    // reveals the error.
+    // Typing an out-of-range value marks the field touched, but the error stays
+    // deferred until blur — showing it on every keystroke flashed red while the user
+    // was still mid-edit (e.g. clearing a Typical default, or typing "4" -> "45" ->
+    // "450" on the way to a valid "4500"). See useDeferredFieldError.
     fireEvent.change(exactValueInput, { target: { value: "0" } });
+    expect(screen.queryByText(/Enter a billed amount between/)).not.toBeInTheDocument();
+    fireEvent.blur(exactValueInput);
     expect(screen.getByText(/Enter a billed amount between/)).toBeInTheDocument();
 
-    // Typing a real value clears the error.
+    // Once blurred, further edits still track live — typing a real value clears the
+    // error immediately without needing another blur.
     fireEvent.change(exactValueInput, { target: { value: "1500" } });
     expect(exactValueInput).toHaveValue(1500);
     expect(screen.queryByText(/Enter a billed amount between/)).not.toBeInTheDocument();
+  });
+
+  it("an ATTEMPT_STEP-blocked Continue still reveals the error immediately, without waiting for blur", () => {
+    render(
+      <WizardProvider>
+        <SelectMri />
+        <SliderField path="basic.billedTariffPerUse" />
+        <StepNav step="usage" complete={false} backHref={null} nextHref="/assess/costs" />
+      </WizardProvider>
+    );
+
+    fireEvent.click(screen.getByText("select mri"));
+    expect(screen.queryByText(/Enter a billed amount between/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByText(/Enter a billed amount between/)).toBeInTheDocument();
   });
 });
 
@@ -133,6 +154,54 @@ describe("PreStepPage — blocked \"Begin the assessment\" reveals its own requi
     expect(
       screen.getByText(/Select the city tier closest to your hospital/)
     ).toBeInTheDocument();
+  });
+});
+
+describe("ISS-33 — switching equipment mid-draft requires a second confirming click", () => {
+  it("the very first equipment pick applies immediately, with no confirmation needed", () => {
+    render(
+      <WizardProvider>
+        <PreStepPage />
+      </WizardProvider>
+    );
+
+    fireEvent.click(screen.getByText("MRI"));
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("switching to a different equipment type after one is already selected requires a second click, and leaves the original selected until then", () => {
+    render(
+      <WizardProvider>
+        <PreStepPage />
+      </WizardProvider>
+    );
+
+    fireEvent.click(screen.getByText("MRI"));
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "true");
+
+    // First click on a different tile only arms the confirmation — MRI stays selected.
+    fireEvent.click(screen.getByText("Cath Lab"));
+    expect(screen.getByText(/Click again to confirm/)).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: /Cath Lab/ })).toHaveAttribute("aria-checked", "false");
+
+    // Second click actually switches.
+    fireEvent.click(screen.getByText(/Click again to confirm/));
+    expect(screen.getByRole("radio", { name: /Cath Lab/ })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "false");
+  });
+
+  it("re-clicking the already-selected tile is a no-op, not an armed confirmation", () => {
+    render(
+      <WizardProvider>
+        <PreStepPage />
+      </WizardProvider>
+    );
+
+    fireEvent.click(screen.getByText("MRI"));
+    fireEvent.click(screen.getByText("MRI"));
+    expect(screen.queryByText(/Click again to confirm/)).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /MRI/ })).toHaveAttribute("aria-checked", "true");
   });
 });
 

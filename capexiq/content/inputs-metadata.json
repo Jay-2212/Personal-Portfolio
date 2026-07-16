@@ -159,7 +159,7 @@
       "decimalPlaces": 0,
       "allowNegative": false,
       "required": true,
-      "errorMessage": "Consumable cost per use can't be negative.",
+      "errorMessage": "Enter a consumable cost between ₹0 and ₹5,000 per use.",
       "tooltipKey": "Consumable cost per use"
     },
     "professionalFeePerUse": {
@@ -173,7 +173,7 @@
       "allowNegative": false,
       "required": false,
       "resolvedNote": "SPEC.md §36.1 Q13 and §10.2, resolved: optional but visible in Basic Mode, uniformly across equipment types — not mandatory, not equipment-specific.",
-      "errorMessage": "Professional fee per use can't be negative.",
+      "errorMessage": "Enter a professional/reporting fee between ₹0 and ₹10,000 per use.",
       "tooltipKey": "Professional / reporting fee per use"
     },
     "otherVariableCostPerUse": {
@@ -186,7 +186,7 @@
       "decimalPlaces": 0,
       "allowNegative": false,
       "required": false,
-      "errorMessage": "Other variable cost per use can't be negative.",
+      "errorMessage": "Enter an amount between ₹0 and ₹5,000 per use.",
       "tooltipKey": "Other variable cost per use"
     },
     "staffCostPerMonth": {
@@ -199,7 +199,7 @@
       "decimalPlaces": 0,
       "allowNegative": false,
       "required": true,
-      "errorMessage": "Staff cost per month can't be negative.",
+      "errorMessage": "Enter a staff cost between ₹0 and ₹20,00,000 per month.",
       "tooltipKey": "Staff cost per month"
     },
     "electricityCostPerMonth": {
@@ -212,7 +212,7 @@
       "decimalPlaces": 0,
       "allowNegative": false,
       "required": true,
-      "errorMessage": "Electricity/utility cost per month can't be negative.",
+      "errorMessage": "Enter an electricity/utility cost between ₹0 and ₹5,00,000 per month.",
       "tooltipKey": "Electricity / utility cost per month"
     },
     "otherFixedCostPerMonth": {
@@ -225,7 +225,7 @@
       "decimalPlaces": 0,
       "allowNegative": false,
       "required": false,
-      "errorMessage": "Other fixed cost per month can't be negative.",
+      "errorMessage": "Enter an amount between ₹0 and ₹5,00,000 per month.",
       "tooltipKey": "Other fixed operating cost per month"
     },
     "warrantyYears": {
@@ -298,7 +298,7 @@
         "decimalPlaces": 0,
         "allowNegative": false,
         "required": false,
-        "errorMessage": "Billed tariff can't be negative.",
+        "errorMessage": "Enter a billed tariff between ₹0 and ₹50,000.",
         "tooltipKey": "Billed tariff by payer type"
       },
       "realizationPctByPayerType": {
@@ -390,7 +390,7 @@
         "allowNegative": false,
         "required": false,
         "requiredIf": "acquisitionMode = Loan",
-        "errorMessage": "Down payment can't be negative.",
+        "errorMessage": "Enter a down payment between ₹0 and ₹100 Cr.",
         "tooltipKey": "Down payment"
       },
       "loanInterestRate": {
@@ -445,7 +445,7 @@
         "allowNegative": false,
         "required": false,
         "errorMessage": "Enter a month between 0 and 36.",
-        "tooltipKey": "EMI start month / Moratorium period"
+        "tooltipKey": "EMI start month"
       },
       "moratoriumPeriodMonths": {
         "label": "Moratorium period",
@@ -457,7 +457,7 @@
         "allowNegative": false,
         "required": false,
         "errorMessage": "Enter a value between 0 and 24 months.",
-        "tooltipKey": "EMI start month / Moratorium period"
+        "tooltipKey": "Moratorium period"
       },
       "leaseRentalPerMonth": {
         "label": "Lease rental",
@@ -470,7 +470,7 @@
         "allowNegative": false,
         "required": false,
         "requiredIf": "acquisitionMode = Lease",
-        "errorMessage": "Lease rental can't be negative.",
+        "errorMessage": "Enter a lease rental between ₹0 and ₹20,00,000 per month.",
         "tooltipKey": "Lease rental (if lease mode)"
       },
       "leaseTenureMonths": {
@@ -549,7 +549,7 @@
         "decimalPlaces": 0,
         "allowNegative": false,
         "required": false,
-        "errorMessage": "Pre-opening fixed costs can't be negative.",
+        "errorMessage": "Enter pre-opening fixed costs between ₹0 and ₹50,00,000.",
         "tooltipKey": "Pre-opening fixed costs"
       },
       "workingCapitalBufferAmount": {
@@ -562,7 +562,7 @@
         "decimalPlaces": 0,
         "allowNegative": false,
         "required": false,
-        "errorMessage": "Working capital buffer can't be negative.",
+        "errorMessage": "Enter a working capital buffer between ₹0 and ₹1,00,00,000.",
         "tooltipKey": "Working capital buffer"
       }
     },
@@ -620,7 +620,7 @@
         "decimalPlaces": 0,
         "allowNegative": false,
         "required": false,
-        "errorMessage": "Major replacement cost can't be negative.",
+        "errorMessage": "Enter a major replacement cost between ₹0 and ₹1,00,00,000.",
         "tooltipKey": "Major replacement cost (optional)"
       },
       "downtimeAssumption": {

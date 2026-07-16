@@ -59,7 +59,8 @@ const PAYER_LABELS = ["Private cash", "Insurance / TPA", "Corporate credit", "PM
 export function buildWorkbookPlan(
   inputs: AssessmentInputs,
   result: AssessmentResult,
-  monthly: MonthlySeries
+  monthly: MonthlySeries,
+  context?: { hospitalName: string; equipmentCategory: string }
 ): WorkbookPlan {
   const cells: CellPlan[] = [];
   const push = (sheet: string, address: string, entry: { value?: number | string; formula?: string }) => {
@@ -76,7 +77,12 @@ export function buildWorkbookPlan(
     return `${A}!$B$${row}`;
   };
 
-  push(A, "A1", { value: "CapexIQ — Assumptions" });
+  push(A, "A1", {
+    value:
+      context && context.hospitalName
+        ? `CapexIQ — Assumptions — ${context.hospitalName} (${context.equipmentCategory})`
+        : "CapexIQ — Assumptions",
+  });
 
   const purchaseCostRef = addRow("Purchase cost", inputs.purchaseCost);
   const installationCostRef = addRow("Installation cost", inputs.installationCost);
