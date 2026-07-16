@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mac-orchestrator: Mac control for AI agents</title>
+  <meta name="description" content="mac-orchestrator is a self-hosted MCP server that gives AI agents real control of macOS: mouse, keyboard, screen reading, and a full terminal, through one server.">
+  <meta property="og:title" content="mac-orchestrator: Mac control for AI agents">
+  <meta property="og:description" content="One MCP server. Mouse, keyboard, screen, and terminal, all in one place.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jaybharti.me/mac-orchestrator">
+  <meta property="og:image" content="https://jaybharti.me/mac-orchestrator/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="mac-orchestrator: Mac control for AI agents">
+  <meta name="twitter:description" content="One MCP server. Mouse, keyboard, screen, and terminal, all in one place.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <link rel="canonical" href="https://jaybharti.me/mac-orchestrator">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0A0B0E;
+      --bg-elevated: #121419;
+      --bg-surface: #171A21;
+      --border: #262A34;
+      --border-soft: #1B1E26;
+      --text-primary: #F2F3F5;
+      --text-secondary: #9CA3AF;
+      --text-muted: #5B616E;
+      --accent: #4FE3B5;
+      --accent-soft: rgba(79, 227, 181, 0.10);
+      --accent-border: rgba(79, 227, 181, 0.30);
+      --accent-hover: #79ecc6;
+      --warn: #E8A23D;
+      --warn-soft: rgba(232, 162, 61, 0.08);
+      --warn-border: rgba(232, 162, 61, 0.30);
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --radius-pill: 999px;
+      --max-width: 1120px;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-display);
+      font-weight: 400;
+      line-height: 1.6;
+      font-size: 17px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+
+    .wrap {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      padding: 0 24px;
+      background: rgba(10, 11, 14, 0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .topbar-home {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: color 0.2s var(--ease);
+    }
+    .topbar-home:hover { color: var(--text-primary); }
+    .topbar-home svg { flex-shrink: 0; }
+
+    .topbar-name {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .topbar-name .dot { color: var(--accent); }
+
+    .topbar-gh {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 7px 16px;
+      transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+    }
+    .topbar-gh:hover { border-color: var(--accent-border); background: var(--accent-soft); }
+
+    @media (max-width: 640px) {
+      .topbar-name { display: none; }
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      padding: 72px 0 88px;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-pill);
+      padding: 6px 14px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 4.4vw, 3.6rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.12;
+      max-width: 15ch;
+      margin-bottom: 20px;
+    }
+    .hero h1 .accent { color: var(--accent); }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 46ch;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .hero-sub code {
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 22px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+      transition: transform 0.15s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: var(--accent);
+      color: #08110D;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    .btn-secondary:hover { border-color: var(--accent-border); background: var(--accent-soft); }
+
+    /* ---------- Terminal mockup ---------- */
+    .terminal {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+    .terminal-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .terminal-dot--r { background: #FF5F57; }
+    .terminal-dot--y { background: #FEBC2E; }
+    .terminal-dot--g { background: #28C840; }
+    .terminal-title {
+      margin-left: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .terminal-body {
+      padding: 20px 18px 24px;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      line-height: 1.75;
+      min-height: 300px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .t-prompt { color: var(--accent); }
+    .t-cmd { color: var(--text-primary); }
+    .t-ok { color: var(--accent); }
+    .t-dim { color: var(--text-muted); }
+    .t-cursor {
+      display: inline-block;
+      width: 7px;
+      height: 15px;
+      background: var(--accent);
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .t-cursor { animation: none; }
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+      .hero h1 { max-width: none; }
+      .terminal-body { min-height: 260px; }
+    }
+
+    /* ---------- Section shell ---------- */
+    section { padding: 88px 0; border-top: 1px solid var(--border-soft); }
+    .hero + section { border-top: none; }
+
+    .section-head { max-width: 60ch; margin-bottom: 48px; }
+    .section-head h2 {
+      font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+    .section-head p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 58ch;
+      line-height: 1.65;
+    }
+
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
+    .reveal.visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* ---------- What it does ---------- */
+    .prose { max-width: 68ch; }
+    .prose p { font-size: 16px; color: var(--text-secondary); line-height: 1.75; margin-bottom: 18px; }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text-primary); font-weight: 600; }
+
+    .split-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border-soft);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 40px;
+    }
+    .split-strip > div { background: var(--bg-elevated); padding: 26px 24px; }
+    .split-strip h3 {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .split-strip p { font-size: 14.5px; color: var(--text-secondary); line-height: 1.6; }
+    @media (max-width: 640px) {
+      .split-strip { grid-template-columns: 1fr; }
+    }
+
+    /* ---------- Tool grid ---------- */
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-auto-rows: 1fr;
+      gap: 14px;
+    }
+    .tool-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+    }
+    .tool-card:hover { border-color: var(--accent-border); transform: translateY(-2px); }
+    .tool-card--s2 { grid-column: span 2; }
+    .tool-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tool-card h3 .tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .tool-card ul { display: flex; flex-direction: column; gap: 6px; }
+    .tool-card code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+    .tool-card code .fn { color: var(--text-primary); }
+
+    @media (max-width: 900px) {
+      .tool-grid { grid-template-columns: 1fr; }
+      .tool-card { grid-column: 1 / -1 !important; }
+    }
+
+    /* ---------- Architecture ---------- */
+    .arch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      overflow-x: auto;
+    }
+    .arch-node {
+      flex: 0 0 auto;
+      text-align: center;
+      min-width: 148px;
+    }
+    .arch-node .box {
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      border-radius: var(--radius-sm);
+      padding: 16px 14px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+    .arch-node.accent .box { border-color: var(--accent-border); background: var(--accent-soft); color: var(--accent); }
+    .arch-node .caption { margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+    .arch-link {
+      flex: 1 1 auto;
+      min-width: 40px;
+      height: 1px;
+      background: var(--border);
+      position: relative;
+      margin: 0 -1px;
+      top: -20px;
+    }
+    .arch-link::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: -3px;
+      width: 6px;
+      height: 6px;
+      border-right: 1px solid var(--text-muted);
+      border-bottom: 1px solid var(--text-muted);
+      transform: rotate(-45deg);
+    }
+    @media (max-width: 800px) {
+      .arch { flex-direction: column; }
+      .arch-link { width: 1px; height: 32px; margin: -1px 0; top: 0; }
+      .arch-link::after { right: -3px; top: auto; bottom: 0; transform: rotate(45deg); }
+    }
+
+    .arch-note {
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 60ch;
+    }
+    .arch-note code { font-family: var(--font-mono); color: var(--text-secondary); }
+
+    /* ---------- Install ---------- */
+    .install-steps { display: flex; flex-direction: column; gap: 14px; }
+    .code-block {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-primary);
+      overflow-x: auto;
+    }
+    .code-block .c-comment { color: var(--text-muted); }
+    .code-block .c-line { display: block; }
+    .code-block .c-line + .c-line { margin-top: 6px; }
+    .code-block .c-prompt { color: var(--accent); margin-right: 6px; }
+
+    .install-note {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      font-size: 14.5px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 62ch;
+    }
+    .install-note svg { flex-shrink: 0; margin-top: 3px; color: var(--accent); }
+
+    /* ---------- Safety ---------- */
+    .safety-panel {
+      display: flex;
+      gap: 18px;
+      background: var(--warn-soft);
+      border: 1px solid var(--warn-border);
+      border-left: 3px solid var(--warn);
+      border-radius: var(--radius);
+      padding: 26px 28px;
+    }
+    .safety-panel svg { flex-shrink: 0; color: var(--warn); margin-top: 2px; }
+    .safety-panel h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+    .safety-panel p { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 62ch; }
+    .safety-panel p + p { margin-top: 10px; }
+    .safety-panel strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ---------- Footer ---------- */
+    footer { padding: 56px 0 64px; }
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .footer-left {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .footer-left a { color: var(--text-secondary); transition: color 0.2s var(--ease); }
+    .footer-left a:hover { color: var(--accent); }
+    .footer-links { display: flex; gap: 24px; font-size: 14px; }
+    .footer-links a { color: var(--text-secondary); transition: color 0.2s var(--ease); }
+    .footer-links a:hover { color: var(--accent); }
+
+    @media (max-width: 560px) {
+      .footer-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="/" class="topbar-home" aria-label="Back to jaybharti.me">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      jaybharti.me
+    </a>
+    <span class="topbar-name">mac<span class="dot">.</span>orchestrator</span>
+    <a href="https://github.com/Jay-2212/mac-orchestrator" target="_blank" rel="noopener noreferrer" class="topbar-gh">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">MCP server for macOS</span>
+          <h1>Your Mac, <span class="accent">one MCP call away.</span></h1>
+          <p class="hero-sub">mac-orchestrator gives AI agents real mouse, keyboard, and screen access, plus a full terminal, through a single self-hosted MCP server.</p>
+          <div class="hero-ctas">
+            <a href="#install" class="btn btn-primary">Install</a>
+            <a href="https://github.com/Jay-2212/mac-orchestrator" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View on GitHub</a>
+          </div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-head">
+            <span class="terminal-dot terminal-dot--r"></span>
+            <span class="terminal-dot terminal-dot--y"></span>
+            <span class="terminal-dot terminal-dot--g"></span>
+            <span class="terminal-title">agent session</span>
+          </div>
+          <div class="terminal-body" id="termBody" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="what">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>One server. Both hands.</h2>
+        </div>
+        <div class="prose reveal">
+          <p>Most Mac automation tools do one thing. Either they drive the interface, clicking and typing like a human would, or they open a shell and run commands. <strong>mac-orchestrator does both from the same server</strong>, so an agent can read what's on screen, click through a dialog, then drop into the terminal to finish the job with a script.</p>
+        </div>
+        <div class="split-strip reveal">
+          <div>
+            <h3>UI AUTOMATION</h3>
+            <p>Mouse, keyboard, app focus, and screen reading via macOS's Accessibility API and OCR, for the parts of a job that only exist in a window.</p>
+          </div>
+          <div>
+            <h3>TERMINAL AUTOMATION</h3>
+            <p>Direct shell and filesystem access, for the parts of a job that are faster as a command than a click.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tools">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Twenty tools, one endpoint.</h2>
+          <p>Every tool below is exposed over the same MCP connection. No per-tool plugins, no separate servers to run.</p>
+        </div>
+        <div class="tool-grid">
+          <div class="tool-card tool-card--s2 reveal">
+            <h3>Keyboard &amp; mouse</h3>
+            <ul>
+              <li><code><span class="fn">press_keystroke</span></code></li>
+              <li><code><span class="fn">type_text</span></code></li>
+              <li><code><span class="fn">mouse_action</span></code></li>
+              <li><code><span class="fn">scroll</span></code></li>
+            </ul>
+          </div>
+          <div class="tool-card reveal">
+            <h3>Macros</h3>
+            <ul>
+              <li><code><span class="fn">execute_macro</span></code></li>
+            </ul>
+          </div>
+          <div class="tool-card reveal">
+            <h3>App control</h3>
+            <ul>
+              <li><code><span class="fn">focus_app</span></code></li>
+              <li><code><span class="fn">get_available_apps</span></code></li>
+            </ul>
+          </div>
+          <div class="tool-card tool-card--s2 reveal">
+            <h3>Screen <span class="tag">OCR + layout</span></h3>
+            <ul>
+              <li><code><span class="fn">get_screen_text</span></code></li>
+              <li><code><span class="fn">get_screen_layout</span></code></li>
+              <li><code><span class="fn">get_screen_size</span></code></li>
+            </ul>
+          </div>
+          <div class="tool-card tool-card--s2 reveal">
+            <h3>Terminal</h3>
+            <ul>
+              <li><code><span class="fn">run_terminal_command</span></code></li>
+            </ul>
+          </div>
+          <div class="tool-card tool-card--s2 reveal">
+            <h3>Files</h3>
+            <ul>
+              <li><code><span class="fn">find_file</span></code>, <code><span class="fn">read_file</span></code>, <code><span class="fn">write_file</span></code></li>
+              <li><code><span class="fn">list_directory</span></code>, <code><span class="fn">smart_search</span></code>, <code><span class="fn">vector_search</span></code></li>
+            </ul>
+          </div>
+          <div class="tool-card tool-card--s2 reveal">
+            <h3>Utility</h3>
+            <ul>
+              <li><code><span class="fn">clipboard</span></code>, <code><span class="fn">play_sound_for_user_prompt</span></code>, <code><span class="fn">send_file_to_telegram</span></code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>How it connects.</h2>
+          <p>An agent talks to mac-orchestrator over plain HTTP. The server translates that into real macOS system calls.</p>
+        </div>
+        <div class="arch reveal">
+          <div class="arch-node">
+            <div class="box">AI agent</div>
+            <div class="caption">Claude, or any MCP client</div>
+          </div>
+          <div class="arch-link"></div>
+          <div class="arch-node accent">
+            <div class="box">HTTP / MCP</div>
+            <div class="caption">localhost:8000/mcp</div>
+          </div>
+          <div class="arch-link"></div>
+          <div class="arch-node">
+            <div class="box">mac-orchestrator</div>
+            <div class="caption">FastMCP server</div>
+          </div>
+          <div class="arch-link"></div>
+          <div class="arch-node">
+            <div class="box">macOS system APIs</div>
+            <div class="caption">pyobjc, AppleScript, EasyOCR, shell</div>
+          </div>
+        </div>
+        <p class="arch-note">Using a cloud-based agent instead of a local one. An optional <code>ngrok</code> tunnel exposes the same endpoint over HTTPS, so nothing changes on the agent's side.</p>
+      </div>
+    </section>
+
+    <section id="install">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Get it running.</h2>
+          <p>No package manager install yet. Clone the repository and run it with <code>uv</code>.</p>
+        </div>
+        <div class="install-steps reveal">
+          <div class="code-block">
+            <span class="c-line"><span class="c-prompt">$</span>git clone https://github.com/Jay-2212/mac-orchestrator.git</span>
+            <span class="c-line"><span class="c-prompt">$</span>cd mac-orchestrator</span>
+            <span class="c-line"><span class="c-prompt">$</span>uv sync</span>
+            <span class="c-line"><span class="c-prompt">$</span>uv run python automac_mcp.py</span>
+          </div>
+        </div>
+        <div class="install-note reveal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>macOS will ask for Accessibility and Screen Recording permissions the first time a tool runs. Grant both, then point any MCP client at the URL the server prints on startup. A Telegram bot token and an <code>ngrok</code> authtoken are optional, for remote alerts and remote access.</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="safety">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Read before you run it.</h2>
+        </div>
+        <div class="safety-panel reveal">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+          <div>
+            <h3>This gives an agent the same access you have.</h3>
+            <p>Anything the tools can do, a connected agent can do: click any button, read anything on screen, run any shell command. There's no sandboxing between the agent and your machine.</p>
+            <p><strong>Only run it on a machine you fully control</strong>, and never expose the port to the internet without putting real authentication in front of it first.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-row">
+      <div class="footer-left">Built by <a href="/">Jay Bharti</a>. License: CC0 1.0, public domain.</div>
+      <div class="footer-links">
+        <a href="https://github.com/Jay-2212/mac-orchestrator" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="/">jaybharti.me</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Scroll-reveal, matching the root site's IntersectionObserver pattern.
+      var revealEls = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window && !reduceMotion) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry, i) {
+            if (entry.isIntersecting) {
+              setTimeout(function () { entry.target.classList.add('visible'); }, i * 40);
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15 });
+        revealEls.forEach(function (el) { io.observe(el); });
+      } else {
+        revealEls.forEach(function (el) { el.classList.add('visible'); });
+      }
+
+      // Hero terminal typewriter. Plays once on load, settles on a static final state.
+      var termLines = [
+        { t: 'prompt', text: '$ ', cont: [{ c: 't-cmd', text: 'mac-orchestrator' }] },
+        { t: 'plain', html: '<span class="t-ok">&#10003;</span> <span class="t-dim">MCP server ready</span> → http://localhost:8000/mcp' },
+        { t: 'plain', html: '' },
+        { t: 'prompt', text: 'agent&gt; ', cont: [{ c: 't-cmd', text: 'execute_macro([focus_app("Safari"), type_text(query)])' }] },
+        { t: 'plain', html: '<span class="t-ok">&#10003;</span> <span class="t-dim">macro complete</span>' },
+        { t: 'plain', html: '' },
+        { t: 'prompt', text: 'agent&gt; ', cont: [{ c: 't-cmd', text: 'get_screen_text()' }] },
+        { t: 'plain', html: '<span class="t-ok">&#10003;</span> <span class="t-dim">text extracted via OCR</span>' },
+        { t: 'plain', html: '' },
+        { t: 'prompt', text: 'agent&gt; ', cont: [{ c: 't-cmd', text: 'run_terminal_command("git status")' }] },
+        { t: 'plain', html: '<span class="t-dim">On branch main, working tree clean</span>' }
+      ];
+
+      var body = document.getElementById('termBody');
+      if (!body) return;
+
+      function renderStatic() {
+        var html = termLines.map(function (line) {
+          if (line.t === 'prompt') {
+            var contHtml = line.cont.map(function (c) { return '<span class="' + c.c + '">' + c.text + '</span>'; }).join('');
+            return '<span class="t-prompt">' + line.text + '</span>' + contHtml;
+          }
+          return line.html;
+        }).join('\n');
+        body.innerHTML = html;
+      }
+
+      if (reduceMotion) { renderStatic(); return; }
+
+      var lineIndex = 0;
+      var charIndex = 0;
+      var built = '';
+
+      function typeNext() {
+        if (lineIndex >= termLines.length) {
+          body.innerHTML = built;
+          return;
+        }
+        var line = termLines[lineIndex];
+
+        if (line.t === 'plain') {
+          built += (lineIndex > 0 ? '\n' : '') + line.html;
+          body.innerHTML = built;
+          lineIndex++;
+          setTimeout(typeNext, line.html === '' ? 120 : 260);
+          return;
+        }
+
+        // typing effect for prompt lines
+        var full = line.cont.map(function (c) { return c.text; }).join('');
+        if (charIndex === 0 && lineIndex > 0) built += '\n';
+        if (charIndex < full.length) {
+          charIndex++;
+          var typed = full.slice(0, charIndex);
+          body.innerHTML = built + '<span class="t-prompt">' + line.text + '</span><span class="t-cmd">' + typed + '</span><span class="t-cursor"></span>';
+          setTimeout(typeNext, 18 + Math.random() * 22);
+        } else {
+          built += '<span class="t-prompt">' + line.text + '</span><span class="t-cmd">' + full + '</span>';
+          body.innerHTML = built;
+          lineIndex++;
+          charIndex = 0;
+          setTimeout(typeNext, 200);
+        }
+      }
+
+      setTimeout(typeNext, 400);
+    })();
+  </script>
+</body>
+</html>
