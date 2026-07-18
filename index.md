@@ -39,6 +39,7 @@ Welcome to my agent-readable portfolio! I am a Healthcare Administration special
 ## Side Projects
 - **Sensum**: An Android voice keyboard utilizing Groq's Whisper API for near-instant transcription. [GitHub Repo](https://github.com/Jay-2212/IME)
 - **Mac Orchestrator**: A streamlined MCP server giving AI agents direct control over macOS via mouse, keyboard, and OCR. [GitHub Repo](https://github.com/Jay-2212/mac-orchestrator)
+- **Meridian**: A self-hosted RAG backend on Cloudflare Workers, D1, and Vectorize that indexes a Mac's files and answers questions over Telegram. Shares its index with Mac Orchestrator. [GitHub Repo](https://github.com/Jay-2212/meridian) · [Site](https://jaybharti.me/meridian)
 - **CapexIQ**: A decision-support tool for Indian hospitals evaluating whether a high-value equipment purchase is financially viable — ROI, payback, NPV, IRR, and export-ready proposals. [GitHub Repo](https://github.com/Jay-2212/Personal-Portfolio/tree/main/capexiq) · [Live Site](https://capexiq.jaybharti.me)
 
 ## Education

@@ -9,6 +9,7 @@
 - [Home](https://jaybharti.me/): Main portfolio page with experience, projects, and contact details.
 - [Agent-readable profile](https://jaybharti.me/index.md): Structured markdown profile for AI retrieval and citation.
 - [mac-orchestrator](https://jaybharti.me/mac-orchestrator): A self-hosted MCP server giving AI agents UI and terminal control of macOS.
+- [Meridian](https://jaybharti.me/meridian): A self-hosted RAG backend that indexes a Mac's files into Cloudflare D1 and Vectorize, answers questions over Telegram, and shares its index with mac-orchestrator.
 - [Sitemap](https://jaybharti.me/sitemap.xml): URL discovery map.
 - [Resume](https://jaybharti.me/resume/Resume_Jay_Bharti.pdf): Current resume PDF.
 

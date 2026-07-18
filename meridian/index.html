@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meridian: a private RAG backend for your Mac</title>
+  <meta name="description" content="Meridian indexes your Mac's files into a private Cloudflare vector index and answers questions about them over Telegram. It shares its backend with mac-orchestrator.">
+  <meta property="og:title" content="Meridian: a private RAG backend for your Mac">
+  <meta property="og:description" content="One private index. A Telegram bot to ask it questions, and mac-orchestrator to act on the answers.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jaybharti.me/meridian">
+  <meta property="og:image" content="https://jaybharti.me/meridian/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Meridian: a private RAG backend for your Mac">
+  <meta name="twitter:description" content="One private index. A Telegram bot to ask it questions, and mac-orchestrator to act on the answers.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/favicon.svg">
+  <link rel="canonical" href="https://jaybharti.me/meridian">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0A0B0E;
+      --bg-elevated: #121419;
+      --bg-surface: #171A21;
+      --border: #262A34;
+      --border-soft: #1B1E26;
+      --text-primary: #F2F3F5;
+      --text-secondary: #9CA3AF;
+      --text-muted: #5B616E;
+      --accent: #5B93FF;
+      --accent-soft: rgba(91, 147, 255, 0.10);
+      --accent-border: rgba(91, 147, 255, 0.30);
+      --accent-hover: #82AEFF;
+      --warm: #E8A23D;
+      --warm-soft: rgba(232, 162, 61, 0.08);
+      --warm-border: rgba(232, 162, 61, 0.30);
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --radius-pill: 999px;
+      --max-width: 1120px;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-display);
+      font-weight: 400;
+      line-height: 1.6;
+      font-size: 17px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+
+    .wrap { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 40;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; padding: 0 24px;
+      background: rgba(10, 11, 14, 0.82);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .topbar-home { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary); transition: color 0.2s var(--ease); }
+    .topbar-home:hover { color: var(--text-primary); }
+    .topbar-home svg { flex-shrink: 0; }
+    .topbar-name { font-family: var(--font-mono); font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .topbar-name .dot { color: var(--accent); }
+    .topbar-gh {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 500; color: var(--text-primary);
+      border: 1px solid var(--border); border-radius: var(--radius-pill);
+      padding: 7px 16px;
+      transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+    }
+    .topbar-gh:hover { border-color: var(--accent-border); background: var(--accent-soft); }
+    @media (max-width: 640px) { .topbar-name { display: none; } }
+
+    /* ---------- Hero ---------- */
+    .hero { padding: 64px 0 88px; overflow: hidden; }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+
+    .eyebrow {
+      display: inline-flex; align-items: center;
+      font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-border);
+      border-radius: var(--radius-pill); padding: 6px 14px; margin-bottom: 24px;
+    }
+
+    .hero h1 { font-size: clamp(2.3rem, 4.2vw, 3.4rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.14; max-width: 15ch; margin-bottom: 20px; }
+    .hero h1 .accent { color: var(--accent); }
+    .hero-sub { font-size: 18px; color: var(--text-secondary); max-width: 46ch; line-height: 1.6; margin-bottom: 32px; }
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-display); font-size: 15px; font-weight: 600;
+      padding: 12px 22px; border-radius: var(--radius-pill); white-space: nowrap;
+      transition: transform 0.15s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #05070D; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { border: 1px solid var(--border); color: var(--text-primary); }
+    .btn-secondary:hover { border-color: var(--accent-border); background: var(--accent-soft); }
+
+    /* ---------- Hero: Telegram mockup ---------- */
+    .phone {
+      background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 18px;
+      overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+    .phone-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px; border-bottom: 1px solid var(--border-soft);
+    }
+    .phone-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--accent-soft); border: 1px solid var(--accent-border);
+      display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0;
+    }
+    .phone-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .phone-sub { font-size: 12px; color: var(--text-muted); }
+    .phone-body { padding: 20px 16px; min-height: 320px; display: flex; flex-direction: column; gap: 12px; justify-content: flex-end; }
+    .bubble { max-width: 86%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.55; opacity: 0; transform: translateY(8px); transition: opacity 0.4s var(--ease), transform 0.4s var(--ease); }
+    .bubble.show { opacity: 1; transform: translateY(0); }
+    .bubble--user { align-self: flex-end; background: var(--accent); color: #05070D; border-bottom-right-radius: 4px; }
+    .bubble--bot { align-self: flex-start; background: var(--bg-surface); border: 1px solid var(--border-soft); color: var(--text-secondary); border-bottom-left-radius: 4px; font-family: var(--font-mono); font-size: 13px; }
+    .bubble--bot.final { color: var(--text-primary); }
+    .bubble--bot .src { display: block; margin-top: 6px; color: var(--text-muted); font-size: 11.5px; }
+    @media (prefers-reduced-motion: reduce) { .bubble { transition: none; } }
+
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+      .hero h1 { max-width: none; }
+      .phone-body { min-height: 260px; }
+    }
+
+    /* ---------- Section shell ---------- */
+    section { padding: 88px 0; border-top: 1px solid var(--border-soft); }
+    .hero + section { border-top: none; }
+    .section-head { max-width: 60ch; margin-bottom: 48px; }
+    .section-head h2 { font-size: clamp(1.6rem, 2.4vw, 2.1rem); font-weight: 600; letter-spacing: -0.01em; margin-bottom: 14px; }
+    .section-head p { font-size: 16px; color: var(--text-secondary); max-width: 58ch; line-height: 1.65; }
+
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
+    .reveal.visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+    .prose { max-width: 68ch; }
+    .prose p { font-size: 16px; color: var(--text-secondary); line-height: 1.75; margin-bottom: 18px; }
+    .prose p:last-child { margin-bottom: 0; }
+    .prose strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ---------- Pipeline ---------- */
+    .pipeline { display: flex; align-items: stretch; gap: 0; margin-top: 40px; overflow-x: auto; }
+    .pipe-stage {
+      flex: 1 1 0; min-width: 148px; background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 18px; position: relative;
+      transition: border-color 0.4s var(--ease), background 0.4s var(--ease);
+    }
+    .pipe-stage + .pipe-stage { margin-left: 14px; }
+    .pipe-stage.lit { border-color: var(--accent-border); background: var(--accent-soft); }
+    .pipe-num { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+    .pipe-stage.lit .pipe-num { color: var(--accent); }
+    .pipe-title { font-size: 14.5px; font-weight: 600; margin-bottom: 6px; }
+    .pipe-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+    @media (max-width: 900px) {
+      .pipeline { flex-direction: column; }
+      .pipe-stage + .pipe-stage { margin-left: 0; margin-top: 14px; }
+    }
+
+    /* ---------- Bento (agent actions) ---------- */
+    .bento { display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 1fr; gap: 14px; }
+    .bento-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; transition: border-color 0.25s var(--ease), transform 0.25s var(--ease); }
+    .bento-card:hover { border-color: var(--accent-border); transform: translateY(-2px); }
+    .bento-card--wide { grid-column: span 3; }
+    .bento-card--narrow { grid-column: span 2; }
+    .bento-card--accent { background: var(--accent-soft); border-color: var(--accent-border); }
+    .bento-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .bento-card p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 10px; }
+    .bento-card code { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-secondary); }
+    .bento-card code .fn { color: var(--text-primary); }
+    .bento-card--accent code .fn { color: var(--accent); }
+    @media (max-width: 900px) {
+      .bento { grid-template-columns: 1fr; }
+      .bento-card { grid-column: 1 / -1 !important; }
+    }
+
+    /* ---------- Connects (branching architecture) ---------- */
+    .branch { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px 32px; }
+    .branch-row { display: flex; align-items: center; justify-content: center; }
+    .branch-node { text-align: center; min-width: 168px; }
+    .branch-node .box { border: 1px solid var(--border); background: var(--bg-surface); border-radius: var(--radius-sm); padding: 16px 16px; font-family: var(--font-mono); font-size: 13px; color: var(--text-primary); }
+    .branch-node.accent .box { border-color: var(--accent-border); background: var(--accent-soft); color: var(--accent); }
+    .branch-node .caption { margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+    .branch-stem { width: 1px; height: 34px; background: var(--border); margin: 0 auto; position: relative; }
+    .branch-stem.flow::after {
+      content: ""; position: absolute; left: -2px; top: 0; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent); opacity: 0; animation: flowdown 2.2s var(--ease) infinite;
+    }
+    @keyframes flowdown { 0% { top: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+    .branch-split { display: flex; justify-content: center; align-items: flex-start; gap: 64px; margin-top: 0; }
+    .branch-leg { display: flex; flex-direction: column; align-items: center; }
+    .branch-diag { width: 1px; height: 28px; background: var(--border); }
+    @media (prefers-reduced-motion: reduce) { .branch-stem.flow::after { animation: none; opacity: 0; } }
+    @media (max-width: 720px) {
+      .branch-split { flex-direction: column; gap: 28px; }
+    }
+
+    .connect-links { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px; }
+    .connect-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px 22px; transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+    }
+    .connect-card:hover { border-color: var(--accent-border); background: var(--accent-soft); }
+    .connect-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .connect-card-desc { font-size: 13px; color: var(--text-muted); }
+    .connect-card svg { flex-shrink: 0; color: var(--text-muted); }
+    .connect-card:hover svg { color: var(--accent); }
+    @media (max-width: 640px) { .connect-links { grid-template-columns: 1fr; } }
+
+    /* ---------- Deploy ---------- */
+    .deploy-steps { display: flex; flex-direction: column; gap: 14px; }
+    .code-block {
+      background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 20px; font-family: var(--font-mono); font-size: 14px; color: var(--text-primary); overflow-x: auto;
+    }
+    .code-block .c-line { display: block; }
+    .code-block .c-line + .c-line { margin-top: 6px; }
+    .code-block .c-prompt { color: var(--accent); margin-right: 6px; }
+    .deploy-note { display: flex; gap: 12px; margin-top: 24px; font-size: 14.5px; color: var(--text-secondary); line-height: 1.6; max-width: 62ch; }
+    .deploy-note svg { flex-shrink: 0; color: var(--accent); margin-top: 3px; }
+
+    /* ---------- Privacy panel ---------- */
+    .privacy-panel {
+      display: flex; gap: 18px; background: var(--warm-soft); border: 1px solid var(--warm-border);
+      border-left: 3px solid var(--warm); border-radius: var(--radius); padding: 26px 28px;
+    }
+    .privacy-panel svg { flex-shrink: 0; color: var(--warm); margin-top: 2px; }
+    .privacy-panel h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+    .privacy-panel p { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 62ch; }
+    .privacy-panel p + p { margin-top: 10px; }
+    .privacy-panel strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ---------- Footer ---------- */
+    footer { padding: 56px 0 64px; }
+    .footer-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; }
+    .footer-left { font-size: 14px; color: var(--text-muted); }
+    .footer-left a { color: var(--text-secondary); transition: color 0.2s var(--ease); }
+    .footer-left a:hover { color: var(--accent); }
+    .footer-links { display: flex; gap: 24px; font-size: 14px; }
+    .footer-links a { color: var(--text-secondary); transition: color 0.2s var(--ease); }
+    .footer-links a:hover { color: var(--accent); }
+    @media (max-width: 560px) { .footer-row { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="/" class="topbar-home" aria-label="Back to jaybharti.me">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      jaybharti.me
+    </a>
+    <span class="topbar-name">meridian<span class="dot">.</span></span>
+    <a href="https://github.com/Jay-2212/meridian" target="_blank" rel="noopener noreferrer" class="topbar-gh">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Personal RAG, self-hosted</span>
+          <h1>Everything on your Mac, <span class="accent">one message away.</span></h1>
+          <p class="hero-sub">Meridian indexes your files into a private vector index and answers questions over Telegram, grounded in your own data.</p>
+          <div class="hero-ctas">
+            <a href="#deploy" class="btn btn-primary">Deploy your own</a>
+            <a href="https://github.com/Jay-2212/meridian" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View on GitHub</a>
+          </div>
+        </div>
+        <div class="phone">
+          <div class="phone-head">
+            <div class="phone-avatar">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+            </div>
+            <div>
+              <div class="phone-title">Meridian</div>
+              <div class="phone-sub" id="phoneStatus">Telegram</div>
+            </div>
+          </div>
+          <div class="phone-body" id="phoneBody" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="what">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>A private index of everything you own.</h2>
+        </div>
+        <div class="prose reveal">
+          <p>Meridian is a self-hosted Retrieval-Augmented Generation backend built on Cloudflare Workers. A local indexer on your Mac chunks your files, embeds them offline, and streams the vectors into a private Vectorize index alongside a relational record in D1.</p>
+          <p>From there, <strong>two different things can read that same index</strong>: a Telegram bot for natural-language questions, and mac-orchestrator's own search tool. Neither one owns the data. Meridian just serves it.</p>
+        </div>
+        <div class="pipeline reveal" id="pipeline">
+          <div class="pipe-stage" data-stage="0"><div class="pipe-num">01</div><div class="pipe-title">Files</div><div class="pipe-desc">Documents, Downloads, Desktop, OneDrive</div></div>
+          <div class="pipe-stage" data-stage="1"><div class="pipe-num">02</div><div class="pipe-title">Chunk</div><div class="pipe-desc">Split locally by the indexer</div></div>
+          <div class="pipe-stage" data-stage="2"><div class="pipe-num">03</div><div class="pipe-title">Embed</div><div class="pipe-desc">bge-base-en-v1.5, 768 dimensions</div></div>
+          <div class="pipe-stage" data-stage="3"><div class="pipe-num">04</div><div class="pipe-title">Index</div><div class="pipe-desc">D1 rows + Vectorize, cosine similarity</div></div>
+          <div class="pipe-stage" data-stage="4"><div class="pipe-num">05</div><div class="pipe-title">Retrieve</div><div class="pipe-desc">Agent loop, answered over Telegram</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="actions">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Five ways to look, one way to answer.</h2>
+          <p>Every question runs through a durable Cloudflare Workflow, up to seven reasoning steps, before Meridian commits to a final answer.</p>
+        </div>
+        <div class="bento">
+          <div class="bento-card bento-card--wide reveal">
+            <h3>Semantic search</h3>
+            <p>Finds relevant files by topic or concept, not exact wording.</p>
+            <code><span class="fn">vectorSearch</span>(query)</code>
+          </div>
+          <div class="bento-card bento-card--narrow reveal">
+            <h3>File path search</h3>
+            <p>Locates documents by name.</p>
+            <code><span class="fn">filePathSearch</span>(term)</code>
+          </div>
+          <div class="bento-card bento-card--narrow reveal">
+            <h3>Keyword search</h3>
+            <p>Finds specific terms inside text.</p>
+            <code><span class="fn">keywordSearch</span>(term)</code>
+          </div>
+          <div class="bento-card bento-card--narrow reveal">
+            <h3>Full file read</h3>
+            <p>Reads up to 25 KB for complete context.</p>
+            <code><span class="fn">fetchFileContent</span>(path)</code>
+          </div>
+          <div class="bento-card bento-card--wide reveal">
+            <h3>In-file search</h3>
+            <p>Pinpoints a value inside one large spreadsheet or CSV rather than reading the whole thing.</p>
+            <code><span class="fn">searchFileContent</span>(path, term)</code>
+          </div>
+          <div class="bento-card bento-card--wide bento-card--accent reveal">
+            <h3>Final answer</h3>
+            <p>Called once the agent has enough evidence. Answers are never guessed or extrapolated from partial matches.</p>
+            <code><span class="fn">respond</span>(answer)</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="connects">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Shares a brain with mac-orchestrator.</h2>
+          <p>mac-orchestrator's local indexer writes into Meridian. Meridian serves that same index back out, over Telegram and straight into mac-orchestrator's own tools.</p>
+        </div>
+        <div class="branch reveal">
+          <div class="branch-row">
+            <div class="branch-node">
+              <div class="box">mac-orchestrator's indexer.py</div>
+              <div class="caption">Embeds files locally, on your Mac</div>
+            </div>
+          </div>
+          <div class="branch-stem flow"></div>
+          <div class="branch-row">
+            <div class="branch-node accent">
+              <div class="box">Meridian · D1 + Vectorize</div>
+              <div class="caption">One private index, one Cloudflare Worker</div>
+            </div>
+          </div>
+          <div class="branch-stem"></div>
+          <div class="branch-split">
+            <div class="branch-leg">
+              <div class="branch-diag"></div>
+              <div class="branch-node">
+                <div class="box">Telegram bot</div>
+                <div class="caption">Natural-language Q&amp;A, 7-step agent loop</div>
+              </div>
+            </div>
+            <div class="branch-leg">
+              <div class="branch-diag"></div>
+              <div class="branch-node">
+                <div class="box">mac-orchestrator's vector_search()</div>
+                <div class="caption">Reads the same index from inside an agent session</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="connect-links reveal">
+          <a href="/mac-orchestrator" class="connect-card">
+            <div>
+              <div class="connect-card-name">mac-orchestrator</div>
+              <div class="connect-card-desc">Gives an agent hands: mouse, keyboard, screen, terminal.</div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="https://github.com/Jay-2212/meridian" target="_blank" rel="noopener noreferrer" class="connect-card">
+            <div>
+              <div class="connect-card-name">Meridian</div>
+              <div class="connect-card-desc">Gives that agent memory: a private, queryable index of your files.</div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="deploy">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Bring your own Cloudflare account.</h2>
+          <p>No hosted version. Meridian runs on infrastructure only you control.</p>
+        </div>
+        <div class="deploy-steps reveal">
+          <div class="code-block">
+            <span class="c-line"><span class="c-prompt">$</span>git clone https://github.com/Jay-2212/meridian.git</span>
+            <span class="c-line"><span class="c-prompt">$</span>cd meridian</span>
+            <span class="c-line"><span class="c-prompt">$</span>npx wrangler d1 execute mac-brain-db --remote --file=./schema.sql</span>
+            <span class="c-line"><span class="c-prompt">$</span>npx wrangler deploy</span>
+          </div>
+        </div>
+        <div class="deploy-note reveal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>Three secrets, set with <code style="font-family: var(--font-mono); color: var(--text-primary);">wrangler secret put</code>: a Telegram bot token, a bearer token for the local indexer's ingest calls, and the one Telegram user ID allowed to query it.</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="privacy">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Built for one user.</h2>
+        </div>
+        <div class="privacy-panel reveal">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div>
+            <h3>Every endpoint checks a bearer token before it touches your index.</h3>
+            <p>Ingestion and retrieval both require an authenticated request, and the Telegram bot only answers one authorized user ID. There is no shared or hosted deployment: every install runs on your own Cloudflare account, against your own database.</p>
+            <p><strong>Secrets are never hardcoded.</strong> They live in Cloudflare's secret store or a local, gitignored <code style="font-family: var(--font-mono); color: var(--text-primary);">.devvars</code> file, never in source.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-row">
+      <div class="footer-left">Built by <a href="/">Jay Bharti</a>. License: MIT.</div>
+      <div class="footer-links">
+        <a href="https://github.com/Jay-2212/meridian" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="/mac-orchestrator">mac-orchestrator</a>
+        <a href="/">jaybharti.me</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Scroll-reveal
+      var revealEls = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window && !reduceMotion) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry, i) {
+            if (entry.isIntersecting) {
+              setTimeout(function () { entry.target.classList.add('visible'); }, i * 40);
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15 });
+        revealEls.forEach(function (el) { io.observe(el); });
+      } else {
+        revealEls.forEach(function (el) { el.classList.add('visible'); });
+      }
+
+      // Pipeline: light up stages in sequence once visible
+      var pipeline = document.getElementById('pipeline');
+      if (pipeline) {
+        var lit = false;
+        var lightStages = function () {
+          if (lit) return;
+          lit = true;
+          var stages = pipeline.querySelectorAll('.pipe-stage');
+          stages.forEach(function (el, i) {
+            setTimeout(function () { el.classList.add('lit'); }, reduceMotion ? 0 : i * 160);
+          });
+        };
+        if ('IntersectionObserver' in window) {
+          var pio = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) { lightStages(); pio.disconnect(); }
+            });
+          }, { threshold: 0.4 });
+          pio.observe(pipeline);
+        } else {
+          lightStages();
+        }
+      }
+
+      // Hero Telegram mockup: real conversation, typed status updates
+      var body = document.getElementById('phoneBody');
+      var status = document.getElementById('phoneStatus');
+      if (!body) return;
+
+      function addBubble(kind, html, extraClass) {
+        var el = document.createElement('div');
+        el.className = 'bubble bubble--' + kind + (extraClass ? ' ' + extraClass : '');
+        el.innerHTML = html;
+        body.appendChild(el);
+        requestAnimationFrame(function () { el.classList.add('show'); });
+        return el;
+      }
+
+      function playDemo() {
+        if (reduceMotion) {
+          status.textContent = 'Telegram';
+          addBubble('user', 'What was the plasma bag breakage reduction after the QI fix?');
+          addBubble('bot', '95% reduction in plasma bag breakage, saving ₹2.6L annually.<span class="src">Source: QualTech_Prize_Submission.pdf</span>', 'final show');
+          return;
+        }
+        var t = 500;
+        setTimeout(function () {
+          addBubble('user', 'What was the plasma bag breakage reduction after the QI fix?');
+        }, t); t += 900;
+
+        var thinking;
+        setTimeout(function () {
+          thinking = addBubble('bot', '🔍 Searching your files...');
+        }, t); t += 1300;
+
+        setTimeout(function () {
+          if (thinking) thinking.innerHTML = 'Step 2: searching semantically for &quot;plasma bag breakage&quot;...';
+        }, t); t += 1500;
+
+        setTimeout(function () {
+          if (thinking) thinking.innerHTML = 'Step 4: reading QualTech_Prize_Submission.pdf...';
+        }, t); t += 1400;
+
+        setTimeout(function () {
+          if (thinking) {
+            thinking.classList.add('final');
+            thinking.innerHTML = '95% reduction in plasma bag breakage, saving ₹2.6L annually.<span class="src">Source: QualTech_Prize_Submission.pdf</span>';
+          }
+        }, t);
+      }
+
+      if ('IntersectionObserver' in window) {
+        var hio = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) { playDemo(); hio.disconnect(); }
+          });
+        }, { threshold: 0.4 });
+        hio.observe(body);
+      } else {
+        playDemo();
+      }
+    })();
+  </script>
+</body>
+</html>
