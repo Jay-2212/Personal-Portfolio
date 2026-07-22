@@ -9,16 +9,20 @@ import { payerMixGroupError } from "../forms/wizardValidation";
 function CompactNumber({ path, label }: { path: string; label: string }) {
   const field = useFieldController(path);
   return (
-    <input
-      id={path}
-      type="number"
-      aria-label={label}
-      value={field.value ?? ""}
-      min={0}
-      className="payer-table__input"
-      data-invalid={field.error !== null}
-      onChange={(event) => field.setValue(event.target.value === "" ? null : Number(event.target.value))}
-    />
+    <div className="payer-table__field">
+      <input
+        id={path}
+        type="number"
+        aria-label={label}
+        aria-invalid={field.error !== null}
+        value={field.value ?? ""}
+        min={0}
+        className="payer-table__input"
+        data-invalid={field.error !== null}
+        onChange={(event) => field.setValue(event.target.value === "" ? null : Number(event.target.value))}
+      />
+      {field.error && <small role="alert" className="payer-table__cell-error">{field.error}</small>}
+    </div>
   );
 }
 

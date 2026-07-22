@@ -18,7 +18,7 @@ function WarrantyVsUsefulLifeNotice() {
   const { warrantyYears } = state.basic;
   const { usefulLifeYears } = state.advanced.F;
   if (warrantyYears === null || usefulLifeYears === null) return null;
-  if (warrantyYears < usefulLifeYears) return null;
+  if (warrantyYears !== usefulLifeYears) return null;
   return (
     <div className="smart-input-notice" role="status">
       <AlertTriangle aria-hidden="true" size={16} />

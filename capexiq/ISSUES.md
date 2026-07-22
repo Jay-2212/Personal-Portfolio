@@ -176,6 +176,21 @@ is a placeholder only, safe to replace once real product screenshots exist.
 
 ## Resolved
 
+### ISS-34 — Basic-mode Continue could look dead when validation blocked Results
+**Resolved:** 2026-07-22.
+**Area:** wizard validation / units / accessibility
+**What was found:** a failed step gate did not trigger a network request or calculation;
+it simply withheld navigation. Existing inline feedback could be off-screen or hidden
+inside Advanced Mode, invalid optional values were skipped by the gate, and
+`aria-disabled` contradicted the button's intended click-to-explain behavior. The
+Lakh/Crore selector also converted the displayed number on a unit change.
+**Fix:** every entered field now participates in validation; cross-field rules live in
+`app/forms/crossFieldValidation.ts`; a nearby Step/field summary always explains the
+first blocker and its Take me there action navigates/opens/focuses the exact field;
+invalid Continue remains an operable button; and unit switches preserve the literal
+typed number. Chrome reproduced ₹700 tariff + ₹800 consumables and verified the full
+recovery plus a valid `/results` run. See `HANDOFF.md`'s 2026-07-22 entry.
+
 ### ISS-31 — Cath Lab/Dialysis Purchase Cost default corrupted to ~1e-6 of the real value (unit-conversion bug)
 **Resolved:** 2026-07-16, Jay approved the fix after reviewing the flagged writeup.
 **Area:** data / formulas

@@ -16,6 +16,7 @@ comment.
 | `initialState.ts` | Builds empty/defaulted `WizardState` — includes the payer-mix default fix, see `ISSUES.md` ISS-22 |
 | `fieldPath.ts` | Generic dotted-path get/set over `WizardState` |
 | `wizardValidation.ts` | Field/step/group validation, the route guard's `earliestIncompleteStep()`, the fresh/stale contract |
+| `crossFieldValidation.ts` | Inter-field business rules and their single-source user-facing error copy (`wizard-state.md` §2.1) |
 | `useFieldController.ts` | The hook every field control builds on |
 | `resolvePayerMix.ts` | WizardState → `AssessmentPayer[]` — see `ISSUES.md` ISS-17 for the realization/claim-deduction composition caveat |
 | `toAssessmentInputs.ts` | WizardState → `formulas/computeAssessment.ts`'s input shape — see `ISSUES.md` ISS-18/ISS-19 for financing/ramp-up caveats |

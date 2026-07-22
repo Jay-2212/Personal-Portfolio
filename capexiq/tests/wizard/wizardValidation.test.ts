@@ -10,6 +10,7 @@ import {
   payerMixGroupError,
   stepForFieldPath,
   validateFieldValue,
+  validationIssuesOnStep,
 } from "../../app/forms/wizardValidation";
 import { getFieldDefinition } from "../../app/forms/fieldSchema";
 
@@ -138,6 +139,73 @@ describe("isStepComplete / firstInvalidFieldOnStep", () => {
     });
     expect(state.basic.billedTariffPerUse).toBeNull();
     expect(isStepComplete("usage", state)).toBe(false);
+  });
+
+  it("blocks a consumable cost above the procedure price with specific copy", () => {
+    let state = completeMri();
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.billedTariffPerUse", value: 700 });
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.consumableCostPerUse", value: 800 });
+    expect(firstInvalidFieldOnStep("costs", state)).toBe("basic.consumableCostPerUse");
+    expect(validationIssuesOnStep("costs", state)[0]?.message).toBe(
+      "Consumable cost cannot exceed the procedure price."
+    );
+  });
+
+  it("blocks combined per-use costs above the procedure price", () => {
+    let state = completeMri();
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.billedTariffPerUse", value: 700 });
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.consumableCostPerUse", value: 300 });
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.professionalFeePerUse", value: 250 });
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.otherVariableCostPerUse", value: 200 });
+    expect(validationIssuesOnStep("costs", state)[0]?.message).toBe(
+      "Total per-use costs cannot exceed the procedure price."
+    );
+  });
+
+  it("validates a populated optional field instead of silently skipping it", () => {
+    let state = completeMri();
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.professionalFeePerUse", value: -1 });
+    expect(firstInvalidFieldOnStep("costs", state)).toBe("basic.professionalFeePerUse");
+    expect(validationIssuesOnStep("costs", state)[0]?.message).toMatch(/between/);
+  });
+
+  it("requires a partially entered utilization ramp to be completed", () => {
+    let state = completeMri();
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.B.utilizationRampPct.month1to3",
+      value: 40,
+    });
+    expect(validationIssuesOnStep("costs", state).some((issue) =>
+      issue.message === "Complete all four utilization ramp periods, or clear them all."
+    )).toBe(true);
+  });
+
+  it("blocks financing and lifecycle combinations that exceed their parent totals", () => {
+    let state = completeMri();
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.acquisitionMode", value: "Loan" });
+    state = wizardReducer(state, { type: "SET_FIELD", path: "advanced.C.downPayment", value: 10 });
+    expect(validationIssuesOnStep("costs", state).some((issue) =>
+      issue.message === "Down payment cannot exceed the total purchase and installation cost."
+    )).toBe(true);
+
+    state = wizardReducer(state, { type: "SET_FIELD", path: "advanced.C.downPayment", value: 1 });
+    state = wizardReducer(state, { type: "SET_FIELD", path: "basic.warrantyYears", value: 20 });
+    expect(validationIssuesOnStep("costs", state).some((issue) =>
+      issue.message === "Warranty period cannot exceed the equipment's useful life."
+    )).toBe(true);
+  });
+
+  it("validates each populated year in the dynamic maintenance schedule", () => {
+    let state = completeMri();
+    state = wizardReducer(state, {
+      type: "SET_MAINTENANCE_SCHEDULE_YEAR",
+      yearIndex: 0,
+      value: 25,
+    });
+    expect(validationIssuesOnStep("costs", state).some((issue) =>
+      issue.path === "advanced.E.maintenanceCostByYearPct.0" && issue.message.includes("20%")
+    )).toBe(true);
   });
 });
 

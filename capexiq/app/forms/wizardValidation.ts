@@ -4,7 +4,8 @@
 
 import { getFieldDefinition, type FieldDefinition } from "./fieldSchema";
 import { getFieldValue } from "./fieldPath";
-import { PAYER_TYPES } from "./payerAndRampKeys";
+import { crossFieldError } from "./crossFieldValidation";
+import { PAYER_TYPES, RAMP_PERIODS } from "./payerAndRampKeys";
 import type { FieldValue, WizardState, WizardStep } from "./wizardTypes";
 
 export function isRequiredIfSatisfiedOrNa(
@@ -42,8 +43,11 @@ export function validateFieldValue(
   if (typeof value === "string" && def.maxLength !== undefined) {
     if (value.length > def.maxLength) return def.errorMessage ?? null;
   }
+  if (typeof value === "string" && def.options && !def.options.includes(value)) {
+    return def.errorMessage ?? "Select one of the available options.";
+  }
 
-  return null;
+  return crossFieldError(def.path, state);
 }
 
 /** The payer-mix group constraint — one error, anchored to the group heading, shared
@@ -93,7 +97,31 @@ const STEP_FIELD_PATHS: Record<Exclude<WizardStep, "results">, string[]> = {
     "advanced.C.loanTenureMonths",
     "advanced.C.leaseRentalPerMonth",
     "advanced.C.leaseTenureMonths",
-    ...PAYER_TYPES.map((p) => `advanced.A.payerMixSharePct.${p.suffix}`),
+    ...PAYER_TYPES.flatMap((p) => [
+      `advanced.A.payerMixSharePct.${p.suffix}`,
+      `advanced.A.billedTariffByPayerType.${p.suffix}`,
+      `advanced.A.realizationPctByPayerType.${p.suffix}`,
+      `advanced.A.claimDeductionPctByPayerType.${p.suffix}`,
+      `advanced.A.collectionDelayDaysByPayerType.${p.suffix}`,
+    ]),
+    ...RAMP_PERIODS.map((p) => `advanced.B.utilizationRampPct.${p.suffix}`),
+    "advanced.B.expectedMatureUtilization",
+    "advanced.C.processingChargesPct",
+    "advanced.C.emiStartMonth",
+    "advanced.C.moratoriumPeriodMonths",
+    "advanced.D.civilWorkDurationMonths",
+    "advanced.D.installationDurationMonths",
+    "advanced.D.licensingApprovalDurationMonths",
+    "advanced.D.trainingCommissioningDurationMonths",
+    "advanced.D.preOpeningFixedCosts",
+    "advanced.D.workingCapitalBufferAmount",
+    "advanced.E.cmcYears",
+    "advanced.E.maintenanceInflationPct",
+    "advanced.E.majorReplacementCost",
+    "advanced.F.inflationRate",
+    "advanced.F.depreciationMethod",
+    "advanced.F.priceEscalationPct",
+    "advanced.F.costEscalationPct",
   ],
 };
 
@@ -125,16 +153,65 @@ export function firstInvalidFieldOnStep(
   step: Exclude<WizardStep, "results">,
   state: WizardState
 ): string | null {
+  return validationIssuesOnStep(step, state)[0]?.path ?? null;
+}
+
+export interface ValidationIssue {
+  step: Exclude<WizardStep, "results">;
+  path: string;
+  fieldLabel: string;
+  message: string;
+}
+
+export function validationIssuesOnStep(
+  step: Exclude<WizardStep, "results">,
+  state: WizardState
+): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
   for (const path of STEP_FIELD_PATHS[step]) {
     const def = getFieldDefinition(path);
-    if (!isFieldRequired(def, state)) continue;
-    const value = getFieldValue(state, path);
-    if (validateFieldValue(def, value, state) !== null) return path;
+    const message = validateFieldValue(def, getFieldValue(state, path), state);
+    if (message) issues.push({ step, path, fieldLabel: def.label, message });
   }
-  if (step === "costs" && payerMixGroupError(state) !== null) {
-    return "advanced.A.payerMixSharePct.privateCash";
+  if (step === "costs") {
+    const scheduleDef = getFieldDefinition("advanced.E.maintenanceCostByYearPct");
+    state.advanced.E.maintenanceCostByYearPct.forEach((value, index) => {
+      const message = validateFieldValue(scheduleDef, value, state);
+      if (message) {
+        issues.push({
+          step,
+          path: `advanced.E.maintenanceCostByYearPct.${index}`,
+          fieldLabel: `AMC / CMC cost — Year ${index + 1}`,
+          message,
+        });
+      }
+    });
+    const message = payerMixGroupError(state);
+    if (message) {
+      issues.push({
+        step,
+        path: "advanced.A.payerMixSharePct.privateCash",
+        fieldLabel: "Payer mix",
+        message,
+      });
+    }
   }
-  return null;
+  return issues;
+}
+
+const STEP_ORDER: WizardStep[] = ["preStep", "investment", "usage", "costs", "results"];
+
+export function validationIssuesThroughStep(
+  step: Exclude<WizardStep, "results">,
+  state: WizardState
+): ValidationIssue[] {
+  const end = STEP_ORDER.indexOf(step);
+  const start = step === "preStep" ? 0 : 1;
+  return STEP_ORDER.slice(start, end + 1).flatMap((candidate) =>
+    candidate === "results"
+      ? []
+      : validationIssuesOnStep(candidate as Exclude<WizardStep, "results">, state)
+  );
 }
 
 export function isStepComplete(
@@ -143,8 +220,6 @@ export function isStepComplete(
 ): boolean {
   return firstInvalidFieldOnStep(step, state) === null;
 }
-
-const STEP_ORDER: WizardStep[] = ["preStep", "investment", "usage", "costs", "results"];
 
 /** wizard-state.md §2's route guard — the earliest step whose prerequisites are not
  *  yet complete, or null if every step up to and including `upTo` is complete. */

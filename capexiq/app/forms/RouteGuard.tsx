@@ -47,12 +47,21 @@ export function RouteGuard() {
     if (requestedStep !== state.currentStep) {
       dispatch({ type: "GO_TO_STEP", step: requestedStep });
     }
+    if (state.pendingFieldFocusPath) {
+      const field = document.getElementById(state.pendingFieldFocusPath);
+      if (field) {
+        field.focus();
+        field.scrollIntoView({ block: "center" });
+        dispatch({ type: "CLEAR_FIELD_FOCUS" });
+        return;
+      }
+    }
     // Focus the destination step's own h1 — every step page renders exactly one
     // (wizard-state.md §6.5's in-app Next/Back and route-guard focus rule).
     const heading = document.querySelector<HTMLElement>("h1[tabindex='-1']");
     heading?.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, state.hasHydrated]);
+  }, [pathname, state.hasHydrated, state.pendingFieldFocusPath]);
 
   useEffect(() => {
     if (state.restoredDraftSavedAt && !hasAnnouncedDraftRestore.current) {

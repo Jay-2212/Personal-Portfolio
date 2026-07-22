@@ -134,6 +134,7 @@ export function emptyWizardState(): WizardState {
     restoredDraftSavedAt: null,
     hasHydrated: false,
     pendingAdvancedFocusPath: null,
+    pendingFieldFocusPath: null,
   };
 }
 

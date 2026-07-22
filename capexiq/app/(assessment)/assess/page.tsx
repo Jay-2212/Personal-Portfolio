@@ -126,7 +126,7 @@ export default function PreStepPage() {
               <SelectField path="preStep.hospitalType" />
               <TextField path="preStep.equipmentNameModel" />
             </div>
-            <Button variant="primary" aria-disabled={!complete} onClick={continueAssessment}>
+            <Button variant="primary" data-blocked={!complete} onClick={continueAssessment}>
               Begin the assessment <ArrowRight aria-hidden="true" size={17} />
             </Button>
           </div>

@@ -26,7 +26,9 @@ export type WizardAction =
   | { type: "SET_MAINTENANCE_SCHEDULE_YEAR"; yearIndex: number; value: number | null }
   | { type: "ATTEMPT_STEP"; step: Exclude<WizardStep, "results"> }
   | { type: "REQUEST_ADVANCED_FOCUS"; path: string }
-  | { type: "CLEAR_ADVANCED_FOCUS" };
+  | { type: "CLEAR_ADVANCED_FOCUS" }
+  | { type: "REQUEST_FIELD_FOCUS"; path: string }
+  | { type: "CLEAR_FIELD_FOCUS" };
 
 function resizeMaintenanceArray(
   state: WizardState,
@@ -80,12 +82,31 @@ export function wizardReducer(
     }
 
     case "SET_CURRENCY_UNIT": {
+      const currentUnits = state.currencyUnits ?? {
+        purchaseCost: "Crore" as CurrencyUnit,
+        installationCost: "Lakh" as CurrencyUnit,
+      };
+      const previousUnit = currentUnits[action.field];
+      if (previousUnit === action.unit) return state;
+      const path = `basic.${action.field}`;
+      const currentValue = state.basic[action.field];
+      // basic.* costs are canonical Crore values. Re-scale that canonical value when
+      // the display unit changes so the visible number remains the user's source of
+      // truth (2 Lakh -> switch -> 2 Crore, never 0.02 or 200 in the input).
+      const nextValue =
+        currentValue === null
+          ? null
+          : previousUnit === "Lakh" && action.unit === "Crore"
+            ? currentValue * 100
+            : currentValue / 100;
       return {
         ...state,
+        basic: { ...state.basic, [action.field]: nextValue },
         currencyUnits: {
-          ...(state.currencyUnits ?? { purchaseCost: "Crore", installationCost: "Lakh" }),
+          ...currentUnits,
           [action.field]: action.unit,
         },
+        touched: currentValue === null ? state.touched : { ...state.touched, [path]: true },
       };
     }
 
@@ -122,6 +143,7 @@ export function wizardReducer(
         },
         attemptedSteps: {},
         pendingAdvancedFocusPath: null,
+        pendingFieldFocusPath: null,
         advancedPanelForcedOpen: false,
         restoredDraftSavedAt: action.savedAt,
         hasHydrated: true,
@@ -157,6 +179,15 @@ export function wizardReducer(
       return { ...state, pendingAdvancedFocusPath: null };
     }
 
+    case "REQUEST_FIELD_FOCUS": {
+      return { ...state, pendingFieldFocusPath: action.path };
+    }
+
+    case "CLEAR_FIELD_FOCUS": {
+      if (state.pendingFieldFocusPath === null) return state;
+      return { ...state, pendingFieldFocusPath: null };
+    }
+
     case "ATTEMPT_STEP": {
       // ISS-25: reveals every blocked field's error on this step at once (the
       // disabled-"Next" discoverability behavior, wizard-state.md §2/audit F7) without
@@ -176,8 +207,10 @@ export function wizardReducer(
       // a plain object), so it gets its own action.
       const updated = [...state.advanced.E.maintenanceCostByYearPct];
       updated[action.yearIndex] = action.value;
+      const path = `advanced.E.maintenanceCostByYearPct.${action.yearIndex}`;
       return {
         ...state,
+        touched: { ...state.touched, [path]: true },
         advanced: {
           ...state.advanced,
           E: { ...state.advanced.E, maintenanceCostByYearPct: updated },

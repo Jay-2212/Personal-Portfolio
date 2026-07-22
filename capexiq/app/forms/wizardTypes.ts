@@ -172,4 +172,8 @@ export interface WizardState {
    *  switches to the right group, focuses the field, then clears this. Ephemeral UI
    *  state, reset on RESTORE_DRAFT/START_OVER like attemptedSteps. */
   pendingAdvancedFocusPath: string | null;
+  /** Basic-field counterpart to pendingAdvancedFocusPath. Set by a validation
+   *  summary's "Take me there" action before cross-step navigation; RouteGuard
+   *  focuses the destination field and clears it after the page mounts. */
+  pendingFieldFocusPath: string | null;
 }

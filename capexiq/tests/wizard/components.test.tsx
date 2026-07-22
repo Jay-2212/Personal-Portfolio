@@ -10,6 +10,7 @@ import { WizardProvider, useWizard } from "../../app/forms/WizardContext";
 import { NumberField } from "../../app/components/NumberField";
 import { SliderField } from "../../app/components/SliderField";
 import { StepNav } from "../../app/components/StepNav";
+import { CurrencyUnitField } from "../../app/components/CurrencyUnitField";
 import PreStepPage from "../../app/(assessment)/assess/page";
 
 vi.mock("next/navigation", () => ({
@@ -96,8 +97,8 @@ describe("SliderField — never shows a fake value for a genuinely unset require
   });
 });
 
-describe("StepNav — disabled-\"Next\" moves focus to the first invalid field (audit F7)", () => {
-  it("clicking Next on an incomplete step focuses the first missing required field instead of navigating", () => {
+describe("StepNav — blocked navigation summary and guided focus", () => {
+  it("clicking Next shows a specific summary, and Take me there focuses the first invalid field", () => {
     render(
       <WizardProvider>
         <NumberField path="basic.purchaseCost" />
@@ -107,7 +108,8 @@ describe("StepNav — disabled-\"Next\" moves focus to the first invalid field (
     );
 
     const nextButton = screen.getByRole("button", { name: "Next" });
-    expect(nextButton).toHaveAttribute("aria-disabled", "true");
+    expect(nextButton).toHaveAttribute("data-blocked", "true");
+    expect(nextButton).not.toBeDisabled();
 
     // ISS-25: on a fresh, untouched render, neither field shows red yet.
     expect(screen.queryByText(/Enter the equipment.s purchase cost/)).not.toBeInTheDocument();
@@ -116,11 +118,48 @@ describe("StepNav — disabled-\"Next\" moves focus to the first invalid field (
     fireEvent.click(nextButton);
 
     const purchaseCostInput = screen.getByLabelText(/Purchase cost/);
+    expect(screen.getByText(/Step 1: Purchase cost/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Take me there" })).toBeInTheDocument();
+    expect(purchaseCostInput).not.toHaveFocus();
+    fireEvent.click(screen.getByRole("button", { name: "Take me there" }));
     expect(purchaseCostInput).toHaveFocus();
     // A blocked Next reveals every blocked field on the step at once, not just the
     // one focus lands on.
-    expect(screen.getByText(/Enter the equipment.s purchase cost/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Enter the equipment.s purchase cost/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Enter installation.civil cost/)).toBeInTheDocument();
+  });
+});
+
+function CurrencyValueProbe({ field }: { field: "purchaseCost" | "installationCost" }) {
+  const { state } = useWizard();
+  return <output data-testid={`${field}-canonical`}>{state.basic[field]}</output>;
+}
+
+describe("CurrencyUnitField — the typed number is the source of truth", () => {
+  it.each([
+    ["basic.purchaseCost", "purchaseCost", "Purchase cost"],
+    ["basic.installationCost", "installationCost", "Installation / civil cost"],
+  ] as const)("keeps the visible number unchanged across unit switches for %s", (path, field, label) => {
+    render(
+      <WizardProvider>
+        <CurrencyUnitField path={path} field={field} />
+        <CurrencyValueProbe field={field} />
+      </WizardProvider>
+    );
+
+    const input = screen.getByRole("spinbutton", { name: label });
+    fireEvent.click(screen.getByRole("button", { name: "Lakh" }));
+    fireEvent.change(input, { target: { value: "2" } });
+    expect(input).toHaveValue(2);
+    expect(screen.getByTestId(`${field}-canonical`)).toHaveTextContent("0.02");
+
+    fireEvent.click(screen.getByRole("button", { name: "Crore" }));
+    expect(input).toHaveValue(2);
+    expect(screen.getByTestId(`${field}-canonical`)).toHaveTextContent("2");
+
+    fireEvent.click(screen.getByRole("button", { name: "Lakh" }));
+    expect(input).toHaveValue(2);
+    expect(screen.getByTestId(`${field}-canonical`)).toHaveTextContent("0.02");
   });
 });
 
@@ -142,7 +181,8 @@ describe("PreStepPage — blocked \"Begin the assessment\" reveals its own requi
     ).not.toBeInTheDocument();
 
     const nextButton = screen.getByRole("button", { name: /Begin the assessment/ });
-    expect(nextButton).toHaveAttribute("aria-disabled", "true");
+    expect(nextButton).toHaveAttribute("data-blocked", "true");
+    expect(nextButton).not.toBeDisabled();
 
     fireEvent.click(nextButton);
 

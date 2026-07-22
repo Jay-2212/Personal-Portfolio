@@ -208,6 +208,43 @@ of validation, which `inputs-metadata.json` doesn't cover:
   silent (added — UI assurance audit F6, 2026-07-12):** see §6.5 for the focus/
   announcement this redirect (and every other step-change event) must produce.
 
+### 2.1 Cross-field validation and blocked-transition guidance
+
+Single-field bounds remain in `content/inputs-metadata.json`. Relationships between
+fields live in `app/forms/crossFieldValidation.ts`, because they cannot be expressed as
+one field's min/max without duplicating or hiding the dependency. The blocking rules
+are:
+
+| Fields | Rule | Inline error |
+|---|---|---|
+| Consumable cost, billed revenue per use | Consumable cost must not exceed the billed price | `Consumable cost cannot exceed the procedure price.` |
+| Professional fee, billed revenue per use | Professional fee must not exceed the billed price | `Professional fee cannot exceed the procedure price.` |
+| Other variable cost, billed revenue per use | Other variable cost must not exceed the billed price | `Other variable cost cannot exceed the procedure price.` |
+| All three per-use costs, billed revenue per use | Their total must not exceed the billed price | `Total per-use costs cannot exceed the procedure price.` |
+| Four utilization-ramp periods | If one is entered, all four are required and values cannot decrease over time | `Complete all four utilization ramp periods, or clear them all.` / `Utilization ramp cannot decrease over time.` |
+| Down payment, purchase + installation cost | Down payment must not exceed the financed investment | `Down payment cannot exceed the total purchase and installation cost.` |
+| Moratorium period, loan tenure | Moratorium must fit inside the loan term | `Moratorium period cannot exceed the loan tenure.` |
+| Warranty period, useful life | Warranty cannot run beyond useful life | `Warranty period cannot exceed the equipment's useful life.` |
+| Warranty, CMC coverage, useful life | Warranty + CMC coverage must fit inside useful life | `CMC coverage cannot exceed the post-warranty useful life.` |
+| Payer-mix shares | Shares must total 100% | Existing dynamic payer-mix message |
+
+An optional field is non-blocking only while it is blank. Once the user enters a value,
+its normal bounds and the rules above participate in the step gate.
+
+Blocked Next/Results transitions use this explicit state table:
+
+| Event | State/UI transition |
+|---|---|
+| Continue with no issues | Set `transitionInFlight`, navigate once |
+| Continue with one or more issues | Mark every affected step attempted; keep the current route; render and focus a summary beside the buttons |
+| Take me there, issue on current Basic step | Scroll to and focus the field |
+| Take me there, issue on another Basic step | Store `pendingFieldFocusPath`, navigate to that step, then scroll/focus and clear the pending path |
+| Take me there, issue in Advanced Mode | Force the Advanced panel open without opting into Advanced formula precedence, select the owning group, then scroll/focus |
+
+The summary names the step and blocking message. It remains visible while the issue is
+present and disappears after a successful transition; clicking Continue can refresh it
+to the next remaining issue. The button never behaves as an unexplained no-op.
+
 ---
 
 ## 3. Basic ↔ Advanced toggle persistence

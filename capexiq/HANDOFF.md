@@ -11,200 +11,41 @@ of *how* we got here.
 
 ## Current State
 
-*(Last updated: 2026-07-16, first hands-on post-launch QA pass across Basic + Advanced
-Mode + a second equipment type; a systemic input-validation-timing bug fixed, Excel
-export personalized, and — after Jay reviewed and explicitly approved the flagged
-writeup — a real data-corruption bug in Cath Lab/Dialysis defaults plus two
-precedence bugs also fixed, all in the same PR)*
+*(Last updated: 2026-07-22 — Pallavi's real-user Basic-mode completion blocker
+diagnosed and fixed; unit switching, cross-field validation, and guided recovery
+verified end to end in Chrome.)*
 
-**2026-07-16 QA pass — first session to actually drive the product end to end (Basic +
-all 6 Advanced groups + Loan financing + a second equipment type + Results quick
-settings + all 3 exports) with realistic data instead of reading code.** Full writeup
-in `/Users/jay/.claude/plans/can-you-create-a-structured-sundae.md` (Jay's copy, not
-tracked in this repo). PR: `qol-input-validation-and-export-personalization`. Two
-rounds of fixes, both now complete:
-- **Round 1 (small, display/content-only, verified live + via tests):** a systemic
-  eager-validation bug — every `NumberField`/`SliderField`/`CurrencyUnitField`
-  dispatched on every keystroke with no debounce, so clearing a pre-filled "Typical"
-  value (or typing a fresh multi-digit number past a min threshold) flashed a red error
-  before the user finished editing. Fixed via `useDeferredFieldError`
-  (`app/forms/useFieldController.ts`) — display defers to blur, but an ATTEMPT_STEP
-  (blocked "Continue") still reveals immediately, unchanged. Also: ~12 ambiguous
-  "X can't be negative" error messages reworded to state the actual range; the step
-  breadcrumb (`ProgressStepper`) is now clickable for completed/current steps; a
-  duplicated tooltip ("EMI start month" / "Moratorium period" shared one entry) split
-  in two; the AMC/CMC blended default now rounds to its own declared decimal
-  precision instead of displaying `4.90625`; the Excel export now receives
-  `{hospitalName, equipmentCategory}` (previously only Word did) and personalizes its
-  Assumptions-sheet title; all three export filenames now include hospital + equipment
-  + date instead of a shared hardcoded name (previously colliding — confirmed
-  empirically as `Financial Model.xlsx` / `Financial Model (1).xlsx` in `~/Downloads`).
-- **Round 2 (Jay reviewed the flagged writeup and approved all three — see ISS-31/32/33
-  in `ISSUES.md`'s Resolved section for full detail):** (1) **the data-corruption bug**
-  — `equipmentDefaults.ts` always divided `purchaseCost.typical` by one crore assuming
-  raw INR, but Cath Lab's/Dialysis's equipment-data files declare Crore/Lakh units
-  respectively (Cath Lab loaded `9e-7` instead of ₹9 Cr). Fixed with a
-  `toCanonicalCrore()` helper that branches on the file's own declared unit — restores
-  the already-cited S13 figure, invents nothing new. (2) Advanced Mode's silent
-  recompute — the maintenance-cost and usage-per-day precedence switches now gate on
-  `state.touched["advanced.E.cmcYears"]` / `state.touched["advanced.B.
-  expectedMatureUtilization"]` (the same `touched` map used everywhere else in the
-  wizard) instead of on `advancedOpen` alone, so opening the panel with zero new input
-  no longer changes the score. (3) equipment-switch mid-draft now requires a second
-  confirming click (`app/(assessment)/assess/page.tsx`), mirroring `StartOver.tsx`'s
-  existing pattern, before overwriting already-answered cost/usage fields.
-- **Verification:** 271 tests passing (up from 255 at session start), clean
-  `tsc --noEmit`, clean static-export build. Every fix live-re-verified in the browser
-  against its original repro, including a full MRI→Cath Lab equipment-switch flow
-  confirming Purchase Cost now loads as `9` (Crore) not `9e-7`, and confirming the
-  Payback/score figure is byte-identical before and after opening Advanced Mode until
-  a field is actually edited.
+A blocked Basic-mode Continue is now always explained. The root cause was the wizard's
+validation gate, not a network or calculation failure: invalid state correctly withheld
+navigation, but feedback could be off-screen or inside collapsed Advanced Mode, and
+entered optional fields were skipped by the step gate entirely. Invalid Continue
+actions now remain operable, reveal every affected inline error, and show a focused
+summary beside the navigation buttons with the blocking step/field and a **Take me
+there** action. That action navigates across steps when needed, opens the correct
+Advanced topic without changing formula precedence, and scrolls/focuses the field.
 
-**The warm-beige "calm clinical intelligence" redesign and Phase 7's results dashboard
-depth are both implemented and verified live.** The canonical calculation pipeline and
-Crore-based financial contracts are unchanged throughout.
+Lakh/Crore selection now treats the visible number as the source of truth for both
+Purchase cost and Installation/civil cost. Typing 2 and changing the unit leaves 2 in
+the input while updating the canonical Crore value to match the newly selected meaning.
 
-- `/` has a decision-led hero, a compact model-coverage strip, a three-step story, a
-  legible Basic/Advanced comparison, concise role cards, and a final CTA. Landing-only
-  rules live in `app/landing.css`. Purpose-made CT and COO assets are in
-  `public/design/hero-ct-suite-v2.png` and
-  `public/people-personas/05-operations-head-coo-v2.png`.
-- `/assess` collects hospital name and carries the selected equipment into the hospital
-  profile stage. Investment supports independent Lakh/Crore display units for purchase
-  and civil cost while persisting canonical Crore values. Usage and costs are grouped
-  by meaning. Required-field errors are gated behind touch/attempt
-  (`app/forms/useFieldController.ts`'s `touched || attempted` check, driving every
-  field's `data-invalid` — confirmed via direct DOM inspection, not just visually, that
-  a fresh untouched load never sets `data-invalid="true"`); a blocked "Next"/"Begin the
-  assessment" reveals every blocked field on that step via `ATTEMPT_STEP`.
-- Basic completion offers two explicit paths. Advanced Mode is a six-topic workspace
-  with one active topic; payer assumptions use a compact table. Help and Methodology no
-  longer expose repository/code language; Methodology is a two-column doc layout with
-  its own sticky table of contents (`app/methodology/page.tsx`).
-- A blocked **Continue with Basic** no longer fails silently when the missing required
-  value lives in a collapsed Advanced topic (for example, Loan mode with no Down
-  payment). `StepNav` dispatches `REQUEST_ADVANCED_FOCUS`; `AdvancedPanel` opens without
-  opting the calculation into Advanced precedence, selects the owning topic, focuses
-  the field, and shows its existing validation message. This fix is on `main` via PR
-  #14; the live domain still serves the migrated app's pre-fix JavaScript bundle.
-- `/results` leads with a human outlook, score, NPV/IRR/payback, and supporting
-  metrics, then **Phase 7's new depth**: a break-even comparison bar
-  (`app/charts/BreakEvenBar.tsx`), a cumulative cash-flow bar chart
-  (`app/charts/CashFlowChart.tsx`, fed by the new pure `cumulativeCashFlowSeries`
-  in `formulas/roi.ts` — never recomputed in the component, per CONVENTIONS.md §3), a
-  data-driven risk callout (`app/components/RiskCallout.tsx`) that reuses
-  `investmentOutlookScore.ts`'s own 55-point "Moderate" floor to decide which
-  sub-scores get called out, plus a working-capital-gap timing note, and a collapsed-
-  by-default **"Adjust the assumptions that move this the most"** quick-settings panel
-  (`app/components/ResultsQuickSettings.tsx`) — Discount Rate, Target Hurdle IRR, and
-  the active financing rate/rental (Loan interest rate, Lease rental, or a plain note
-  for Cash), reusing the existing `NumberField` so edits dispatch through the one
-  wizard reducer and `useAssessmentResult` recomputes live with no separate wiring.
-  This is Phase 7's literal "Advanced settings pane" goal line, not just the pre-
-  existing "Open Advanced Mode" link satisfying it by proxy — live-verified in the
-  browser (lowering the discount rate from 12.5% to 8% moved the score from 45/
-  "Caution" to 65/"Moderate" and NPV from −₹9.0L to +₹1.12Cr instantly). All four are
-  pure-presentational/dispatch-only and read `AssessmentResult`/
-  `InvestmentOutlookResult`/the wizard reducer directly — no calculation logic inline.
-- Root verification: **255 tests passing across 39 files, clean TypeScript, clean
-  static-export build.** A Phase 4-D contrast check (computed WCAG contrast ratios via
-  `getComputedStyle`, not eyeballing) found and fixed one real failure: the cash-flow
-  chart's small year labels were `--text-muted` at 3.29:1 against the card background,
-  below the 4.5:1 small-text floor; switched to `--text-secondary` (5.91:1). All other
-  new chart/callout text checked at 5.9:1–14.7:1.
+Cross-field rules now cover per-use costs versus billed price (individual and combined),
+complete/non-decreasing utilization ramps, down payment versus total investment,
+moratorium versus loan tenure, warranty/CMC coverage versus useful life, payer mix
+totaling 100%, and every populated optional/dynamic maintenance input. Exact contracts
+and copy live in `app/forms/wizard-state.md` §2.1 and
+`app/forms/crossFieldValidation.ts`.
 
-**A note on this session's browser QA:** the automation browser has the Dark Reader
-extension active, which repaints every page (confirmed via `data-darkreader-*`
-attributes and a since-superseded false hydration-mismatch console warning it causes).
-Structural/layout/copy/responsive QA in this doc is trustworthy; color/contrast claims
-are based on either (a) a `<meta name="darkreader-lock">` injected via
-`javascript_tool`, which reliably makes Dark Reader release a page for one clean
-render, or (b) direct `getComputedStyle`/CSS-source inspection bypassing the extension
-entirely — never on an un-locked screenshot. Future sessions using `claude-in-chrome`
-for visual QA should do the same, or ask Jay to disable the extension for `localhost`.
+Verification: **279 tests across 41 files pass**, `npm run build` succeeds, and Chrome
+QA reproduced ₹700 billed revenue with ₹800 consumables, confirmed the red inline error,
+Step 3 summary, working Take me there focus, and zero network requests on the blocked
+click; correcting the value then reached a
+fully rendered Results page. Both unit-bearing fields were live-checked in both unit
+directions. The existing unrelated `../.DS_Store` modification was preserved.
 
-**One historical QA note:**
-**The "red validation box before a field is filled" behavior Jay asked to have
-   fixed was already resolved** before this session started — independently, by two
-   different uncommitted/unmerged efforts that both landed on the same touched/attempt
-   gating (see the Change Log entry below for how they were reconciled). This session
-   could not reproduce the bug anywhere in the flow (landing → equipment select →
-   hospital profile → investment currency fields → usage sliders → costs → Advanced
-   payer table, including hard reloads), and confirmed it structurally: every field
-   component keys its red state off the gated `error`/`data-invalid`, never off raw
-   `required`. Re-open if Jay still sees it — that would mean a component or browser
-   this session didn't reach.
-The former scaffold-only deployment is resolved: `capexiq.jaybharti.me` now serves the
-full migrated app from the Personal-Portfolio repository. It is nevertheless behind
-`main`: direct inspection of the live `/assess/costs` JavaScript bundle on 2026-07-15
-showed the pre-PR-#14 `StepNav`/`AdvancedPanel` implementation, with no
-`REQUEST_ADVANCED_FOCUS` path. Live QA still confirmed that the Excel export itself
-downloads successfully; the apparent export miss during automation was a tab/click
-mismatch, not an export-generator defect. Deployment freshness remains ISS-28.
-
-**2026-07-14 session — Phase 8 (Excel/Word/ZIP exports) built, plus Phase 7's last
-open item:**
-- **Chart-level hover tooltips** (the one item Phase 7 was missing) are built:
-  `app/charts/CashFlowChart.tsx`/`BreakEvenBar.tsx` bars are focusable/hoverable marks
-  showing exact value + series label + period, on both mouse hover and keyboard focus,
-  live-verified in a real browser. See `agent-build-plan.md` Phase 7's Do-list.
-- **Phase 8 exports are real**, not stubs: `exports/excel-generator.ts` produces a
-  `.xlsx` with live, embedded formulas (Assumptions/Monthly/Annual Summary/Break-even
-  Analysis/Maintenance Schedule/Charts(data)/Formula Notes tabs) referencing an
-  Assumptions sheet by direct cell address; `exports/word-generator.ts` produces a
-  12-section `.docx`; `exports/zip-generator.ts` bundles both. All three are wired to
-  three new download buttons on `/results` (`app/components/ExportPanel.tsx`), lazy-
-  loading `exceljs`/`docx`/`jszip` on click so the initial page bundle is untouched.
-  Live-verified end to end in a real browser against a real MRI scenario: all three
-  downloads produced correctly-sized, correctly-MIME-typed files with zero console
-  errors.
-- **The formula-correctness verification for Excel is a HyperFormula oracle, not a
-  "does a formula string exist" check** — the exact cell plan
-  (`exports/workbookPlan.ts`) is fed into a real formula-evaluation engine and every
-  evaluated result is checked against `computeAssessment()`/the new
-  `formulas/monthlySeries.ts` across two golden scenarios. This caught two real bugs
-  before they shipped (an unquoted space-containing sheet-name reference, and a
-  missing upper-bound guard on a DSO cash-received lookup that produced `#NUM!` past
-  the useful-life horizon). See `agent-build-plan.md` Phase 8's DoD status for the
-  full verification writeup. **Follow-up (2026-07-14):** LibreOffice is now installed
-  in this environment and was used to actually recalculate a real generated `.xlsx`
-  headlessly (`soffice --convert-to xlsx` with `OOXMLRecalcMode` forced to always-
-  recalculate, since exceljs writes formulas with no cached values and LibreOffice
-  doesn't recalc xlsx on load by default) — its IRR cell matched
-  `computeAssessment()`'s own IRR to ~13 significant digits, independently confirming
-  the HyperFormula oracle's result.
-- **ISS-29 (billed/realized ramp asymmetry) resolved:** `computeAssessment.ts` ramped
-  realized revenue/variable cost by the utilization ramp but never ramped billed
-  revenue — an existing asymmetry this phase's monthly-series work made externally
-  visible for the first time. Jay's decision (2026-07-14, after an advisor pass over
-  three options): ramp billed revenue too, in `formulas/monthlySeries.ts` and
-  `exports/workbookPlan.ts` only — `computeAssessment.ts`'s own flat headline
-  `roiBilled`/`roiRealized`/`annualOperatingSurplus` fields are untouched (they already
-  used flat, unramped figures for both revenue views). See `ISSUES.md` ISS-29.
-- **Chart images (Excel "Charts" tab, Word §8) are deferred, not built** — flagged
-  explicitly in both `report-templates/excel-sheet-structure.md` and
-  `word-report-template.md`, a data table stands in for now. Now that LibreOffice is
-  available, verifying a rasterized image round-trips correctly is unblocked but still
-  not done this session — remains a fast-follow.
-- Verification: 249 tests (up from 203 at Phase 8's start; monthlySeries/workbookPlan/
-  excel-generator/word-generator/zip-generator/chart-tooltip tests all new, plus the
-  ISS-29 fix's updated ramp assertions), clean `tsc --noEmit`, clean static-export
-  `npm run build` (confirmed via build output that exceljs/docx/jszip stay in lazy
-  chunks — `/results` grew ~1KB, not the ~1MB+ eager-bundling would add).
-
-**Next:** ISS-31/32/33 are resolved (see above and ISSUES.md's Resolved section) —
-Jay still needs to merge PR `qol-input-validation-and-export-personalization`. A
-visual QA pass across the remaining equipment types (CT, Ultrasound) and a Strong/Weak
-outcome (only MRI and, this session, Cath Lab have been live-tested) remains open.
-Phase 8's remaining fast-follow is chart images (now unblocked by LibreOffice being
-available, but not yet built). Phase 9 (sensitivity/scenario comparison) hasn't been
-started. A dedicated real-user copy pass and the Dark-Reader-free device QA pass noted
-above remain open. This session's `resize_window` calls did not actually change the
-browser viewport (`window.innerWidth` stayed at 1470 despite requesting 390px) — mobile/
-responsive QA is still untested by any live browser session, not just deferred. Do not
-return Advanced Mode to a six-group continuous scroll, expose internal field/formula
-identifiers in public UI, or fix the stale live-deploy issue without checking with Jay
-first (it may be intentional, e.g. mid-migration).
+**Next:** deploy current `main` to the Cloudflare Pages project serving
+`capexiq.jaybharti.me` (ISS-28) before considering Pallavi's production incident
+closed. Phase 8 chart images and Phase 9 sensitivity/scenario comparison remain future
+work.
 
 ---
 
@@ -236,6 +77,27 @@ before <date>.` This keeps HANDOFF.md fast to read no matter how old the project
 ## Change Log
 
 *(most recent first)*
+
+### 2026-07-22 — Pallavi's Basic-mode blocker fixed: guided validation + literal unit switching
+**Diagnosis:** the blocked click was a validation gate, not a request/calculation
+failure. Existing recovery covered one hidden Advanced-required-field case, but the
+button still had no nearby explanation, `aria-disabled` made an intentionally
+actionable validation control semantically inert, and populated optional fields were
+not included in the gate. Unit buttons also converted the displayed amount instead of
+preserving what the user typed.
+
+**Changes:** added `crossFieldValidation.ts`; expanded step validation to all populated
+fields and dynamic maintenance years; added cross-field rules documented in
+`wizard-state.md` §2.1; added the Step/field summary and Take me there routing/focus;
+made invalid Continue buttons real actions; and made both Lakh/Crore selectors preserve
+the literal typed number while updating canonical Crore state.
+
+**Verification:** 279/279 tests pass and the production build succeeds. In Chrome,
+₹700 billed revenue + ₹800 consumables produced the expected red inline error and
+Step 3 summary; Take me there focused `basic.consumableCostPerUse`; DevTools captured
+zero network requests for the blocked click; correcting to ₹500 removed the summary
+and rendered `/results`. Purchase and installation values both stayed `2` through
+Lakh↔Crore switches.
 
 ### 2026-07-16 (round 2, same session) — ISS-31/32/33 approved and fixed: Cath Lab data corruption, Advanced Mode silent recompute, equipment-switch overwrite
 **What happened:** immediately after the round-1 QA/fix session below and its PR, Jay

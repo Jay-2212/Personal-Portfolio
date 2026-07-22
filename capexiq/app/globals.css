@@ -1216,7 +1216,15 @@ a { color: var(--accent-interactive); }
 .smart-input-notice > svg { flex-shrink:0; margin-top:2px; color:var(--status-caution); }
 .smart-input-notice span { font-size:13px; line-height:1.55; color:#3a3936; }
 .smart-input-notice + .smart-input-notice { margin-top:12px; }
-.step-nav { justify-content:space-between; align-items:center; margin-top:28px; }
+.step-nav-wrap { margin-top:28px; }
+.step-nav { justify-content:space-between; align-items:center; }
+.validation-summary { display:flex; justify-content:space-between; gap:20px; align-items:center; margin-bottom:14px; padding:16px 18px; border:1px solid var(--status-risk); border-radius:14px; background:var(--status-risk-bg); color:var(--text-primary); }
+.validation-summary:focus { outline:3px solid color-mix(in srgb,var(--status-risk) 28%,transparent); outline-offset:2px; }
+.validation-summary strong { color:var(--status-risk); font-size:14px; }
+.validation-summary p { margin:4px 0 0; font-size:13px; line-height:1.45; }
+.validation-summary .button { flex-shrink:0; }
+.payer-table__field { min-width:110px; }
+.payer-table__cell-error { display:block; max-width:170px; margin-top:4px; color:var(--status-risk); font-size:10px; line-height:1.25; }
 
 /* Basic / Advanced decision and focused workspace */
 .advanced-panel { margin-top:34px; padding:0; border:0; }
