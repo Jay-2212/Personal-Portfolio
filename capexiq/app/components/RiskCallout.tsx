@@ -2,7 +2,7 @@
 
 // Phase 7 — risk callout. Every number here is read directly off AssessmentResult /
 // InvestmentOutlookResult (formulas/investmentOutlookScore.ts, formulas/
-// workingCapitalPeak.ts) — this only turns already-computed sub-scores into plain
+// the canonical cash-flow spine) — this only turns already-computed sub-scores into plain
 // language, never a second scoring pass (CONVENTIONS.md §3). The 55-point threshold
 // below reuses investmentOutlookScore.ts's own "Moderate" floor rather than inventing
 // a separate cutoff, so a sub-score is only called out here when it would itself pull

@@ -120,10 +120,8 @@ export function emptyWizardState(): WizardState {
       F: {
         discountRate: null,
         targetIrr: null,
-        inflationRate: null,
         usefulLifeYears: null,
         salvageValuePercentage: null,
-        depreciationMethod: "Straight-line",
         priceEscalationPct: null,
         costEscalationPct: null,
       },

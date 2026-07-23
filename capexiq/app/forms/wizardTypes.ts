@@ -89,10 +89,8 @@ export interface AdvancedGroupE {
 export interface AdvancedGroupF {
   discountRate: number | null;
   targetIrr: number | null;
-  inflationRate: number | null;
   usefulLifeYears: number | null;
   salvageValuePercentage: number | null;
-  depreciationMethod: "Straight-line";
   priceEscalationPct: number | null;
   costEscalationPct: number | null;
 }

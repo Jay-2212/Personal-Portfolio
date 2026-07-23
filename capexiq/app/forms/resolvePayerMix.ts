@@ -1,10 +1,7 @@
 // Resolves WizardState's Advanced Group A payer-mix fields into the AssessmentPayer[]
-// shape formulas/computeAssessment.ts expects — SPEC.md §14.3's "Basic Mode calculates
-// first-pass billed revenue; Advanced Mode models net realization and collection
-// timing." advanced.A is always populated with a valid default (100% private cash,
-// see initialState.ts's defaultPayerMixShare) whether or not the Advanced panel has
-// ever been opened, so this function never branches on advancedOpen — one code path,
-// same as every other field.
+// shape formulas/computeAssessment.ts expects. Basic Mode is an explicit 100% cash,
+// 100%-realization, zero-DSO case. Active Advanced Mode uses the entered payer
+// waterfall; closing it deactivates those overrides without deleting them.
 //
 // Realization/claim-deduction combination rule (ISS-17, resolved 2026-07-13 — Opus
 // advisor pass, no product decision needed): this is a standard healthcare

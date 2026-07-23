@@ -74,6 +74,27 @@ describe("generateExcelWorkbook", () => {
     expect(assumptions.getCell("B2").formula).toBeUndefined();
   });
 
+  it("applies Indian-grouped whole-rupee, one-decimal percentage, and count formats", async () => {
+    const result = computeAssessment(inputs);
+    const buffer = await generateExcelWorkbook(inputs, result);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(Buffer.from(buffer) as any);
+
+    const assumptions = workbook.getWorksheet("Assumptions")!;
+    expect(assumptions.getCell("B2").numFmt).toContain("#,##,##0");
+    const discountRow = assumptions
+      .getRows(1, 80)!
+      .find((row) => row.getCell("A").value === "Discount rate (%)")!;
+    expect(discountRow.getCell("B").numFmt).toBe("0.0");
+
+    const monthly = workbook.getWorksheet("Monthly")!;
+    expect(monthly.getCell("C2").numFmt).toContain("#,##,##0");
+    expect(monthly.getCell("D2").numFmt).toBe("0.0%");
+
+    const maintenance = workbook.getWorksheet("Maintenance Schedule")!;
+    expect(maintenance.getCell("C2").numFmt).toContain("#,##,##0");
+  });
+
   it("never throws for an unreachable break-even (undefined contribution margin)", async () => {
     const lossyInputs: AssessmentInputs = { ...inputs, variableCostPerUse: 10_000 };
     const result = computeAssessment(lossyInputs);

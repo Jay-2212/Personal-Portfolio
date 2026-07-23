@@ -9,6 +9,11 @@ Ships as an appendix on the Word report and as the "Formulas" sheet in the Excel
 export, so a CFO or auditor can trace any headline number back to its exact
 calculation without reading TypeScript.
 
+All formulas retain full numeric precision. Display rounding follows `SPEC.md`: whole
+rupees with Indian grouping, percentages to one decimal, measured counts/years to one
+decimal, and whole numbers for integer counts. Rounding is never fed back into a
+calculation.
+
 ---
 
 ## 1. Revenue

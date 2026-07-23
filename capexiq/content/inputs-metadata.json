@@ -666,7 +666,7 @@
       },
       "inflationRate": {
         "label": "Inflation rate",
-        "controlType": "input",
+        "controlType": "reserved",
         "type": "percentage",
         "unit": "% p.a.",
         "min": 0,
@@ -674,7 +674,7 @@
         "decimalPlaces": 2,
         "allowNegative": false,
         "required": false,
-        "note": "Not yet consumed by any formula in this version — collected for future use.",
+        "note": "Reserved for a future general-inflation model. Not rendered; use the active price, cost, and maintenance escalation fields instead.",
         "errorMessage": "Enter a value between 0% and 20%.",
         "tooltipKey": "Inflation rate"
       },
@@ -712,7 +712,7 @@
         "options": ["Straight-line"],
         "required": true,
         "default": "Straight-line",
-        "note": "Only method supported in v1 — field exists for future extensibility, not currently a real choice.",
+        "note": "Straight-line is the fixed v1 method. This is not rendered as a one-option control.",
         "tooltipKey": "Depreciation method"
       },
       "taxAssumptions": {
@@ -733,7 +733,7 @@
         "decimalPlaces": 1,
         "allowNegative": false,
         "required": false,
-        "note": "Not yet consumed by any formula in this version — distinct from the automatic actionable-insight engine's own tariff-increase testing (financial-model-spec.md §4).",
+        "note": "Compounds billed and realized revenue once per operating year while Advanced Mode is active.",
         "errorMessage": "Enter a value between 0% and 20%.",
         "tooltipKey": "Price escalation / Cost escalation"
       },
@@ -747,7 +747,7 @@
         "decimalPlaces": 1,
         "allowNegative": false,
         "required": false,
-        "note": "Not yet consumed by any formula in this version.",
+        "note": "Compounds variable cost, fixed cost, and major replacement once per operating year while Advanced Mode is active.",
         "errorMessage": "Enter a value between 0% and 20%.",
         "tooltipKey": "Price escalation / Cost escalation"
       },

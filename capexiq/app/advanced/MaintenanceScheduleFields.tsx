@@ -3,9 +3,8 @@
 // AMC/CMC cost by year — the one field whose length depends on another field's value
 // (advanced.F.usefulLifeYears), so it uses the reducer's dedicated
 // SET_MAINTENANCE_SCHEDULE_YEAR action rather than the generic dotted-path setter
-// (wizard-state.md §5). Optional stepped-schedule override of
-// basic.amcCmcCostPostWarranty — not yet consumed by the canonical pipeline (see
-// toAssessmentInputs.ts), collected here for a future pass.
+// (wizard-state.md §5). This optional schedule overrides the standard warranty →
+// CMC → AMC ladder for each populated operating year.
 
 import { useWizard } from "../forms/WizardContext";
 import { getFieldDefinition } from "../forms/fieldSchema";

@@ -64,7 +64,7 @@ export default function ResultsPage() {
           <div><dt>Initial equity outlay</dt><dd>{formatInr(result.initialEquityOutlay)}</dd></div>
           <div><dt>ROI · cash-flow view</dt><dd>{formatPercent(result.roiCashFlow)}</dd></div>
           <div><dt>Discounted payback</dt><dd>{result.discountedPaybackYears === null ? "Beyond useful life" : formatYears(result.discountedPaybackYears)}</dd></div>
-          <div><dt>Break-even activity</dt><dd>{result.breakEvenUsagePerDay === null ? "Not achievable" : `${result.breakEvenUsagePerDay.toFixed(1)} / day`}</dd></div>
+          <div><dt>Break-even activity</dt><dd>{result.breakEvenUsagePerDay === null ? "Not achievable" : `${formatNumber(result.breakEvenUsagePerDay, 1)} / day`}</dd></div>
           <div><dt>Equivalent annual cost</dt><dd>{formatInr(result.eac)}</dd></div>
           <div>
             <dt>IRR vs target</dt>

@@ -1,10 +1,16 @@
-// Indian digit grouping and currency formatting — ux-product-spec.md §10.5 (UI
-// assurance audit F9): lakh/crore grouping via Intl.NumberFormat('en-IN'), a leading
-// minus sign for negatives (never accounting-style parentheses), full figures
-// everywhere except compact dashboard metric callouts (which this module doesn't
-// provide — that's a Phase 7 concern for the large mono metric cards specifically).
+// Shared display policy: Indian grouping, whole rupees, one decimal for percentages
+// and measured counts, and explicit non-finite sentinels. Calculations retain full
+// precision; rounding happens only at presentation boundaries.
+
+export const DISPLAY_PRECISION = {
+  currency: 0,
+  percentage: 1,
+  count: 1,
+  compactCurrency: 1,
+} as const;
 
 const inrFormatter = new Intl.NumberFormat("en-IN", {
+  minimumFractionDigits: DISPLAY_PRECISION.currency,
   maximumFractionDigits: 0,
 });
 
@@ -22,27 +28,31 @@ export function formatNumber(value: number, decimalPlaces = 0): string {
   }).format(value);
 }
 
-export function formatPercent(value: number, decimalPlaces = 1): string {
+export function formatPercent(
+  value: number,
+  decimalPlaces = DISPLAY_PRECISION.percentage
+): string {
   return `${formatNumber(value, decimalPlaces)}%`;
 }
 
 export function formatYears(value: number): string {
   if (!Number.isFinite(value)) return "Never (within useful life)";
-  return `${formatNumber(value, 1)} yr`;
+  return `${formatNumber(value, DISPLAY_PRECISION.count)} yr`;
 }
 
 const CRORE = 1e7;
 const LAKH = 1e5;
 
-/** Lakh/Crore-compact form for the Phase 7 chart axis labels this module's own header
- *  comment flagged as outstanding — e.g. "₹1.4 Cr", "₹18L". Values under a lakh fall
- *  back to formatInr's full-figure form since a compact unit would be meaningless
- *  (and misleadingly imprecise) at that scale. */
+/** Compact chart form; exact values remain available in chart detail/table views. */
 export function formatInrCompact(value: number): string {
   if (!Number.isFinite(value)) return value === Infinity ? "∞" : "Unavailable";
   const sign = value < 0 ? "−" : "";
   const abs = Math.abs(value);
-  if (abs >= CRORE) return `${sign}₹${formatNumber(abs / CRORE, 2)} Cr`;
-  if (abs >= LAKH) return `${sign}₹${formatNumber(abs / LAKH, 2)} L`;
+  if (abs >= CRORE) {
+    return `${sign}₹${formatNumber(abs / CRORE, DISPLAY_PRECISION.compactCurrency)} Cr`;
+  }
+  if (abs >= LAKH) {
+    return `${sign}₹${formatNumber(abs / LAKH, DISPLAY_PRECISION.compactCurrency)} L`;
+  }
   return formatInr(value);
 }

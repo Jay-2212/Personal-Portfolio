@@ -7,36 +7,8 @@
 // already resolves this via isFieldRequired(), so this component doesn't special-case
 // it.
 
-import { AlertTriangle } from "lucide-react";
 import { useWizard } from "../forms/WizardContext";
 import { FieldRenderer } from "../components/FieldRenderer";
-import { formatNumber } from "../components/formatting";
-
-function LoanLeaseTenureNotice() {
-  const { state } = useWizard();
-  const { acquisitionMode } = state.basic;
-  const usefulLifeYears = state.advanced.F.usefulLifeYears;
-  const tenureMonths =
-    acquisitionMode === "Loan"
-      ? state.advanced.C.loanTenureMonths
-      : acquisitionMode === "Lease"
-        ? state.advanced.C.leaseTenureMonths
-        : null;
-  if (usefulLifeYears === null || tenureMonths === null) return null;
-  const usefulLifeMonths = usefulLifeYears * 12;
-  if (tenureMonths <= usefulLifeMonths) return null;
-  const label = acquisitionMode === "Loan" ? "Loan tenure" : "Lease tenure";
-  return (
-    <div className="smart-input-notice" role="status">
-      <AlertTriangle aria-hidden="true" size={16} />
-      <span>
-        {label} ({tenureMonths} months) runs longer than the equipment&apos;s useful life
-        ({usefulLifeYears} years, {usefulLifeMonths} months) — worth double-checking these
-        numbers.
-      </span>
-    </div>
-  );
-}
 
 export function GroupC() {
   const { state } = useWizard();
@@ -67,7 +39,6 @@ export function GroupC() {
           <FieldRenderer path="advanced.C.leaseTenureMonths" />
         </>
       )}
-      <LoanLeaseTenureNotice />
     </fieldset>
   );
 }

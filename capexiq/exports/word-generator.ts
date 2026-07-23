@@ -11,7 +11,12 @@ import { Document, HeadingLevel, Packer, Paragraph, Table, TableCell, TableRow, 
 import type { AssessmentInputs, AssessmentResult } from "../formulas/computeAssessment";
 import { cumulativeCashFlowSeries } from "../formulas/roi";
 import { deriveRiskNotes } from "../app/components/riskNotes";
-import { formatInr, formatPercent, formatYears } from "../app/components/formatting";
+import {
+  formatInr,
+  formatNumber,
+  formatPercent,
+  formatYears,
+} from "../app/components/formatting";
 
 const PAYER_LABELS = ["Private cash", "Insurance / TPA", "Corporate credit", "PM-JAY / government", "Other"];
 
@@ -148,7 +153,7 @@ export async function generateWordProposal(
         "IRR vs target",
         result.irrVsTargetPercentagePoints === null
           ? "Unavailable"
-          : `${result.irrVsTargetPercentagePoints.toFixed(1)} percentage points`,
+          : `${formatNumber(result.irrVsTargetPercentagePoints, 1)} percentage points`,
       ],
       ["Terminal salvage", formatInr(result.terminalSalvageValue)],
       ["Equivalent annual cost", formatInr(result.eac)],
@@ -189,7 +194,7 @@ export async function generateWordProposal(
         "Break-even usage per day",
         result.breakEvenUsagePerDay === null
           ? "Undefined — never breaks even"
-          : result.breakEvenUsagePerDay.toFixed(1),
+          : formatNumber(result.breakEvenUsagePerDay, 1),
       ],
     ]),
 

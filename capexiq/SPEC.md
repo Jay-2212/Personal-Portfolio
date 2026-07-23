@@ -128,6 +128,14 @@ Use Indian number grouping and `₹`; full values are required in inputs, tables
 labels, and exports. Compact lakh/crore display is allowed only for prominent dashboard
 metrics when the exact value remains accessible.
 
+Presentation rounding never changes model precision. UI and Word currency use Indian
+grouping and whole rupees; Excel uses Indian-grouped whole-rupee number formats.
+Percentages use one decimal place, measured counts and years use one decimal, and
+integer-count fields/month indices remain whole numbers. Compact lakh/crore chart
+labels use one decimal while exact whole-rupee values remain available in chart detail
+or tables. Undefined/non-finite outputs render as an explicit status such as
+`Unavailable`, `Undefined`, or `Never`, never `NaN` or negative infinity.
+
 ## UX and accessibility
 
 The interface is progressive rather than spreadsheet-first: short grouped questions, an

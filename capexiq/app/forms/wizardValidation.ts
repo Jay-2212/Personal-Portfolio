@@ -5,6 +5,7 @@
 import { getFieldDefinition, type FieldDefinition } from "./fieldSchema";
 import { getFieldValue } from "./fieldPath";
 import { crossFieldError } from "./crossFieldValidation";
+import { formatNumber } from "../components/formatting";
 import { PAYER_TYPES, RAMP_PERIODS } from "./payerAndRampKeys";
 import type { FieldValue, WizardState, WizardStep } from "./wizardTypes";
 
@@ -62,7 +63,7 @@ export function payerMixGroupError(state: WizardState): string | null {
     0
   );
   if (Math.abs(total - 100) > 0.05) {
-    return `Payer mix shares must sum to 100% (currently ${total.toFixed(1)}%).`;
+    return `Payer mix shares must sum to 100% (currently ${formatNumber(total, 1)}%).`;
   }
   return null;
 }
@@ -122,7 +123,6 @@ const STEP_FIELD_PATHS: Record<Exclude<WizardStep, "results">, string[]> = {
     "advanced.E.cmcYears",
     "advanced.E.maintenanceInflationPct",
     "advanced.E.majorReplacementCost",
-    "advanced.F.depreciationMethod",
     "advanced.F.priceEscalationPct",
     "advanced.F.costEscalationPct",
   ],

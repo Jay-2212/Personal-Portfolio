@@ -25,6 +25,7 @@ import {
   InvestmentOutlookResult,
 } from "./investmentOutlookScore";
 import { buildMonthlyCashFlowSpine } from "./cashFlowSpine";
+import { workingCapitalGap } from "./workingCapital";
 
 export interface AssessmentPayer {
   payerName: string;
@@ -183,7 +184,10 @@ function peakCollectionGap(
   ) {
     cumulativeRealized += realizedRevenue[monthIndex] ?? 0;
     cumulativeCashReceived += cashReceived[monthIndex] ?? 0;
-    const gap = cumulativeRealized - cumulativeCashReceived;
+    const gap = workingCapitalGap(
+      cumulativeRealized,
+      cumulativeCashReceived
+    );
     if (gap > peakGap) {
       peakGap = gap;
       peakMonthIndex = monthIndex;

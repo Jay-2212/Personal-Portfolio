@@ -27,6 +27,11 @@ financing, lifecycle, escalation, and target-IRR fields are consumed; the unused
 generic inflation control is no longer rendered. Results use canonical mature usage,
 and exports use one validated input/result snapshot and are disabled while stale.
 
+Display formatting is centralized: whole rupees with Indian grouping, one decimal for
+percentages and measured counts, and explicit non-finite statuses. Excel applies
+equivalent number formats. Scenario regressions cover DSO, launch, financing, salvage,
+Advanced activation, and intentional unit reinterpretation.
+
 Recent validation work makes blocked navigation explainable: invalid Continue actions
 reveal errors and a field summary, including Advanced-only blockers; **Take me there**
 navigates, opens the relevant Advanced group without changing formula precedence, and
@@ -45,6 +50,13 @@ Known next work:
 Open/accepted issues belong in `ISSUES.md`; do not recreate an issue list here.
 
 ## Change log
+
+### 2026-07-23 — Formatting and regression cleanup, Phase 3 (Codex run)
+
+**Changed:** standardized UI/Word/Excel/chart precision and Indian grouping; normalized
+maintenance presentation; removed obsolete ramp/working-capital paths and stale
+comments; added end-to-end cash-flow behavior scenarios. **Evidence:** 301 tests and
+TypeScript check pass, and the production build completes successfully.
 
 ### 2026-07-23 — Input activation, validation, and export gates, Phase 2 (Codex run)
 

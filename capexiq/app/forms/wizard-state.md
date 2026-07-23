@@ -420,9 +420,9 @@ localStorage key: "capexiq.wizardDraft.v1"
              preOpeningFixedCosts, workingCapitalBufferAmount */ },
     "E": { "maintenanceCostByYearPct": [ /* array, length = F.usefulLifeYears */ ],
            "maintenanceInflationPct": ..., "majorReplacementCost": ... },
-    "F": { "discountRate": ..., "targetIrr": ..., "inflationRate": ...,
+    "F": { "discountRate": ..., "targetIrr": ...,
            "usefulLifeYears": ..., "salvageValuePercentage": ...,
-           "depreciationMethod": "Straight-line", "priceEscalationPct": ...,
+           "priceEscalationPct": ...,
            "costEscalationPct": ... }
   }
 }
