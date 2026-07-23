@@ -19,6 +19,11 @@ describe("roi", () => {
   it("preserves a negative cash-flow ROI", () => {
     expect(roi(-50000, 1000000, "cash-flow")).toBe(-5);
   });
+
+  it("uses a finite zero sentinel when initial investment is zero", () => {
+    expect(roi(100000, 0, "cash-flow")).toBe(0);
+    expect(roi(-100000, 0, "cash-flow")).toBe(0);
+  });
 });
 
 describe("paybackPeriod", () => {
@@ -37,6 +42,10 @@ describe("paybackPeriod", () => {
 });
 
 describe("paybackPeriodFromCashFlows", () => {
+  it("treats zero initial investment as immediate payback", () => {
+    expect(paybackPeriodFromCashFlows(0, [-100, 200])).toBe(0);
+  });
+
   it("interpolates within the year that cumulative cash flow repays investment", () => {
     expect(paybackPeriodFromCashFlows(1000, [200, 400, 800])).toBe(2.5);
   });

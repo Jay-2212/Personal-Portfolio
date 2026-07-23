@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 import { discountedPaybackPeriod } from "../../formulas/discountedPayback";
 
 describe("discountedPaybackPeriod", () => {
+  it("treats zero initial investment as immediate payback", () => {
+    expect(discountedPaybackPeriod(0, [-100, 200], 10)).toBe(0);
+  });
+
   it("interpolates a clean round-number zero-discount case", () => {
     expect(discountedPaybackPeriod(1000, [400, 400, 400], 0)).toBe(2.5);
   });

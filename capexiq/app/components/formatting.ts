@@ -9,13 +9,13 @@ const inrFormatter = new Intl.NumberFormat("en-IN", {
 });
 
 export function formatInr(value: number): string {
-  if (!Number.isFinite(value)) return value > 0 ? "∞" : "−∞";
+  if (!Number.isFinite(value)) return value === Infinity ? "∞" : "Unavailable";
   const sign = value < 0 ? "−" : "";
   return `${sign}₹${inrFormatter.format(Math.abs(value))}`;
 }
 
 export function formatNumber(value: number, decimalPlaces = 0): string {
-  if (!Number.isFinite(value)) return value > 0 ? "∞" : "−∞";
+  if (!Number.isFinite(value)) return value === Infinity ? "∞" : "Unavailable";
   return new Intl.NumberFormat("en-IN", {
     minimumFractionDigits: decimalPlaces,
     maximumFractionDigits: decimalPlaces,
@@ -39,7 +39,7 @@ const LAKH = 1e5;
  *  back to formatInr's full-figure form since a compact unit would be meaningless
  *  (and misleadingly imprecise) at that scale. */
 export function formatInrCompact(value: number): string {
-  if (!Number.isFinite(value)) return value > 0 ? "∞" : "−∞";
+  if (!Number.isFinite(value)) return value === Infinity ? "∞" : "Unavailable";
   const sign = value < 0 ? "−" : "";
   const abs = Math.abs(value);
   if (abs >= CRORE) return `${sign}₹${formatNumber(abs / CRORE, 2)} Cr`;

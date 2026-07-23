@@ -23,6 +23,6 @@ describe("formatInrCompact", () => {
 
   it("preserves the infinite-value fallback", () => {
     expect(formatInrCompact(Infinity)).toBe("∞");
-    expect(formatInrCompact(-Infinity)).toBe("−∞");
+    expect(formatInrCompact(-Infinity)).toBe("Unavailable");
   });
 });

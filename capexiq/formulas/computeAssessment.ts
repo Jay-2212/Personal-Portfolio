@@ -101,6 +101,9 @@ export interface AssessmentInputs {
   launchDelayMonths?: number;
   preOpeningFixedCosts?: number;
   workingCapitalBufferAmount?: number;
+  priceEscalationRate?: number;
+  costEscalationRate?: number;
+  targetIrr?: number;
 }
 
 export interface AssessmentResult {
@@ -134,6 +137,8 @@ export interface AssessmentResult {
   processingCharges: number;
   terminalSalvageValue: number;
   monthlyNetCashFlowsAfterFinancing: number[];
+  targetIrr: number | null;
+  irrVsTargetPercentagePoints: number | null;
 }
 
 function sumRange(series: number[], start: number, length: number): number {
@@ -155,7 +160,8 @@ function annualizedIrrFromMonthly(
 ): number | null {
   try {
     const monthlyIrr = irr(initialOutlay, monthlyCashFlows);
-    return ((1 + monthlyIrr / 100) ** 12 - 1) * 100;
+    const annualized = ((1 + monthlyIrr / 100) ** 12 - 1) * 100;
+    return Number.isFinite(annualized) ? annualized : null;
   } catch {
     return null;
   }
@@ -245,11 +251,17 @@ export function computeAssessment(
   const maintenanceSchedule: MaintenanceScheduleEntry[] = baseMaintenanceSchedule.map(
     (entry, yearIndex) => {
       const overridePct = inputs.maintenance.costByYearPct?.[yearIndex];
-      if (overridePct === null || overridePct === undefined) return entry;
       return {
         yearNumber: entry.yearNumber,
-        coverageType: "override",
-        annualCost: (overridePct / 100) * inputs.purchaseCost,
+        coverageType:
+          overridePct === null || overridePct === undefined
+            ? entry.coverageType
+            : "override",
+        annualCost:
+          (overridePct === null || overridePct === undefined
+            ? entry.annualCost
+            : (overridePct / 100) * inputs.purchaseCost) *
+          (1 + (inputs.maintenance.inflationRate ?? 0) / 100) ** yearIndex,
       };
     }
   );
@@ -386,5 +398,10 @@ export function computeAssessment(
     terminalSalvageValue: spine.terminalSalvageValue,
     monthlyNetCashFlowsAfterFinancing:
       spine.monthlyNetCashFlowAfterFinancing,
+    targetIrr: inputs.targetIrr ?? null,
+    irrVsTargetPercentagePoints:
+      irrResult === null || inputs.targetIrr === undefined
+        ? null
+        : irrResult - inputs.targetIrr,
   };
 }

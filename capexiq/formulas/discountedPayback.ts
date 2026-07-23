@@ -5,6 +5,7 @@ export function discountedPaybackPeriod(
   cashFlowsByYear: number[],
   discountRate: number
 ): number | null {
+  if (initialInvestment <= 0) return 0;
   let cumulativeDiscountedCashFlow = 0;
 
   for (let yearIndex = 0; yearIndex < cashFlowsByYear.length; yearIndex += 1) {

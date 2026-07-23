@@ -65,12 +65,35 @@ export function crossFieldError(path: string, state: WizardState): string | null
     }
   }
 
-  if (path === "advanced.C.moratoriumPeriodMonths") {
+  if (
+    path === "advanced.C.moratoriumPeriodMonths" ||
+    path === "advanced.C.loanTenureMonths"
+  ) {
     const moratorium = state.advanced.C.moratoriumPeriodMonths;
     const tenure = state.advanced.C.loanTenureMonths;
     if (moratorium !== null && tenure !== null && moratorium > tenure) {
       return "Moratorium period cannot exceed the loan tenure.";
     }
+  }
+
+  const usefulLifeMonths = (state.advanced.F.usefulLifeYears ?? 0) * 12;
+  if (
+    path === "advanced.C.loanTenureMonths" &&
+    state.basic.acquisitionMode === "Loan" &&
+    state.advanced.C.loanTenureMonths !== null &&
+    usefulLifeMonths > 0 &&
+    state.advanced.C.loanTenureMonths > usefulLifeMonths
+  ) {
+    return "Loan tenure cannot exceed the equipment's useful life.";
+  }
+  if (
+    path === "advanced.C.leaseTenureMonths" &&
+    state.basic.acquisitionMode === "Lease" &&
+    state.advanced.C.leaseTenureMonths !== null &&
+    usefulLifeMonths > 0 &&
+    state.advanced.C.leaseTenureMonths > usefulLifeMonths
+  ) {
+    return "Lease tenure cannot exceed the equipment's useful life.";
   }
 
   const warranty = state.basic.warrantyYears;

@@ -15,6 +15,7 @@ const CRORE = 10_000_000;
 
 export function toAssessmentInputs(state: WizardState): AssessmentInputs {
   const { basic, advanced, preStep } = state;
+  const advancedActive = state.advancedOpen;
   const purchaseCost = (basic.purchaseCost ?? 0) * CRORE;
   const installationCost = (basic.installationCost ?? 0) * CRORE;
   const usefulLifeYears = advanced.F.usefulLifeYears ?? 1;
@@ -39,7 +40,8 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
   // (only relevant once acquisition mode is Loan/Lease): Advanced precedence should
   // require the user to have actually done something in that group, not merely opened
   // the panel.
-  const cmcYearsTouched = state.touched["advanced.E.cmcYears"] === true;
+  const cmcYearsTouched =
+    advancedActive && state.touched["advanced.E.cmcYears"] === true;
 
   if (!cmcYearsTouched) {
     // Basic Mode's flat blended rate for the whole post-warranty period
@@ -68,10 +70,16 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
           downPayment: (advanced.C.downPayment ?? 0) * CRORE,
           interestRate: advanced.C.loanInterestRate ?? 0,
           tenureMonths: advanced.C.loanTenureMonths ?? 1,
-          processingChargesPct: advanced.C.processingChargesPct ?? 0,
+          processingChargesPct: advancedActive
+            ? (advanced.C.processingChargesPct ?? 0)
+            : 0,
           emiStartMonth:
-            advanced.C.emiStartMonth ?? basic.launchDelayMonths ?? 0,
-          moratoriumPeriodMonths: advanced.C.moratoriumPeriodMonths ?? 0,
+            advancedActive
+              ? (advanced.C.emiStartMonth ?? basic.launchDelayMonths ?? 0)
+              : (basic.launchDelayMonths ?? 0),
+          moratoriumPeriodMonths: advancedActive
+            ? (advanced.C.moratoriumPeriodMonths ?? 0)
+            : 0,
         }
       : basic.acquisitionMode === "Lease"
         ? {
@@ -93,7 +101,8 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
   // all. Basic-Mode-only users, and Advanced-Mode users who haven't edited this
   // specific field, are both unaffected.
   const usagePerDay =
-    (state.touched["advanced.B.expectedMatureUtilization"] === true
+    (advancedActive &&
+    state.touched["advanced.B.expectedMatureUtilization"] === true
       ? advanced.B.expectedMatureUtilization
       : null) ??
     basic.usagePerDay ??
@@ -103,7 +112,7 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
   // ramp isn't a meaningful schedule, and Basic Mode never populates any of these, so
   // this correctly stays undefined (flat mature usage) for the common case.
   const rampPct = advanced.B.utilizationRampPct;
-  const hasFullRamp = RAMP_PERIODS.every(
+  const hasFullRamp = advancedActive && RAMP_PERIODS.every(
     (period) => rampPct[period.suffix] !== null && rampPct[period.suffix] !== undefined
   );
   const utilizationRamp: UtilizationRampUp | undefined = hasFullRamp
@@ -114,6 +123,27 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
         year2PlusPct: rampPct.year2Plus ?? 0,
       }
     : undefined;
+
+  const launchDurationPaths = [
+    "civilWorkDurationMonths",
+    "installationDurationMonths",
+    "licensingApprovalDurationMonths",
+    "trainingCommissioningDurationMonths",
+  ] as const;
+  const hasLaunchBreakdown =
+    advancedActive &&
+    launchDurationPaths.some(
+      (field) => state.touched[`advanced.D.${field}`] === true
+    );
+  const launchDelayMonths = hasLaunchBreakdown
+    ? launchDurationPaths.reduce(
+        (total, field) => total + (advanced.D[field] ?? 0),
+        0
+      )
+    : (basic.launchDelayMonths ?? 0);
+  const hasMaintenanceOverride =
+    advancedActive &&
+    advanced.E.maintenanceCostByYearPct.some((value) => value !== null);
 
   return {
     purchaseCost,
@@ -135,17 +165,34 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
       cmcYears,
       cmcAnnualCost,
       amcAnnualCost,
-      costByYearPct: advanced.E.maintenanceCostByYearPct,
-      inflationRate: advanced.E.maintenanceInflationPct ?? 0,
-      majorReplacementCost: advanced.E.majorReplacementCost ?? 0,
+      costByYearPct: hasMaintenanceOverride
+        ? advanced.E.maintenanceCostByYearPct
+        : undefined,
+      inflationRate: advancedActive
+        ? (advanced.E.maintenanceInflationPct ?? 0)
+        : 0,
+      majorReplacementCost: advancedActive
+        ? (advanced.E.majorReplacementCost ?? 0)
+        : 0,
     },
     usefulLifeYears,
     discountRate: advanced.F.discountRate ?? 12.5,
     salvageValuePercentage: advanced.F.salvageValuePercentage ?? 0,
     utilizationRamp,
-    launchDelayMonths: basic.launchDelayMonths ?? 0,
-    preOpeningFixedCosts: advanced.D.preOpeningFixedCosts ?? 0,
+    launchDelayMonths,
+    preOpeningFixedCosts: advancedActive
+      ? (advanced.D.preOpeningFixedCosts ?? 0)
+      : 0,
     workingCapitalBufferAmount:
-      advanced.D.workingCapitalBufferAmount ?? 0,
+      advancedActive
+        ? (advanced.D.workingCapitalBufferAmount ?? 0)
+        : 0,
+    priceEscalationRate: advancedActive
+      ? (advanced.F.priceEscalationPct ?? 0)
+      : 0,
+    costEscalationRate: advancedActive
+      ? (advanced.F.costEscalationPct ?? 0)
+      : 0,
+    targetIrr: advanced.F.targetIrr ?? undefined,
   };
 }

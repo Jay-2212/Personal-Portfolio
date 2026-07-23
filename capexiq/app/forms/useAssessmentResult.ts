@@ -7,34 +7,43 @@
 // independently-recalculated copy (CONVENTIONS.md §3).
 
 import { useMemo, useRef } from "react";
-import { computeAssessment, type AssessmentResult } from "@/formulas/computeAssessment";
+import {
+  computeAssessment,
+  type AssessmentInputs,
+  type AssessmentResult,
+} from "@/formulas/computeAssessment";
 import { toAssessmentInputs } from "./toAssessmentInputs";
 import { isResultStateFresh } from "./wizardValidation";
 import type { WizardState } from "./wizardTypes";
 
 export interface AssessmentResultState {
   result: AssessmentResult | null;
+  inputs: AssessmentInputs | null;
   resultState: "fresh" | "stale" | "empty";
 }
 
 export function useAssessmentResult(state: WizardState): AssessmentResultState {
-  const lastValidResult = useRef<AssessmentResult | null>(null);
+  const lastValidSnapshot = useRef<{
+    inputs: AssessmentInputs;
+    result: AssessmentResult;
+  } | null>(null);
   const fresh = isResultStateFresh(state);
 
-  const freshResult = useMemo(() => {
+  const freshSnapshot = useMemo(() => {
     if (!fresh) return null;
-    return computeAssessment(toAssessmentInputs(state));
+    const inputs = toAssessmentInputs(state);
+    return { inputs, result: computeAssessment(inputs) };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fresh, state]);
 
-  if (freshResult) {
-    lastValidResult.current = freshResult;
-    return { result: freshResult, resultState: "fresh" };
+  if (freshSnapshot) {
+    lastValidSnapshot.current = freshSnapshot;
+    return { ...freshSnapshot, resultState: "fresh" };
   }
 
-  if (lastValidResult.current) {
-    return { result: lastValidResult.current, resultState: "stale" };
+  if (lastValidSnapshot.current) {
+    return { ...lastValidSnapshot.current, resultState: "stale" };
   }
 
-  return { result: null, resultState: "empty" };
+  return { inputs: null, result: null, resultState: "empty" };
 }

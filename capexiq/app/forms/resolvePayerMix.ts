@@ -22,6 +22,18 @@ import type { AssessmentPayer } from "@/formulas/computeAssessment";
 import type { WizardState } from "./wizardTypes";
 
 export function resolvePayerMix(state: WizardState): AssessmentPayer[] {
+  if (!state.advancedOpen) {
+    return [
+      {
+        payerName: "privateCash",
+        shareOfVolume: 100,
+        billedTariff: state.basic.billedTariffPerUse ?? 0,
+        realizationPercentage: 100,
+        collectionDelayDays: 0,
+      },
+    ];
+  }
+
   return PAYER_TYPES.map((payer) => {
     const share = state.advanced.A.payerMixSharePct[payer.suffix] ?? 0;
     const billedTariff =

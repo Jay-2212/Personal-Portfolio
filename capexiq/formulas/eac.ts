@@ -6,6 +6,7 @@ export function equivalentAnnualCost(
   discountRate: number,
   usefulLifeYears: number
 ): number {
+  if (usefulLifeYears <= 0 || !Number.isFinite(usefulLifeYears)) return 0;
   const rate = discountRate / 100;
   const presentValueOfCosts = costsByYear.reduce(
     (total, cost, yearIndex) =>
@@ -17,5 +18,6 @@ export function equivalentAnnualCost(
       ? usefulLifeYears
       : (1 - (1 + rate) ** -usefulLifeYears) / rate;
 
-  return presentValueOfCosts / annuityFactor;
+  const value = presentValueOfCosts / annuityFactor;
+  return Number.isFinite(value) ? value : 0;
 }

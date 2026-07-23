@@ -1207,6 +1207,7 @@ a { color: var(--accent-interactive); }
 .currency-unit-field__units { display:flex; align-self:stretch; padding:5px; gap:4px; background:#f2ece2; }
 .currency-unit-field__units button { border:0; border-radius:8px; padding:0 10px; background:transparent; color:var(--text-secondary); font:inherit; font-size:12px; cursor:pointer; }
 .currency-unit-field__units button[data-selected="true"] { background:#fffdf7; color:var(--text-primary); box-shadow:0 1px 5px rgba(41,35,27,.12); font-weight:700; }
+.currency-unit-field__notice { grid-column:1 / -1; padding:0 12px 8px; color:var(--text-secondary); font-size:11px; line-height:1.35; }
 .question-card--sectioned { display:flex; flex-direction:column; gap:30px; }
 .question-section + .question-section { padding-top:30px; border-top:1px solid var(--border-subtle); }
 .question-section__heading { margin-bottom:22px; }

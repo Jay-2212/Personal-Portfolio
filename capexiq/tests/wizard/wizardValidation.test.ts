@@ -169,8 +169,43 @@ describe("isStepComplete / firstInvalidFieldOnStep", () => {
     expect(validationIssuesOnStep("costs", state)[0]?.message).toMatch(/between/);
   });
 
+  it("requires a positive total investment and integer count fields", () => {
+    let state = completeMri();
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "basic.purchaseCost",
+      value: 0,
+    });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "basic.installationCost",
+      value: 0,
+    });
+    expect(validationIssuesOnStep("investment", state)[0]).toMatchObject({
+      path: "basic.purchaseCost",
+      message: "Total purchase and installation cost must be greater than zero.",
+    });
+
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "basic.acquisitionMode",
+      value: "Loan",
+    });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.C.loanTenureMonths",
+      value: 12.5,
+    });
+    expect(
+      validationIssuesOnStep("costs", state).some(
+        (issue) => issue.path === "advanced.C.loanTenureMonths"
+      )
+    ).toBe(true);
+  });
+
   it("requires a partially entered utilization ramp to be completed", () => {
     let state = completeMri();
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
     state = wizardReducer(state, {
       type: "SET_FIELD",
       path: "advanced.B.utilizationRampPct.month1to3",
@@ -196,8 +231,46 @@ describe("isStepComplete / firstInvalidFieldOnStep", () => {
     )).toBe(true);
   });
 
+  it("blocks loan and lease tenures beyond useful life", () => {
+    let state = completeMri();
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.F.usefulLifeYears",
+      value: 5,
+    });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "basic.acquisitionMode",
+      value: "Loan",
+    });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.C.loanTenureMonths",
+      value: 61,
+    });
+    expect(
+      validationIssuesOnStep("costs", state).some(
+        (issue) => issue.message === "Loan tenure cannot exceed the equipment's useful life."
+      )
+    ).toBe(true);
+  });
+
+  it("does not let a closed Advanced-only override silently block progression", () => {
+    let state = completeMri();
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.E.maintenanceInflationPct",
+      value: 99,
+    });
+    expect(isStepComplete("costs", state)).toBe(false);
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    expect(isStepComplete("costs", state)).toBe(true);
+  });
+
   it("validates each populated year in the dynamic maintenance schedule", () => {
     let state = completeMri();
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
     state = wizardReducer(state, {
       type: "SET_MAINTENANCE_SCHEDULE_YEAR",
       yearIndex: 0,

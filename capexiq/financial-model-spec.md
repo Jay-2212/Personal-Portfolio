@@ -25,12 +25,21 @@ entered rental tenure the equipment is treated as owned, so terminal salvage rem
 available to equity.
 
 `formulas/cashFlowSpine.ts` is the canonical month-by-month series. A launch delay of
-`n` means the first `n` monthly periods have no operations and operating month 1 is
-period `n + 1`. The spine applies utilization ramp, payer-specific
+`n` means the first `ceil(n)` monthly periods have no operations and operating month 1
+is the following period. When an active Advanced launch breakdown has any user-edited
+component, its civil-work, installation, approval, and commissioning durations sum to
+the launch delay; otherwise the Basic launch delay applies. The spine applies
+utilization ramp, payer-specific
 `ceil(DSO days / 30)` collection shifts, variable and fixed operating costs,
 operation-year maintenance and inflation, financing start/moratorium, mid-life
 replacement, and terminal value. It retains post-useful-life DSO collections and any
 remaining financing periods.
+
+Active price escalation compounds billed and realized revenue once per operating year.
+Active cost escalation compounds variable cost, fixed cost, and major replacement
+once per operating year. Maintenance uses its separate maintenance-inflation input.
+Target IRR does not alter cash flow or the Investment Outlook score; it is consumed as
+an explicit comparison against calculated IRR.
 
 Terminal salvage is `purchase cost × salvage %` in the final operating month; the
 working-capital buffer is released in that same month. NPV discounts the monthly

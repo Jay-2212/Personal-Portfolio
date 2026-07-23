@@ -36,6 +36,10 @@ export function validateFieldValue(
   }
 
   if (typeof value === "number") {
+    if (!Number.isFinite(value)) return def.errorMessage ?? "Enter a finite number.";
+    if (def.integerOnly && !Number.isInteger(value)) {
+      return def.errorMessage ?? "Enter a whole number.";
+    }
     if (def.min !== undefined && value < def.min) return def.errorMessage ?? null;
     if (def.max !== undefined && value > def.max) return def.errorMessage ?? null;
   }
@@ -118,7 +122,6 @@ const STEP_FIELD_PATHS: Record<Exclude<WizardStep, "results">, string[]> = {
     "advanced.E.cmcYears",
     "advanced.E.maintenanceInflationPct",
     "advanced.E.majorReplacementCost",
-    "advanced.F.inflationRate",
     "advanced.F.depreciationMethod",
     "advanced.F.priceEscalationPct",
     "advanced.F.costEscalationPct",
@@ -126,6 +129,23 @@ const STEP_FIELD_PATHS: Record<Exclude<WizardStep, "results">, string[]> = {
 };
 
 export { STEP_FIELD_PATHS };
+
+const ALWAYS_ACTIVE_ADVANCED_PATHS = new Set([
+  "advanced.F.discountRate",
+  "advanced.F.targetIrr",
+  "advanced.F.usefulLifeYears",
+  "advanced.F.salvageValuePercentage",
+  "advanced.C.downPayment",
+  "advanced.C.loanInterestRate",
+  "advanced.C.loanTenureMonths",
+  "advanced.C.leaseRentalPerMonth",
+  "advanced.C.leaseTenureMonths",
+]);
+
+export function isFieldActive(path: string, state: WizardState): boolean {
+  if (!path.startsWith("advanced.")) return true;
+  return state.advancedOpen || ALWAYS_ACTIVE_ADVANCED_PATHS.has(path);
+}
 
 /** ISS-25: which step a field's error-reveal gate (touched || attempted[step])
  *  should check. Deliberately NOT derived from `state.currentStep` — that's only
@@ -169,11 +189,26 @@ export function validationIssuesOnStep(
 ): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   for (const path of STEP_FIELD_PATHS[step]) {
+    if (!isFieldActive(path, state)) continue;
     const def = getFieldDefinition(path);
     const message = validateFieldValue(def, getFieldValue(state, path), state);
     if (message) issues.push({ step, path, fieldLabel: def.label, message });
   }
-  if (step === "costs") {
+  if (
+    step === "investment" &&
+    state.basic.purchaseCost !== null &&
+    state.basic.installationCost !== null &&
+    state.basic.purchaseCost + state.basic.installationCost <= 0 &&
+    !issues.some((issue) => issue.path === "basic.purchaseCost")
+  ) {
+    issues.push({
+      step,
+      path: "basic.purchaseCost",
+      fieldLabel: getFieldDefinition("basic.purchaseCost").label,
+      message: "Total purchase and installation cost must be greater than zero.",
+    });
+  }
+  if (step === "costs" && state.advancedOpen) {
     const scheduleDef = getFieldDefinition("advanced.E.maintenanceCostByYearPct");
     state.advanced.E.maintenanceCostByYearPct.forEach((value, index) => {
       const message = validateFieldValue(scheduleDef, value, state);

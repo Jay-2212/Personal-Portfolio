@@ -42,6 +42,7 @@ export interface InvestmentOutlookResult {
 
 function returnStrengthScore(inputs: InvestmentOutlookInputs): number {
   if (inputs.irr === null) {
+    if (inputs.initialInvestment <= 0) return 0;
     const ratio = inputs.npv / inputs.initialInvestment;
 
     if (ratio <= -0.2) return 0;
@@ -70,6 +71,7 @@ function speedToPaybackScore(inputs: InvestmentOutlookInputs): number {
 }
 
 function financingResilienceScore(inputs: InvestmentOutlookInputs): number {
+  if (inputs.monthlyEmi <= 0 || !Number.isFinite(inputs.monthlyEmi)) return 0;
   const dscr =
     inputs.monthlyOperatingCashFlowBeforeEmi / inputs.monthlyEmi;
 

@@ -354,10 +354,21 @@ describe("workbookPlan — golden scenario D (lease financing, ISS-18 tenure-cut
     variableCostPerUse: 80,
     fixedCostPerMonth: 60_000,
     financing: { type: "lease", rentalPerMonth: 90_000, tenureMonths: 36 },
-    maintenance: { warrantyYears: 3, cmcYears: 2, cmcAnnualCost: 50_000, amcAnnualCost: 35_000 },
+    maintenance: {
+      warrantyYears: 3,
+      cmcYears: 2,
+      cmcAnnualCost: 50_000,
+      amcAnnualCost: 35_000,
+      inflationRate: 3,
+      majorReplacementCost: 100_000,
+    },
     usefulLifeYears: 6,
     discountRate: 12.5,
     salvageValuePercentage: 5,
+    launchDelayMonths: 1,
+    priceEscalationRate: 5,
+    costEscalationRate: 4,
+    targetIrr: 18,
   };
   const result = computeAssessment(inputs);
   const monthly = buildMonthlySeries(inputs);

@@ -28,8 +28,9 @@ interaction rules now supersede older presentation language below:
   that route and visually carries the selected equipment into the hospital profile
   group before the user continues.
 - `purchaseCost` and `installationCost` stay canonical Crore values in persisted and
-  formula state. Independent `currencyUnits` view state lets the user enter and see
-  either Lakh or Crore; conversion happens only at the field boundary.
+  formula state. Independent `currencyUnits` state lets the user reinterpret the same
+  visible number as Lakh or Crore; the reducer rescales the canonical value, results
+  recalculate, and a short status cue explains the change.
 - Validation still recalculates on change, but an error is rendered only after that
   field has been touched or the user tries to continue from its step. The attempted
   step is recorded in `attemptedSteps`.
@@ -253,8 +254,13 @@ Already decided, `agent-build-plan.md` Phase 4-F: entered Advanced values persis
 memory even while the panel is collapsed — collapsing never discards them. This doc
 adds the concrete mechanism: Advanced field values live in the same top-level wizard
 state container as Basic values (§7 below — one reducer, not a second state tree that
-gets torn down on collapse). The panel's open/closed boolean is a separate, single piece
-of state (`advancedOpen`) that only controls visibility, never data lifecycle.
+gets torn down on collapse). `advancedOpen` controls both the user-selected mode and
+whether optional Advanced overrides are active. Closing retains the entered values but
+deactivates payer/DSO, ramp, optional financing timing/fees, launch breakdown,
+pre-opening, lifecycle, and escalation overrides. Reopening restores them. Required
+acquisition terms and baseline finance assumptions remain active because Basic results
+cannot be computed responsibly without them. `advancedPanelForcedOpen` remains the
+visibility-only recovery flag and never activates overrides.
 
 ---
 

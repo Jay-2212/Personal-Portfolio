@@ -6,8 +6,7 @@ import { ArrowLeft, ArrowUpRight, Gauge, IndianRupee, LineChart, TimerReset } fr
 import { cumulativeCashFlowSeries } from "@/formulas/roi";
 import { useWizard } from "../../forms/WizardContext";
 import { useAssessmentResult } from "../../forms/useAssessmentResult";
-import { toAssessmentInputs } from "../../forms/toAssessmentInputs";
-import { formatInr, formatPercent, formatYears } from "../../components/formatting";
+import { formatInr, formatNumber, formatPercent, formatYears } from "../../components/formatting";
 import { BreakEvenBar } from "../../charts/BreakEvenBar";
 import { CashFlowChart } from "../../charts/CashFlowChart";
 import { RiskCallout } from "../../components/RiskCallout";
@@ -23,15 +22,15 @@ const DRIVER_LABELS: Record<string, string> = {
 
 export default function ResultsPage() {
   const { state } = useWizard();
-  const { result, resultState } = useAssessmentResult(state);
+  const { inputs, result, resultState } = useAssessmentResult(state);
 
-  if (!result) return <div className="assess-page"><h1 tabIndex={-1}>Your assessment is not complete yet.</h1><Link href="/assess">Return to the assessment</Link></div>;
+  if (!result || !inputs) return <div className="assess-page"><h1 tabIndex={-1}>Your assessment is not complete yet.</h1><Link href="/assess">Return to the assessment</Link></div>;
 
   const outlook = result.investmentOutlook;
   const hospital = state.preStep.hospitalName || "Your hospital";
   const equipment = state.preStep.equipmentCategory || "equipment";
   const driver = DRIVER_LABELS[outlook.driver] ?? "the most sensitive assumption in this assessment";
-  const usagePerDay = state.basic.usagePerDay ?? 0;
+  const usagePerDay = inputs.usagePerDay;
   const cashFlowSeries = cumulativeCashFlowSeries(
     result.initialInvestment,
     result.annualNetCashFlowsAfterFinancing
@@ -62,11 +61,19 @@ export default function ResultsPage() {
       <section className="results-detail">
         <div className="results-detail__heading"><Gauge aria-hidden="true" /><div><span className="narrative-intro__eyebrow">The supporting read</span><h2>What sits behind the outlook</h2></div></div>
         <dl className="results-metric-grid">
-          <div><dt>Initial investment</dt><dd>{formatInr(result.initialInvestment)}</dd></div>
+          <div><dt>Initial equity outlay</dt><dd>{formatInr(result.initialEquityOutlay)}</dd></div>
           <div><dt>ROI · cash-flow view</dt><dd>{formatPercent(result.roiCashFlow)}</dd></div>
           <div><dt>Discounted payback</dt><dd>{result.discountedPaybackYears === null ? "Beyond useful life" : formatYears(result.discountedPaybackYears)}</dd></div>
           <div><dt>Break-even activity</dt><dd>{result.breakEvenUsagePerDay === null ? "Not achievable" : `${result.breakEvenUsagePerDay.toFixed(1)} / day`}</dd></div>
           <div><dt>Equivalent annual cost</dt><dd>{formatInr(result.eac)}</dd></div>
+          <div>
+            <dt>IRR vs target</dt>
+            <dd>
+              {result.irrVsTargetPercentagePoints === null
+                ? "Unavailable"
+                : `${formatNumber(result.irrVsTargetPercentagePoints, 1)} pp`}
+            </dd>
+          </div>
         </dl>
       </section>
 
@@ -105,10 +112,11 @@ export default function ResultsPage() {
       <ResultsQuickSettings />
 
       <ExportPanel
-        inputs={toAssessmentInputs(state)}
+        inputs={inputs}
         result={result}
         hospitalName={hospital}
         equipmentCategory={equipment}
+        disabled={resultState !== "fresh"}
       />
 
       <p className="results-disclaimer">

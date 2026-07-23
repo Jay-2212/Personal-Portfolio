@@ -21,6 +21,12 @@ and the collection tail. `computeAssessment()`, monthly/annual views, and live E
 formulas now reconcile to that timeline. The exact basis is documented in
 `financial-model-spec.md`.
 
+Advanced Mode now has explicit activation semantics: closing it preserves entered
+values but deactivates optional overrides and their validation. Visible launch,
+financing, lifecycle, escalation, and target-IRR fields are consumed; the unused
+generic inflation control is no longer rendered. Results use canonical mature usage,
+and exports use one validated input/result snapshot and are disabled while stale.
+
 Recent validation work makes blocked navigation explainable: invalid Continue actions
 reveal errors and a field summary, including Advanced-only blockers; **Take me there**
 navigates, opens the relevant Advanced group without changing formula precedence, and
@@ -39,6 +45,16 @@ Known next work:
 Open/accepted issues belong in `ISSUES.md`; do not recreate an issue list here.
 
 ## Change log
+
+### 2026-07-23 — Input activation, validation, and export gates, Phase 2 (Codex run)
+
+**Changed:** wired launch breakdown, financing fees/timing, maintenance inflation,
+replacement, price/cost escalation, and target IRR; made Advanced close deactivate
+optional overrides; preserved literal Lakh/Crore switching with a recalculation cue;
+added positive/integer/tenure validation and finite math sentinels; aligned Results,
+Word, and Excel with the validated snapshot. **Evidence:** 294 tests and TypeScript
+check pass before final Phase 2 documentation. Formatting cleanup and broader scenario
+regressions remain for Phase 3.
 
 ### 2026-07-23 — Canonical equity cash-flow spine, Phase 1 (Codex run)
 

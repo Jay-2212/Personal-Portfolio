@@ -156,6 +156,10 @@ describe("CurrencyUnitField — the typed number is the source of truth", () => 
     fireEvent.click(screen.getByRole("button", { name: "Crore" }));
     expect(input).toHaveValue(2);
     expect(screen.getByTestId(`${field}-canonical`)).toHaveTextContent("2");
+    expect(
+      screen.getAllByText(/Unit switched to Crore.*results were recalculated/i)
+        .length
+    ).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Lakh" }));
     expect(input).toHaveValue(2);

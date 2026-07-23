@@ -52,11 +52,13 @@ export function ExportPanel({
   result,
   hospitalName,
   equipmentCategory,
+  disabled = false,
 }: {
   inputs: AssessmentInputs;
   result: AssessmentResult;
   hospitalName: string;
   equipmentCategory: string;
+  disabled?: boolean;
 }) {
   const [pending, setPending] = useState<ExportKind | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -136,13 +138,18 @@ export function ExportPanel({
             type="button"
             className="button button--secondary"
             onClick={handler}
-            disabled={pending !== null}
+            disabled={disabled || pending !== null}
           >
             {pending === kind ? <Loader2 aria-hidden="true" size={16} className="export-panel__spinner" /> : <Download aria-hidden="true" size={16} />}
             {pending === kind ? "Preparing…" : LABELS[kind]}
           </button>
         ))}
       </div>
+      {disabled && (
+        <p className="export-panel__error" role="status">
+          Fix the highlighted inputs to refresh the assessment before exporting.
+        </p>
+      )}
       {error && (
         <p className="export-panel__error" role="alert">
           {error}

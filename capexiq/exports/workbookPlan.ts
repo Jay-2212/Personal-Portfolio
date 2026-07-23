@@ -103,8 +103,20 @@ export function buildWorkbookPlan(
   const fixedCostPerMonthRef = addRow("Fixed cost per month", inputs.fixedCostPerMonth);
   const usefulLifeYearsRef = addRow("Useful life (years)", inputs.usefulLifeYears);
   const discountRateRef = addRow("Discount rate (%)", inputs.discountRate);
+  addRow("Target IRR (%)", inputs.targetIrr ?? "");
+  const priceEscalationRef = addRow(
+    "Price escalation (% p.a.)",
+    inputs.priceEscalationRate ?? 0
+  );
+  const costEscalationRef = addRow(
+    "Cost escalation (% p.a.)",
+    inputs.costEscalationRate ?? 0
+  );
   const salvageValueRef = addRow("Salvage value (%)", inputs.salvageValuePercentage);
-  const launchDelayRef = addRow("Launch delay (months)", inputs.launchDelayMonths ?? 0);
+  const launchDelayRef = addRow(
+    "Launch delay (whole months)",
+    Math.max(0, Math.ceil(inputs.launchDelayMonths ?? 0))
+  );
   const preOpeningCostsRef = addRow("Pre-opening fixed costs", inputs.preOpeningFixedCosts ?? 0);
   const workingCapitalBufferRef = addRow(
     "Working-capital buffer",
@@ -336,16 +348,24 @@ export function buildWorkbookPlan(
         // ISS-29 (Jay's decision, 2026-07-14): billed revenue ramps with the same
         // utilization curve as realized revenue below — both are usagePerDay-driven,
         // differing only in per-use rate, so a volume ramp affects both identically.
-        formula: `${usagePerDayRef}*${billedPerUseWeightedRef}*${workingDaysRef}*${COL.ramp}${r}`,
+        formula:
+          `${usagePerDayRef}*${billedPerUseWeightedRef}*${workingDaysRef}*${COL.ramp}${r}*` +
+          `(1+${priceEscalationRef}/100)^MAX(0,${operatingYearExpr}-1)`,
       });
       push(M, `${COL.realized}${r}`, {
-        formula: `${usagePerDayRef}*${realizedPerUseRef}*${workingDaysRef}*${COL.ramp}${r}`,
+        formula:
+          `${usagePerDayRef}*${realizedPerUseRef}*${workingDaysRef}*${COL.ramp}${r}*` +
+          `(1+${priceEscalationRef}/100)^MAX(0,${operatingYearExpr}-1)`,
       });
       push(M, `${COL.variable}${r}`, {
-        formula: `${usagePerDayRef}*${variableCostPerUseRef}*${workingDaysRef}*${COL.ramp}${r}`,
+        formula:
+          `${usagePerDayRef}*${variableCostPerUseRef}*${workingDaysRef}*${COL.ramp}${r}*` +
+          `(1+${costEscalationRef}/100)^MAX(0,${operatingYearExpr}-1)`,
       });
       push(M, `${COL.fixed}${r}`, {
-        formula: `IF(${isOperatingExpr},${fixedCostPerMonthRef},0)`,
+        formula:
+          `IF(${isOperatingExpr},${fixedCostPerMonthRef}*` +
+          `(1+${costEscalationRef}/100)^(${operatingYearExpr}-1),0)`,
       });
       {
         const safeOperatingYearExpr =
@@ -368,7 +388,8 @@ export function buildWorkbookPlan(
       push(M, `${COL.net}${r}`, {
         formula:
           `${COL.crTotal}${r}-${COL.variable}${r}-${COL.fixed}${r}-${COL.maintenance}${r}-${COL.emi}${r}` +
-          `-IF(${COL.month}${r}=${launchDelayRef}+ROUNDUP(${totalOperatingMonths}/2,0),${majorReplacementCostRef},0)` +
+          `-IF(${COL.month}${r}=${launchDelayRef}+ROUNDUP(${totalOperatingMonths}/2,0),${majorReplacementCostRef}*` +
+          `(1+${costEscalationRef}/100)^MAX(0,${operatingYearExpr}-1),0)` +
           `+IF(${COL.month}${r}=${launchDelayRef}+${totalOperatingMonths},${purchaseCostRef}*${salvageValueRef}/100+${workingCapitalBufferRef},0)`,
       });
     }
@@ -492,8 +513,9 @@ export function buildWorkbookPlan(
     });
     push(MS, `C${r}`, {
       formula:
-        `IF(${overrideCell}<>"",${overrideCell}/100*${purchaseCostRef},` +
-        `IF(${y}<=${warrantyYearsRef},0,IF(${y}<=${warrantyYearsRef}+${cmcYearsRef},${cmcAnnualCostRef},${amcAnnualCostRef})))`,
+        `(IF(${overrideCell}<>"",${overrideCell}/100*${purchaseCostRef},` +
+        `IF(${y}<=${warrantyYearsRef},0,IF(${y}<=${warrantyYearsRef}+${cmcYearsRef},${cmcAnnualCostRef},${amcAnnualCostRef}))))*` +
+        `(1+${maintenanceInflationRef}/100)^(${y}-1)`,
     });
   }
 

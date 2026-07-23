@@ -46,6 +46,8 @@ function financingSummary(inputs: AssessmentInputs, result: AssessmentResult): [
       ["Down payment", formatInr(inputs.financing.downPayment)],
       ["Interest rate", formatPercent(inputs.financing.interestRate)],
       ["Tenure", `${inputs.financing.tenureMonths} months`],
+      ["Processing charges", formatInr(result.processingCharges)],
+      ["Capitalized pre-operative interest", formatInr(result.capitalizedInterest)],
       ["Monthly EMI", formatInr(result.monthlyEmiOrLease ?? 0)],
     ];
   }
@@ -97,7 +99,7 @@ export async function generateWordProposal(
     simpleTable([
       ["Hospital", context.hospitalName],
       ["Equipment", context.equipmentCategory],
-      ["Initial investment", formatInr(result.initialInvestment)],
+      ["Initial equity outlay", formatInr(result.initialEquityOutlay)],
       ["Useful life", `${inputs.usefulLifeYears} years`],
       ["Financing", financingSummary(inputs, result)[0][1]],
     ]),
@@ -109,6 +111,12 @@ export async function generateWordProposal(
       ["Variable cost per use", formatInr(inputs.variableCostPerUse)],
       ["Fixed cost per month", formatInr(inputs.fixedCostPerMonth)],
       ["Discount rate", formatPercent(inputs.discountRate)],
+      ["Target IRR", inputs.targetIrr === undefined ? "Not set" : formatPercent(inputs.targetIrr)],
+      ["Launch delay", `${Math.ceil(inputs.launchDelayMonths ?? 0)} months`],
+      ["Pre-opening fixed costs", formatInr(inputs.preOpeningFixedCosts ?? 0)],
+      ["Working-capital buffer", formatInr(inputs.workingCapitalBufferAmount ?? 0)],
+      ["Price escalation", formatPercent(inputs.priceEscalationRate ?? 0)],
+      ["Cost escalation", formatPercent(inputs.costEscalationRate ?? 0)],
       ["Salvage value", formatPercent(inputs.salvageValuePercentage)],
       ["Warranty years", `${inputs.maintenance.warrantyYears}`],
       ["CMC years / annual cost", `${inputs.maintenance.cmcYears} / ${formatInr(inputs.maintenance.cmcAnnualCost)}`],
@@ -136,6 +144,13 @@ export async function generateWordProposal(
       ["ROI — billed view", formatPercent(result.roiBilled)],
       ["ROI — realized view", formatPercent(result.roiRealized)],
       ["ROI — cash-flow view", formatPercent(result.roiCashFlow)],
+      [
+        "IRR vs target",
+        result.irrVsTargetPercentagePoints === null
+          ? "Unavailable"
+          : `${result.irrVsTargetPercentagePoints.toFixed(1)} percentage points`,
+      ],
+      ["Terminal salvage", formatInr(result.terminalSalvageValue)],
       ["Equivalent annual cost", formatInr(result.eac)],
       ["Investment Outlook", `${outlook.band} (${outlook.score}/100)`],
     ]),

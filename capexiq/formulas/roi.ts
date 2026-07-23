@@ -8,7 +8,9 @@ export function roi(
   view: FinancialView
 ): number {
   void view;
-  return (annualNetReturn / initialInvestment) * 100;
+  if (initialInvestment <= 0 || !Number.isFinite(initialInvestment)) return 0;
+  const value = (annualNetReturn / initialInvestment) * 100;
+  return Number.isFinite(value) ? value : 0;
 }
 
 export function paybackPeriod(
@@ -26,6 +28,7 @@ export function paybackPeriodFromCashFlows(
   initialInvestment: number,
   annualNetCashFlows: number[]
 ): number {
+  if (initialInvestment <= 0) return 0;
   let cumulativeCashFlow = 0;
 
   for (let yearIndex = 0; yearIndex < annualNetCashFlows.length; yearIndex += 1) {

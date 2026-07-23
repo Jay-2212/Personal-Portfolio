@@ -15,6 +15,7 @@ export interface FieldDefinition {
   min?: number;
   max?: number;
   decimalPlaces?: number;
+  integerOnly?: boolean;
   sliderStep?: number;
   maxLength?: number;
   options?: string[];
@@ -35,6 +36,7 @@ interface RawFieldEntry {
   min?: number;
   max?: number;
   decimalPlaces?: number;
+  type?: string;
   sliderStep?: number;
   maxLength?: number;
   options?: string[];
@@ -56,6 +58,7 @@ function toFieldDefinition(path: string, raw: RawFieldEntry): FieldDefinition {
     min: raw.min,
     max: raw.max,
     decimalPlaces: raw.decimalPlaces,
+    integerOnly: raw.type === "integer-count",
     sliderStep: raw.sliderStep,
     maxLength: raw.maxLength,
     options: raw.options,

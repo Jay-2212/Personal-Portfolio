@@ -188,6 +188,38 @@ describe("toAssessmentInputs — utilization ramp-up wiring (ISS-19)", () => {
     const inputs = toAssessmentInputs(state);
     expect(inputs.usagePerDay).toBe(6);
   });
+
+  it("closing Advanced Mode deactivates demand overrides without discarding their values", () => {
+    let state = baseMriState();
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "basic.usagePerDay",
+      value: 10,
+    });
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.B.expectedMatureUtilization",
+      value: 6,
+    });
+    for (const [suffix, value] of [
+      ["month1to3", 20],
+      ["month4to6", 50],
+      ["month7to12", 80],
+      ["year2Plus", 100],
+    ] as const) {
+      state = wizardReducer(state, {
+        type: "SET_FIELD",
+        path: `advanced.B.utilizationRampPct.${suffix}`,
+        value,
+      });
+    }
+    expect(toAssessmentInputs(state).usagePerDay).toBe(6);
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    expect(toAssessmentInputs(state).usagePerDay).toBe(10);
+    expect(toAssessmentInputs(state).utilizationRamp).toBeUndefined();
+    expect(state.advanced.B.expectedMatureUtilization).toBe(6);
+  });
 });
 
 describe("toAssessmentInputs — Basic vs Advanced maintenance path (PBA-4)", () => {
@@ -226,5 +258,118 @@ describe("toAssessmentInputs — Basic vs Advanced maintenance path (PBA-4)", ()
     expect(inputs.maintenance.cmcYears).toBeGreaterThan(0);
     expect(inputs.maintenance.cmcAnnualCost).toBeGreaterThan(0);
     expect(inputs.maintenance.amcAnnualCost).toBeGreaterThan(0);
+  });
+
+  it("closing Advanced Mode deactivates lifecycle overrides and restores the Basic maintenance path", () => {
+    let state = baseMriState();
+    const basicMaintenance = toAssessmentInputs(state).maintenance;
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.E.cmcYears",
+      value: 2,
+    });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.E.maintenanceInflationPct",
+      value: 8,
+    });
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "advanced.E.majorReplacementCost",
+      value: 500_000,
+    });
+    expect(toAssessmentInputs(state).maintenance.inflationRate).toBe(8);
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    expect(toAssessmentInputs(state).maintenance).toEqual(basicMaintenance);
+  });
+});
+
+describe("toAssessmentInputs — launch, financing, and escalation wiring", () => {
+  it("uses Basic launch delay first, then an active Group D component sum, and restores Basic timing when Advanced closes", () => {
+    let state = baseMriState();
+    expect(toAssessmentInputs(state).launchDelayMonths).toBe(
+      state.basic.launchDelayMonths
+    );
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    for (const [field, value] of [
+      ["civilWorkDurationMonths", 1],
+      ["installationDurationMonths", 2],
+      ["licensingApprovalDurationMonths", 3],
+      ["trainingCommissioningDurationMonths", 4],
+    ] as const) {
+      state = wizardReducer(state, {
+        type: "SET_FIELD",
+        path: `advanced.D.${field}`,
+        value,
+      });
+    }
+    expect(toAssessmentInputs(state).launchDelayMonths).toBe(10);
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    expect(toAssessmentInputs(state).launchDelayMonths).toBe(
+      state.basic.launchDelayMonths
+    );
+  });
+
+  it("maps active optional financing, pre-opening, lifecycle, escalation, and target fields", () => {
+    let state = baseMriState();
+    state = wizardReducer(state, {
+      type: "SET_FIELD",
+      path: "basic.acquisitionMode",
+      value: "Loan",
+    });
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    for (const [path, value] of [
+      ["advanced.C.processingChargesPct", 2],
+      ["advanced.C.emiStartMonth", 4],
+      ["advanced.C.moratoriumPeriodMonths", 3],
+      ["advanced.D.preOpeningFixedCosts", 100_000],
+      ["advanced.D.workingCapitalBufferAmount", 250_000],
+      ["advanced.F.priceEscalationPct", 5],
+      ["advanced.F.costEscalationPct", 4],
+      ["advanced.F.targetIrr", 18],
+    ] as const) {
+      state = wizardReducer(state, { type: "SET_FIELD", path, value });
+    }
+    const inputs = toAssessmentInputs(state);
+    expect(inputs.financing).toMatchObject({
+      processingChargesPct: 2,
+      emiStartMonth: 4,
+      moratoriumPeriodMonths: 3,
+    });
+    expect(inputs.preOpeningFixedCosts).toBe(100_000);
+    expect(inputs.workingCapitalBufferAmount).toBe(250_000);
+    expect(inputs.priceEscalationRate).toBe(5);
+    expect(inputs.costEscalationRate).toBe(4);
+    expect(computeAssessment(inputs).targetIrr).toBe(18);
+  });
+
+  it("deactivates payer realization and DSO overrides when Advanced closes", () => {
+    let state = baseMriState();
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    for (const [path, value] of [
+      ["advanced.A.payerMixSharePct.privateCash", 0],
+      ["advanced.A.payerMixSharePct.insuranceTpa", 100],
+      ["advanced.A.billedTariffByPayerType.insuranceTpa", 3_000],
+      ["advanced.A.realizationPctByPayerType.insuranceTpa", 80],
+      ["advanced.A.collectionDelayDaysByPayerType.insuranceTpa", 60],
+    ] as const) {
+      state = wizardReducer(state, { type: "SET_FIELD", path, value });
+    }
+    expect(toAssessmentInputs(state).payerMix[1]).toMatchObject({
+      shareOfVolume: 100,
+      realizationPercentage: 80,
+      collectionDelayDays: 60,
+    });
+    state = wizardReducer(state, { type: "TOGGLE_ADVANCED" });
+    expect(toAssessmentInputs(state).payerMix).toEqual([
+      {
+        payerName: "privateCash",
+        shareOfVolume: 100,
+        billedTariff: state.basic.billedTariffPerUse,
+        realizationPercentage: 100,
+        collectionDelayDays: 0,
+      },
+    ]);
   });
 });

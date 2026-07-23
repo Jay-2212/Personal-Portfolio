@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useWizard } from "../forms/WizardContext";
 import { useFieldController, useDeferredFieldError } from "../forms/useFieldController";
 import { FieldShell } from "./FieldShell";
@@ -16,7 +17,8 @@ export function CurrencyUnitField({
 }) {
   const controller = useFieldController(path);
   const deferred = useDeferredFieldError(controller);
-  const { state, dispatch } = useWizard();
+  const { state, dispatch, announce } = useWizard();
+  const [unitChangeMessage, setUnitChangeMessage] = useState<string | null>(null);
   const fallback: CurrencyUnit = field === "purchaseCost" ? "Crore" : "Lakh";
   const unit = state.currencyUnits?.[field] ?? fallback;
   const canonicalCrore = typeof controller.value === "number" ? controller.value : null;
@@ -62,12 +64,25 @@ export function CurrencyUnitField({
                 type="button"
                 data-selected={unit === option}
                 aria-pressed={unit === option}
-                onClick={() => dispatch({ type: "SET_CURRENCY_UNIT", field, unit: option })}
+                onClick={() => {
+                  if (option === unit) return;
+                  const message =
+                    `Unit switched to ${option}. The entered number now means ${option}, ` +
+                    "and results were recalculated.";
+                  dispatch({ type: "SET_CURRENCY_UNIT", field, unit: option });
+                  setUnitChangeMessage(message);
+                  announce(message);
+                }}
               >
                 {option}
               </button>
             ))}
           </div>
+          {unitChangeMessage && (
+            <small className="currency-unit-field__notice" role="status">
+              {unitChangeMessage}
+            </small>
+          )}
         </div>
       )}
     />

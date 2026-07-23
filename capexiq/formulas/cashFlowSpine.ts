@@ -37,6 +37,16 @@ function utilizationFractionForOperatingMonth(
   return ramp.year2PlusPct / 100;
 }
 
+function annualEscalationFactor(
+  annualRate: number | undefined,
+  operatingMonthIndex: number
+): number {
+  return (
+    1 +
+    (annualRate ?? 0) / 100
+  ) ** Math.floor(operatingMonthIndex / 12);
+}
+
 function loanPaymentStartMonth(inputs: AssessmentInputs): number {
   if (inputs.financing.type !== "loan") return 0;
   return Math.max(
@@ -50,7 +60,10 @@ export function buildMonthlyCashFlowSpine(
   inputs: AssessmentInputs
 ): MonthlyCashFlowSpine {
   const projectCost = inputs.purchaseCost + inputs.installationCost;
-  const operationStartMonth = inputs.launchDelayMonths ?? 0;
+  const operationStartMonth = Math.max(
+    0,
+    Math.ceil(inputs.launchDelayMonths ?? 0)
+  );
   const operatingMonths = inputs.usefulLifeYears * 12;
   const operationEndMonth = operationStartMonth + operatingMonths;
 
@@ -81,7 +94,7 @@ export function buildMonthlyCashFlowSpine(
       basePrincipal * ((inputs.financing.processingChargesPct ?? 0) / 100);
     paymentMonths = inputs.financing.tenureMonths;
     monthlyPayment =
-      financedPrincipal === 0
+      financedPrincipal === 0 || paymentMonths <= 0
         ? 0
         : monthlyEmi(
             financedPrincipal,
@@ -140,6 +153,10 @@ export function buildMonthlyCashFlowSpine(
         utilizationFractionForOperatingMonth(
           inputs.utilizationRamp,
           monthIndex - operationStartMonth
+        ) *
+        annualEscalationFactor(
+          inputs.priceEscalationRate,
+          monthIndex - operationStartMonth
         )
       );
     }
@@ -152,6 +169,10 @@ export function buildMonthlyCashFlowSpine(
         matureRealizedRevenue *
         utilizationFractionForOperatingMonth(
           inputs.utilizationRamp,
+          monthIndex - operationStartMonth
+        ) *
+        annualEscalationFactor(
+          inputs.priceEscalationRate,
           monthIndex - operationStartMonth
         )
       );
@@ -192,6 +213,10 @@ export function buildMonthlyCashFlowSpine(
         utilizationFractionForOperatingMonth(
           inputs.utilizationRamp,
           monthIndex - operationStartMonth
+        ) *
+        annualEscalationFactor(
+          inputs.costEscalationRate,
+          monthIndex - operationStartMonth
         )
       );
     }
@@ -200,7 +225,11 @@ export function buildMonthlyCashFlowSpine(
     { length: horizonMonths },
     (_, monthIndex) =>
       monthIndex >= operationStartMonth && monthIndex < operationEndMonth
-        ? inputs.fixedCostPerMonth
+        ? inputs.fixedCostPerMonth *
+          annualEscalationFactor(
+            inputs.costEscalationRate,
+            monthIndex - operationStartMonth
+          )
         : 0
   );
 
@@ -239,7 +268,11 @@ export function buildMonthlyCashFlowSpine(
     { length: horizonMonths },
     (_, monthIndex) =>
       monthIndex === replacementMonth
-        ? (inputs.maintenance.majorReplacementCost ?? 0)
+        ? (inputs.maintenance.majorReplacementCost ?? 0) *
+          annualEscalationFactor(
+            inputs.costEscalationRate,
+            monthIndex - operationStartMonth
+          )
         : 0
   );
   const monthlyFinancingPayment = Array.from(

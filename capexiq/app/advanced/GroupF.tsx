@@ -37,7 +37,6 @@ export function GroupF() {
       <legend>F. Financial model assumptions</legend>
       <FieldRenderer path="advanced.F.discountRate" />
       <FieldRenderer path="advanced.F.targetIrr" />
-      <FieldRenderer path="advanced.F.inflationRate" />
       <FieldRenderer path="advanced.F.usefulLifeYears" />
       <WarrantyVsUsefulLifeNotice />
       <FieldRenderer path="advanced.F.salvageValuePercentage" />
