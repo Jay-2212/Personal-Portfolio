@@ -5,7 +5,7 @@ entries before 2026-07-13 are in `handoff-archive/2026-Q3.md`.
 
 ## Current state
 
-Last reviewed: 2026-07-22 (documentation cleanup).
+Last reviewed: 2026-07-23 (cash-flow model Phase 1).
 
 CapexIQ has a working static Next.js application: landing and methodology pages, a
 routed assessment wizard, Basic and Advanced inputs, local draft persistence,
@@ -13,6 +13,13 @@ cross-field validation with guided recovery, a decision-led results page, tested
 financial formulas, and Excel/Word/ZIP exports. The canonical path is
 `app/forms/toAssessmentInputs.ts` → `formulas/computeAssessment.ts`; dashboard and
 exports must consume that path rather than recreate calculations.
+
+The financial basis is equity cash flow for Cash, Loan, and Lease. The canonical
+month-by-month implementation is `formulas/cashFlowSpine.ts`; it owns launch timing,
+ramp, payer DSO, operating and lifecycle costs, financing timing, terminal salvage,
+and the collection tail. `computeAssessment()`, monthly/annual views, and live Excel
+formulas now reconcile to that timeline. The exact basis is documented in
+`financial-model-spec.md`.
 
 Recent validation work makes blocked navigation explainable: invalid Continue actions
 reveal errors and a field summary, including Advanced-only blockers; **Take me there**
@@ -32,6 +39,15 @@ Known next work:
 Open/accepted issues belong in `ISSUES.md`; do not recreate an issue list here.
 
 ## Change log
+
+### 2026-07-23 — Canonical equity cash-flow spine, Phase 1 (Codex run)
+
+**Changed:** selected and documented an equity-NPV basis; introduced one monthly spine
+for launch, DSO, costs, financing, replacement, and terminal value; derived return and
+payback metrics from it; reconciled live Excel formulas and added focused cash/loan/
+lease tests. **Why:** remove DSO omissions and financing double-counting before wiring
+the remaining inputs. **Evidence:** 282 tests and TypeScript check pass. Phase 2 input,
+mode, validation, and export-gate work remains intentionally deferred.
 
 ### 2026-07-22 — Documentation decluttering (Codex run)
 

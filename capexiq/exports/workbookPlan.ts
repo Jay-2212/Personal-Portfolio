@@ -76,6 +76,12 @@ export function buildWorkbookPlan(
     push(A, `B${row}`, { value });
     return `${A}!$B$${row}`;
   };
+  const addFormulaRow = (label: string, formula: string): string => {
+    row += 1;
+    push(A, `A${row}`, { value: label });
+    push(A, `B${row}`, { formula });
+    return `${A}!$B$${row}`;
+  };
 
   push(A, "A1", {
     value:
@@ -87,9 +93,9 @@ export function buildWorkbookPlan(
   const purchaseCostRef = addRow("Purchase cost", inputs.purchaseCost);
   const installationCostRef = addRow("Installation cost", inputs.installationCost);
   row += 1;
-  push(A, `A${row}`, { value: "Initial investment" });
+  push(A, `A${row}`, { value: "Project cost" });
   push(A, `B${row}`, { formula: `${purchaseCostRef.replace(`${A}!`, "")}+${installationCostRef.replace(`${A}!`, "")}` });
-  const initialInvestmentRef = `${A}!$B$${row}`;
+  const projectCostRef = `${A}!$B$${row}`;
 
   const usagePerDayRef = addRow("Usage per day", inputs.usagePerDay);
   const workingDaysRef = addRow("Working days per month", inputs.workingDaysPerMonth);
@@ -97,7 +103,13 @@ export function buildWorkbookPlan(
   const fixedCostPerMonthRef = addRow("Fixed cost per month", inputs.fixedCostPerMonth);
   const usefulLifeYearsRef = addRow("Useful life (years)", inputs.usefulLifeYears);
   const discountRateRef = addRow("Discount rate (%)", inputs.discountRate);
-  addRow("Salvage value (%)", inputs.salvageValuePercentage);
+  const salvageValueRef = addRow("Salvage value (%)", inputs.salvageValuePercentage);
+  const launchDelayRef = addRow("Launch delay (months)", inputs.launchDelayMonths ?? 0);
+  const preOpeningCostsRef = addRow("Pre-opening fixed costs", inputs.preOpeningFixedCosts ?? 0);
+  const workingCapitalBufferRef = addRow(
+    "Working-capital buffer",
+    inputs.workingCapitalBufferAmount ?? 0
+  );
 
   const financingTypeLabel =
     inputs.financing.type === "cash" ? "Cash" : inputs.financing.type === "loan" ? "Loan" : "Lease";
@@ -118,11 +130,66 @@ export function buildWorkbookPlan(
     "Lease rental per month",
     inputs.financing.type === "lease" ? inputs.financing.rentalPerMonth : 0
   );
+  const processingChargesPctRef = addRow(
+    "Loan processing charges (%)",
+    inputs.financing.type === "loan"
+      ? (inputs.financing.processingChargesPct ?? 0)
+      : 0
+  );
+  const emiStartMonthRef = addRow(
+    "EMI start month",
+    inputs.financing.type === "loan"
+      ? (inputs.financing.emiStartMonth ?? 0)
+      : inputs.financing.type === "lease"
+        ? (inputs.financing.paymentStartMonth ?? 0)
+        : 0
+  );
+  const moratoriumMonthsRef = addRow(
+    "Moratorium (months)",
+    inputs.financing.type === "loan"
+      ? (inputs.financing.moratoriumPeriodMonths ?? 0)
+      : 0
+  );
+  const paymentStartMonthRef = addFormulaRow(
+    "Payment start month",
+    `MAX(${emiStartMonthRef.replace(`${A}!`, "")},${moratoriumMonthsRef.replace(`${A}!`, "")})`
+  );
+  const capitalizedInterestRef = addFormulaRow(
+    "Capitalized pre-operative interest",
+    `IF(${financingTypeRef.replace(`${A}!`, "")}="Loan",` +
+      `MAX(0,${projectCostRef.replace(`${A}!`, "")}-${loanDownPaymentRef.replace(`${A}!`, "")})*` +
+      `${loanInterestRateRef.replace(`${A}!`, "")}/100/12*${paymentStartMonthRef.replace(`${A}!`, "")},0)`
+  );
+  const financedPrincipalRef = addFormulaRow(
+    "Financed principal",
+    `IF(${financingTypeRef.replace(`${A}!`, "")}="Loan",` +
+      `MAX(0,${projectCostRef.replace(`${A}!`, "")}-${loanDownPaymentRef.replace(`${A}!`, "")})+` +
+      `${capitalizedInterestRef.replace(`${A}!`, "")},0)`
+  );
+  const processingChargesRef = addFormulaRow(
+    "Processing charges",
+    `MAX(0,${projectCostRef.replace(`${A}!`, "")}-${loanDownPaymentRef.replace(`${A}!`, "")})*` +
+      `${processingChargesPctRef.replace(`${A}!`, "")}/100`
+  );
+  const initialInvestmentRef = addFormulaRow(
+    "Initial equity outlay",
+    `IF(${financingTypeRef.replace(`${A}!`, "")}="Cash",${projectCostRef.replace(`${A}!`, "")}+${preOpeningCostsRef.replace(`${A}!`, "")}+${workingCapitalBufferRef.replace(`${A}!`, "")},` +
+      `IF(${financingTypeRef.replace(`${A}!`, "")}="Loan",${loanDownPaymentRef.replace(`${A}!`, "")}+${processingChargesRef.replace(`${A}!`, "")}+${preOpeningCostsRef.replace(`${A}!`, "")}+${workingCapitalBufferRef.replace(`${A}!`, "")},` +
+      `${installationCostRef.replace(`${A}!`, "")}+${preOpeningCostsRef.replace(`${A}!`, "")}+${workingCapitalBufferRef.replace(`${A}!`, "")}))`
+  );
 
   const warrantyYearsRef = addRow("Warranty years", inputs.maintenance.warrantyYears);
   const cmcYearsRef = addRow("CMC years", inputs.maintenance.cmcYears);
   const cmcAnnualCostRef = addRow("CMC annual cost", inputs.maintenance.cmcAnnualCost);
   const amcAnnualCostRef = addRow("AMC annual cost", inputs.maintenance.amcAnnualCost);
+  const maintenanceInflationRef = addRow(
+    "Maintenance inflation (%)",
+    inputs.maintenance.inflationRate ?? 0
+  );
+  const majorReplacementCostRef = addRow(
+    "Major replacement cost (mid-life)",
+    inputs.maintenance.majorReplacementCost ?? 0
+  );
 
   const ramp = inputs.utilizationRamp;
   const rampMonth1to3Ref = addRow("Ramp: months 1-3 (%)", ramp?.month1to3Pct ?? 100);
@@ -192,7 +259,7 @@ export function buildWorkbookPlan(
 
   // -------------------------------------------------------------------- Monthly ---
   const M = "Monthly";
-  const totalMonths = inputs.usefulLifeYears * 12;
+  const totalOperatingMonths = inputs.usefulLifeYears * 12;
   const monthlySheetRows = monthly.monthlyCashReceived.length;
   const headerRow = 1;
   const firstDataRow = 2;
@@ -222,7 +289,7 @@ export function buildWorkbookPlan(
   push(M, "S1", {
     formula:
       `IF(${financingTypeRef}="Loan",` +
-      `-PMT(${loanInterestRateRef}/12/100,${tenureMonthsRef},${initialInvestmentRef}-${loanDownPaymentRef}),` +
+      `-PMT(${loanInterestRateRef}/12/100,${tenureMonthsRef},${financedPrincipalRef}),` +
       `IF(${financingTypeRef}="Lease",${leaseRentalRef},0))`,
   });
   const monthlyPaymentRef = `${M}!$S$1`;
@@ -252,11 +319,18 @@ export function buildWorkbookPlan(
     const monthNumber = i + 1;
     push(M, `${COL.month}${r}`, { value: monthNumber });
 
-    if (monthNumber <= totalMonths) {
-      const yearNumber = Math.ceil(monthNumber / 12);
-      push(M, `${COL.year}${r}`, { value: yearNumber });
+    {
+      const operatingMonthExpr = `${COL.month}${r}-${launchDelayRef}`;
+      const isOperatingExpr =
+        `AND(${COL.month}${r}>${launchDelayRef},${COL.month}${r}<=${launchDelayRef}+${totalOperatingMonths})`;
+      const operatingYearExpr = `ROUNDUP((${operatingMonthExpr})/12,0)`;
+      push(M, `${COL.year}${r}`, {
+        formula: `IF(${isOperatingExpr},${operatingYearExpr},"")`,
+      });
       push(M, `${COL.ramp}${r}`, {
-        formula: `IF(${COL.month}${r}<=3,${rampMonth1to3Ref},IF(${COL.month}${r}<=6,${rampMonth4to6Ref},IF(${COL.month}${r}<=12,${rampMonth7to12Ref},${rampYear2PlusRef})))/100`,
+        formula:
+          `IF(${isOperatingExpr},` +
+          `IF(${operatingMonthExpr}<=3,${rampMonth1to3Ref},IF(${operatingMonthExpr}<=6,${rampMonth4to6Ref},IF(${operatingMonthExpr}<=12,${rampMonth7to12Ref},${rampYear2PlusRef})))/100,0)`,
       });
       push(M, `${COL.billed}${r}`, {
         // ISS-29 (Jay's decision, 2026-07-14): billed revenue ramps with the same
@@ -270,20 +344,32 @@ export function buildWorkbookPlan(
       push(M, `${COL.variable}${r}`, {
         formula: `${usagePerDayRef}*${variableCostPerUseRef}*${workingDaysRef}*${COL.ramp}${r}`,
       });
-      push(M, `${COL.fixed}${r}`, { formula: `${fixedCostPerMonthRef}` });
+      push(M, `${COL.fixed}${r}`, {
+        formula: `IF(${isOperatingExpr},${fixedCostPerMonthRef},0)`,
+      });
       {
-        const overrideLookup = `INDEX(${A}!$B$${overrideFirstRow}:$B$${overrideLastRow},${COL.year}${r})`;
+        const safeOperatingYearExpr =
+          `MAX(1,MIN(${inputs.usefulLifeYears},${operatingYearExpr}))`;
+        const overrideLookup =
+          `INDEX(${A}!$B$${overrideFirstRow}:$B$${overrideLastRow},${safeOperatingYearExpr})`;
         push(M, `${COL.maintenance}${r}`, {
           formula:
+            `IF(${isOperatingExpr},(` +
             `IF(${overrideLookup}<>"",${overrideLookup}/100*${purchaseCostRef},` +
-            `IF(${COL.year}${r}<=${warrantyYearsRef},0,IF(${COL.year}${r}<=${warrantyYearsRef}+${cmcYearsRef},${cmcAnnualCostRef},${amcAnnualCostRef})))/12`,
+            `IF(${operatingYearExpr}<=${warrantyYearsRef},0,IF(${operatingYearExpr}<=${warrantyYearsRef}+${cmcYearsRef},${cmcAnnualCostRef},${amcAnnualCostRef})))*` +
+            `(1+${maintenanceInflationRef}/100)^(${operatingYearExpr}-1))/12,0)`,
         });
       }
       push(M, `${COL.emi}${r}`, {
-        formula: `IF(${financingTypeRef}="Cash",0,IF(${COL.month}${r}<=${tenureMonthsRef},${monthlyPaymentRef},0))`,
+        formula:
+          `IF(${financingTypeRef}="Cash",0,` +
+          `IF(AND(${COL.month}${r}>${paymentStartMonthRef},${COL.month}${r}<=${paymentStartMonthRef}+${tenureMonthsRef}),${monthlyPaymentRef},0))`,
       });
       push(M, `${COL.net}${r}`, {
-        formula: `${COL.realized}${r}-${COL.variable}${r}-${COL.fixed}${r}-${COL.maintenance}${r}-${COL.emi}${r}`,
+        formula:
+          `${COL.crTotal}${r}-${COL.variable}${r}-${COL.fixed}${r}-${COL.maintenance}${r}-${COL.emi}${r}` +
+          `-IF(${COL.month}${r}=${launchDelayRef}+ROUNDUP(${totalOperatingMonths}/2,0),${majorReplacementCostRef},0)` +
+          `+IF(${COL.month}${r}=${launchDelayRef}+${totalOperatingMonths},${purchaseCostRef}*${salvageValueRef}/100+${workingCapitalBufferRef},0)`,
       });
     }
 
@@ -300,8 +386,8 @@ export function buildWorkbookPlan(
       // golden scenario B (financed + DSO) before this upper bound was added.
       push(M, `${crCols[p]}${r}`, {
         formula:
-          `IF(AND(${sourceMonthExpr}>=1,${sourceMonthExpr}<=${totalMonths}),` +
-          `INDEX($${COL.realized}$${firstDataRow}:$${COL.realized}$${firstDataRow + totalMonths - 1},${sourceMonthExpr})*${payerShareAddr}/100,0)`,
+          `IF(AND(${sourceMonthExpr}>=1,${sourceMonthExpr}<=${monthlySheetRows}),` +
+          `INDEX($${COL.realized}$${firstDataRow}:$${COL.realized}$${firstDataRow + monthlySheetRows - 1},${sourceMonthExpr})*${payerShareAddr}/100,0)`,
       });
     }
     push(M, `${COL.crTotal}${r}`, {
@@ -319,7 +405,8 @@ export function buildWorkbookPlan(
   push(S, "F1", { value: "Net cash flow after financing" });
   push(S, "G1", { value: "Cumulative cash position" });
 
-  for (let y = 0; y < inputs.usefulLifeYears; y += 1) {
+  const annualSummaryYears = Math.ceil(monthlySheetRows / 12);
+  for (let y = 0; y < annualSummaryYears; y += 1) {
     const r = 2 + y;
     const monthStart = firstDataRow + y * 12;
     const monthEnd = monthStart + 11;
@@ -337,11 +424,13 @@ export function buildWorkbookPlan(
   }
 
   const annualFirstRow = 2;
-  const annualLastRow = 1 + inputs.usefulLifeYears;
+  const annualLastRow = 1 + annualSummaryYears;
   const npvRow = annualLastRow + 2;
   push(S, `A${npvRow}`, { value: "NPV" });
   push(S, `B${npvRow}`, {
-    formula: `NPV(${discountRateRef}/100,F${annualFirstRow}:F${annualLastRow})-${initialInvestmentRef}`,
+    formula:
+      `NPV((1+${discountRateRef}/100)^(1/12)-1,` +
+      `${M}!$${COL.net}$${firstDataRow}:$${COL.net}$${lastDataRow})-${initialInvestmentRef}`,
   });
   const npvAddr = `${S}!$B$${npvRow}`;
 
@@ -351,15 +440,17 @@ export function buildWorkbookPlan(
   if (result.irr === null) {
     push(S, `B${irrRow}`, { value: "Undefined — no discount rate makes NPV cross zero" });
   } else {
-    // Excel's IRR() needs one contiguous range including the initial outflow — build
-    // a same-row helper array (column H onward, unused elsewhere on this sheet)
-    // rather than a discontiguous range.
+    // Excel's IRR() needs one contiguous range including the initial outflow.
     push(S, `H${irrRow}`, { formula: `-${initialInvestmentRef}` });
-    for (let y = 0; y < inputs.usefulLifeYears; y += 1) {
-      push(S, `${colLetter(8 + 1 + y)}${irrRow}`, { formula: `F${annualFirstRow + y}` });
+    for (let month = 0; month < monthlySheetRows; month += 1) {
+      push(S, `${colLetter(8 + 1 + month)}${irrRow}`, {
+        formula: `${M}!${COL.net}${firstDataRow + month}`,
+      });
     }
-    const lastCol = colLetter(8 + inputs.usefulLifeYears);
-    push(S, `B${irrRow}`, { formula: `IRR($H$${irrRow}:$${lastCol}$${irrRow})` });
+    const lastCol = colLetter(8 + monthlySheetRows);
+    push(S, `B${irrRow}`, {
+      formula: `(1+IRR($H$${irrRow}:$${lastCol}$${irrRow}))^12-1`,
+    });
     irrAddr = `${S}!$B$${irrRow}`;
   }
 
@@ -410,7 +501,7 @@ export function buildWorkbookPlan(
   const C = "Charts";
   push(C, "A1", { value: "Year" });
   push(C, "B1", { value: "Cumulative cash position" });
-  for (let y = 0; y < inputs.usefulLifeYears; y += 1) {
+  for (let y = 0; y < annualSummaryYears; y += 1) {
     push(C, `A${y + 2}`, { value: y + 1 });
     push(C, `B${y + 2}`, { formula: `'${S}'!G${2 + y}` });
   }
@@ -447,7 +538,12 @@ export function buildWorkbookPlan(
       irr: irrAddr,
       breakEvenUsagePerDay: breakEvenRef,
       expectedUsagePerDay: expectedUsageRef,
-      monthlyNetCashFlowRange: { sheet: M, firstRow: firstDataRow, lastRow: firstDataRow + totalMonths - 1, col: COL.net },
+      monthlyNetCashFlowRange: {
+        sheet: M,
+        firstRow: firstDataRow,
+        lastRow: firstDataRow + monthlySheetRows - 1,
+        col: COL.net,
+      },
       annualNetCashFlowRange: { sheet: S, firstRow: annualFirstRow, lastRow: annualLastRow, col: "F" },
       annualCumulativeCashPosition: { sheet: S, firstRow: annualFirstRow, lastRow: annualLastRow, col: "G" },
     },

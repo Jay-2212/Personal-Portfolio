@@ -102,11 +102,13 @@ cost jump the moment warranty ends) is visible year-by-year rather than averaged
 `formulas/launchDelay.ts` — `preOperativeInterest()`
 
 ```text
-Pre-operative interest = Principal × (Annual interest rate ÷ 100 ÷ 12) × Launch delay in months
+Pre-operative interest = Principal × (Annual interest rate ÷ 100 ÷ 12) × Months before debt service starts
 ```
 
-Simple (non-compounding) monthly interest accrued during the **launch delay** window,
-before any revenue exists to offset it.
+Simple (non-compounding) monthly interest accrued before EMI begins. It is capitalized
+once into the financed principal. When no explicit EMI start is entered, EMI starts
+at launch; an explicitly earlier EMI start pays debt service during the launch delay
+instead of also capitalizing that period's interest.
 
 ---
 
@@ -142,12 +144,35 @@ Straight-line only for v1, per SPEC.md §17 — an equal amount expensed every y
 
 ## 4. Core financial outputs
 
+### 4.0 Equity basis and monthly cash-flow spine
+`formulas/cashFlowSpine.ts` — `buildMonthlyCashFlowSpine()`
+
+All headline return metrics use equity cash flow. Time-zero equity outlay is full
+project/setup cost for Cash, down payment plus fees/setup costs for Loan, and
+installation/setup costs for Lease. Monthly cash flow is:
+
+```text
+Cash received after payer DSO
+− variable operating cost
+− fixed operating cost
+− maintenance and replacement cost
+− EMI or lease rental
++ terminal salvage and working-capital-buffer release in the final operating month
+```
+
+The series begins before launch, retains the full post-horizon collection tail, and
+extends for financing payments when necessary. Annual cash-flow views are sums of
+these monthly periods; they are not separately calculated forecasts.
+
 ### 4.1 NPV (Net Present Value)
 `formulas/npv.ts` — `npv()`
 
 ```text
 NPV = (Σ over each period t of: cash flow[t] ÷ (1 + discount rate ÷ 100)^t) − Initial investment
 ```
+
+CapexIQ passes monthly equity cash flows and the effective monthly rate derived from
+the annual discount rate to this formula.
 
 ### 4.2 IRR (Internal Rate of Return)
 `formulas/irr.ts` — `irr()`
@@ -156,7 +181,9 @@ NPV = (Σ over each period t of: cash flow[t] ÷ (1 + discount rate ÷ 100)^t) �
 IRR = the discount rate at which NPV = 0
 ```
 
-Solved numerically by bisection search between −99% and 1,000%, narrowing until NPV is
+CapexIQ solves the monthly equity series and annualizes the result as
+`(1 + monthly IRR)^12 − 1`. The underlying rate is solved numerically by bisection
+search between −99% and 1,000%, narrowing until NPV is
 within 0.000001 of zero (or 100 iterations elapse). **Undefined and throws** when the
 cash-flow series (initial investment plus all period cash flows) doesn't contain both
 a positive and a negative value, or when no sign change in NPV exists across the
@@ -195,15 +222,15 @@ Find the smallest year y such that:
 Payback period = (y − 1) + (Initial investment − cumulative cash flow through year (y − 1)) ÷ cash flow[y]
 ```
 
-Linear interpolation within the year the cumulative cash flow crosses the initial
-investment. Returns `Infinity` if cumulative cash flow never reaches the initial
-investment across the whole series.
+CapexIQ passes the canonical monthly equity series, linearly interpolates within the
+crossing month, and divides the result by 12 for display in years. Returns `Infinity`
+if cumulative cash flow never reaches the initial investment across the whole series.
 
 ### 4.6 Discounted payback period
 `formulas/discountedPayback.ts` — `discountedPaybackPeriod()`
 
 ```text
-Same as §4.5, but each year's cash flow is first discounted:
+Same as §4.5, but each month's cash flow is first discounted:
   discounted cash flow[t] = cash flow[t] ÷ (1 + discount rate ÷ 100)^t
 ```
 

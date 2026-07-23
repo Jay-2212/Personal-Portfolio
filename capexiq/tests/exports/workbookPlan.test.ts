@@ -128,7 +128,10 @@ describe("workbookPlan — golden scenario A (simple cash purchase)", () => {
     for (let row = firstRow; row <= lastRow; row += 1) {
       const value = evaluated.get(sheet, `${col}${row}`);
       const monthIndex = row - firstRow;
-      expect(value as number).toBeCloseTo(monthly.monthlyNetCashFlowAfterFinancing[monthIndex], 2);
+      expect(value as number, `monthly cash flow ${monthIndex + 1}`).toBeCloseTo(
+        monthly.monthlyNetCashFlowAfterFinancing[monthIndex],
+        2,
+      );
     }
   });
 
@@ -137,7 +140,10 @@ describe("workbookPlan — golden scenario A (simple cash purchase)", () => {
     for (let row = firstRow; row <= lastRow; row += 1) {
       const value = evaluated.get(sheet, `${col}${row}`);
       const yearIndex = row - firstRow;
-      expect(value as number).toBeCloseTo(result.annualNetCashFlowsAfterFinancing[yearIndex], 2);
+      expect(value as number, `annual cash flow ${yearIndex + 1}`).toBeCloseTo(
+        result.annualNetCashFlowsAfterFinancing[yearIndex],
+        2,
+      );
     }
   });
 
@@ -204,7 +210,10 @@ describe("workbookPlan — golden scenario B (financed, ramped, multi-payer DSO)
     for (let row = firstRow; row <= lastRow; row += 1) {
       const value = evaluated.get(sheet, `${col}${row}`);
       const monthIndex = row - firstRow;
-      expect(value as number).toBeCloseTo(monthly.monthlyNetCashFlowAfterFinancing[monthIndex], 2);
+      expect(value as number, `monthly cash flow ${monthIndex + 1}`).toBeCloseTo(
+        monthly.monthlyNetCashFlowAfterFinancing[monthIndex],
+        2,
+      );
     }
   });
 
@@ -309,7 +318,10 @@ describe("workbookPlan — golden scenario C (per-year maintenance override, ISS
     for (let row = firstRow; row <= lastRow; row += 1) {
       const value = evaluated.get(sheet, `${col}${row}`);
       const yearIndex = row - firstRow;
-      expect(value as number).toBeCloseTo(result.annualNetCashFlowsAfterFinancing[yearIndex], 2);
+      expect(value as number, `annual cash flow ${yearIndex + 1}`).toBeCloseTo(
+        result.annualNetCashFlowsAfterFinancing[yearIndex],
+        2,
+      );
     }
   });
 
@@ -318,7 +330,10 @@ describe("workbookPlan — golden scenario C (per-year maintenance override, ISS
     for (let row = firstRow; row <= lastRow; row += 1) {
       const value = evaluated.get(sheet, `${col}${row}`);
       const monthIndex = row - firstRow;
-      expect(value as number).toBeCloseTo(monthly.monthlyNetCashFlowAfterFinancing[monthIndex], 2);
+      expect(value as number, `monthly cash flow ${monthIndex + 1}`).toBeCloseTo(
+        monthly.monthlyNetCashFlowAfterFinancing[monthIndex],
+        2,
+      );
     }
   });
 });
@@ -373,7 +388,10 @@ describe("workbookPlan — golden scenario D (lease financing, ISS-18 tenure-cut
     for (let row = firstRow; row <= lastRow; row += 1) {
       const value = evaluated.get(sheet, `${col}${row}`);
       const yearIndex = row - firstRow;
-      expect(value as number).toBeCloseTo(result.annualNetCashFlowsAfterFinancing[yearIndex], 2);
+      expect(value as number, `annual cash flow ${yearIndex + 1}`).toBeCloseTo(
+        result.annualNetCashFlowsAfterFinancing[yearIndex],
+        2,
+      );
     }
   });
 });

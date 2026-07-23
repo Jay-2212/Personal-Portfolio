@@ -4,6 +4,44 @@ This is the governing contract for the Investment Outlook score, discounted payb
 and Equivalent Annual Cost (EAC). `formulas/` is the implementation; tests are the
 regression evidence. Last reconciled: 2026-07-22.
 
+## Cash-flow basis and canonical timeline
+
+CapexIQ reports an **equity NPV** for every acquisition mode. Cash purchase is the
+special case where the equity outlay is also the full project outlay. The model does
+not mix an unlevered project outlay with levered debt-service cash flows.
+
+| Mode | Time-zero equity outlay | Monthly financing cash flow |
+|---|---|---|
+| Cash | Purchase + installation + pre-opening costs + working-capital buffer | None |
+| Loan | Down payment + processing fee + pre-opening costs + working-capital buffer | EMI on financed project cost plus capitalized pre-operative interest |
+| Lease | Installation + pre-opening costs + working-capital buffer | Lease rental through the entered tenure |
+
+Loan principal is `max(0, purchase + installation − down payment)`. Processing fees
+are paid by equity at time zero. Simple pre-operative interest accrues only for whole
+months before debt service starts, is added once to financed principal, and is then
+repaid through EMI. If no explicit EMI start is entered, debt service starts when the
+equipment launches. Lease follows the current finance-lease contract: after the
+entered rental tenure the equipment is treated as owned, so terminal salvage remains
+available to equity.
+
+`formulas/cashFlowSpine.ts` is the canonical month-by-month series. A launch delay of
+`n` means the first `n` monthly periods have no operations and operating month 1 is
+period `n + 1`. The spine applies utilization ramp, payer-specific
+`ceil(DSO days / 30)` collection shifts, variable and fixed operating costs,
+operation-year maintenance and inflation, financing start/moratorium, mid-life
+replacement, and terminal value. It retains post-useful-life DSO collections and any
+remaining financing periods.
+
+Terminal salvage is `purchase cost × salvage %` in the final operating month; the
+working-capital buffer is released in that same month. NPV discounts the monthly
+equity cash flows at the effective monthly rate derived from the annual discount
+rate. IRR is solved monthly and annualized. Simple and discounted payback interpolate
+on that same monthly equity series. Cash-flow ROI uses the first 12 operating months
+over the time-zero equity outlay. Annual cash-flow tables, charts, and exports are
+aggregations of the same spine. Break-even remains a mature operations measure based
+on contribution per procedure and monthly fixed cost, so financing and DSO do not
+alter it.
+
 ## Investment Outlook
 
 The score is an explainable lens over visible outputs, not a proprietary benchmark or a

@@ -32,13 +32,13 @@ describe("computeAssessment — golden scenario A (simple cash purchase)", () =>
     expect(result.monthlyRealizedRevenue).toBe(200_000);
     expect(result.annualOperatingSurplus).toBe(1_710_000);
     expect(result.annualNetCashFlowsBeforeFinancing).toEqual([
-      1_710_000, 1_710_000, 1_710_000, 1_710_000, 1_710_000, 1_650_000, 1_650_000, 1_670_000,
+      1_710_000, 1_710_000, 1_710_000, 1_710_000, 1_710_000, 1_650_000, 1_650_000, 1_770_000.0000000002,
     ]);
-    expect(result.npv).toBeCloseTo(6_176_803.66, 0);
-    expect(result.irr).toBeCloseTo(80.5921, 3);
+    expect(result.npv).toBeCloseTo(6_679_887.97, 0);
+    expect(result.irr).toBeCloseTo(119.4693, 3);
     expect(result.paybackYears).toBeCloseTo(1.22807, 4);
     expect(result.paybackYearsFromCashFlows).toBeCloseTo(1.22807, 4);
-    expect(result.discountedPaybackYears).toBeCloseTo(1.42928, 4);
+    expect(result.discountedPaybackYears).toBeCloseTo(1.33358, 4);
     expect(result.eac).toBeCloseTo(1_134_791.81, 0);
     expect(result.roiRealized).toBeCloseTo(81.42857, 4);
     expect(result.roiCashFlow).toBeCloseTo(result.roiRealized, 6);
@@ -71,12 +71,14 @@ describe("computeAssessment — golden scenario B (financed, payer mix, DSO)", (
     expect(result.monthlyRealizedRevenue).toBe(2_670_000);
     expect(result.annualOperatingSurplus).toBe(14_040_000);
     expect(result.monthlyEmiOrLease).toBeCloseTo(580_604.83, 0);
-    expect(result.annualNetCashFlowsAfterFinancing[0]).toBeCloseTo(7_072_741.98, 0);
-    expect(result.annualNetCashFlowsAfterFinancing[9]).toBeCloseTo(12_090_000, 0);
-    expect(result.npv).toBeCloseTo(16_071_158.54, 0);
-    expect(result.irr).toBeCloseTo(22.0518, 3);
-    expect(result.roiBilled).toBeCloseTo(49.0909, 3);
-    expect(result.roiRealized).toBeCloseTo(42.5455, 3);
+    expect(result.initialEquityOutlay).toBe(6_600_000);
+    expect(result.annualNetCashFlowsAfterFinancing[0]).toBeCloseTo(3_868_741.98, 0);
+    expect(result.annualNetCashFlowsAfterFinancing[9]).toBeCloseTo(13_590_000, 0);
+    expect(result.annualNetCashFlowsAfterFinancing[10]).toBeCloseTo(3_204_000, 0);
+    expect(result.npv).toBeCloseTo(43_505_038.67, 0);
+    expect(result.irr).toBeCloseTo(108.7059, 3);
+    expect(result.roiBilled).toBeCloseTo(245.4545, 3);
+    expect(result.roiRealized).toBeCloseTo(212.7273, 3);
     expect(result.roiCashFlow).not.toBeCloseTo(result.roiRealized, 1);
     expect(result.roiBilled).not.toBeCloseTo(result.roiRealized, 1);
   });
@@ -107,11 +109,11 @@ describe("computeAssessment — golden scenario C (non-viable, minimum useful li
 
   it("surfaces non-viability via sentinels rather than throwing", () => {
     expect(result.annualOperatingSurplus).toBe(-2_340_000);
-    expect(result.npv).toBeCloseTo(-7_580_000, 0);
-    expect(result.irr).toBeNull();
+    expect(result.npv).toBeCloseTo(-7_474_410.79, 0);
+    expect(result.irr).toBeCloseTo(-100, 3);
     expect(result.paybackYears).toBe(Infinity);
     expect(result.discountedPaybackYears).toBeNull();
-    expect(result.roiCashFlow).toBeCloseTo(-42.5455, 3);
+    expect(result.roiCashFlow).toBeCloseTo(-38, 3);
     expect(result.breakEvenUsagePerDay).toBeCloseTo(17.6, 8);
     expect(result.investmentOutlook.band).toBe("Weak");
   });

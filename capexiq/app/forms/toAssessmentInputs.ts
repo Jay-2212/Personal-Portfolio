@@ -68,6 +68,10 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
           downPayment: (advanced.C.downPayment ?? 0) * CRORE,
           interestRate: advanced.C.loanInterestRate ?? 0,
           tenureMonths: advanced.C.loanTenureMonths ?? 1,
+          processingChargesPct: advanced.C.processingChargesPct ?? 0,
+          emiStartMonth:
+            advanced.C.emiStartMonth ?? basic.launchDelayMonths ?? 0,
+          moratoriumPeriodMonths: advanced.C.moratoriumPeriodMonths ?? 0,
         }
       : basic.acquisitionMode === "Lease"
         ? {
@@ -132,10 +136,16 @@ export function toAssessmentInputs(state: WizardState): AssessmentInputs {
       cmcAnnualCost,
       amcAnnualCost,
       costByYearPct: advanced.E.maintenanceCostByYearPct,
+      inflationRate: advanced.E.maintenanceInflationPct ?? 0,
+      majorReplacementCost: advanced.E.majorReplacementCost ?? 0,
     },
     usefulLifeYears,
     discountRate: advanced.F.discountRate ?? 12.5,
     salvageValuePercentage: advanced.F.salvageValuePercentage ?? 0,
     utilizationRamp,
+    launchDelayMonths: basic.launchDelayMonths ?? 0,
+    preOpeningFixedCosts: advanced.D.preOpeningFixedCosts ?? 0,
+    workingCapitalBufferAmount:
+      advanced.D.workingCapitalBufferAmount ?? 0,
   };
 }

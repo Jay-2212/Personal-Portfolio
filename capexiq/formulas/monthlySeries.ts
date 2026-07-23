@@ -21,11 +21,7 @@
 // discounted payback) and this monthly export series ever see the ramped numbers.
 
 import type { AssessmentInputs } from "./computeAssessment";
-import { billedMonthlyRevenue, monthlyRealizedRevenue } from "./revenue";
-import { realizedRevenuePerUse, PayerMixEntry } from "./realization";
-import { maintenanceScheduleForYears } from "./maintenance";
-import { monthlyEmi } from "./emi";
-import { cashReceivedByMonth, PayerCollectionProfile } from "./dso";
+import { buildMonthlyCashFlowSpine } from "./cashFlowSpine";
 
 export function utilizationFractionForMonth(
   ramp: AssessmentInputs["utilizationRamp"],
@@ -61,104 +57,30 @@ export interface MonthlySeries {
   /** Realized revenue minus variable/fixed/maintenance cost minus financing, per
    *  month — the monthly analogue of annualNetCashFlowsAfterFinancing. */
   monthlyNetCashFlowAfterFinancing: number[];
+  monthlyMajorReplacementCost: number[];
+  initialEquityOutlay: number;
+  terminalSalvageValue: number;
+  operationStartMonth: number;
+  operationEndMonth: number;
 }
 
 export function buildMonthlySeries(inputs: AssessmentInputs): MonthlySeries {
-  const initialInvestment = inputs.purchaseCost + inputs.installationCost;
-  const payerMixEntries: PayerMixEntry[] = inputs.payerMix.map((payer) => ({
-    payerName: payer.payerName,
-    shareOfVolume: payer.shareOfVolume,
-    billedTariff: payer.billedTariff,
-    realizationPercentage: payer.realizationPercentage,
-  }));
-  const realizedPerUse = realizedRevenuePerUse(payerMixEntries);
-  const billedPerUseWeighted = inputs.payerMix.reduce(
-    (total, payer) => total + (payer.shareOfVolume / 100) * payer.billedTariff,
-    0
-  );
-  const monthlyRealizedFlat = monthlyRealizedRevenue(
-    inputs.usagePerDay,
-    realizedPerUse,
-    inputs.workingDaysPerMonth
-  );
-  const monthlyBilledFlat = billedMonthlyRevenue(
-    inputs.usagePerDay,
-    billedPerUseWeighted,
-    inputs.workingDaysPerMonth
-  );
-  const annualVariableCost =
-    inputs.usagePerDay * inputs.variableCostPerUse * inputs.workingDaysPerMonth * 12;
-
-  const baseMaintenanceSchedule = maintenanceScheduleForYears(
-    inputs.maintenance.warrantyYears,
-    inputs.maintenance.cmcYears,
-    inputs.maintenance.cmcAnnualCost,
-    inputs.maintenance.amcAnnualCost,
-    inputs.usefulLifeYears
-  );
-  const maintenanceAnnualCostByYear = baseMaintenanceSchedule.map((entry, yearIndex) => {
-    const overridePct = inputs.maintenance.costByYearPct?.[yearIndex];
-    if (overridePct === null || overridePct === undefined) return entry.annualCost;
-    return (overridePct / 100) * inputs.purchaseCost;
-  });
-
-  const monthlyPayment =
-    inputs.financing.type === "loan"
-      ? monthlyEmi(
-          initialInvestment - inputs.financing.downPayment,
-          inputs.financing.interestRate,
-          inputs.financing.tenureMonths
-        )
-      : inputs.financing.type === "lease"
-        ? inputs.financing.rentalPerMonth
-        : 0;
-
-  const totalMonths = inputs.usefulLifeYears * 12;
-  const ramp = inputs.utilizationRamp;
-
-  const monthlyBilledRevenue = Array.from({ length: totalMonths }, (_, monthIndex) =>
-    monthlyBilledFlat * utilizationFractionForMonth(ramp, monthIndex)
-  );
-  const monthlyRealizedRevenue_ = Array.from({ length: totalMonths }, (_, monthIndex) =>
-    monthlyRealizedFlat * utilizationFractionForMonth(ramp, monthIndex)
-  );
-  const monthlyVariableCost = Array.from({ length: totalMonths }, (_, monthIndex) =>
-    (annualVariableCost / 12) * utilizationFractionForMonth(ramp, monthIndex)
-  );
-  const monthlyFixedCost = Array.from({ length: totalMonths }, () => inputs.fixedCostPerMonth);
-  const monthlyMaintenanceCost = Array.from({ length: totalMonths }, (_, monthIndex) => {
-    const yearIndex = Math.floor(monthIndex / 12);
-    return (maintenanceAnnualCostByYear[yearIndex] ?? 0) / 12;
-  });
-
-  const payerCollectionProfiles: PayerCollectionProfile[] = inputs.payerMix.map((payer) => ({
-    payerName: payer.payerName,
-    shareOfVolume: payer.shareOfVolume,
-    daysToCollect: payer.collectionDelayDays,
-  }));
-  const monthlyCashReceived = cashReceivedByMonth(monthlyRealizedRevenue_, payerCollectionProfiles);
-
-  const monthlyEmiOrLease = Array.from({ length: totalMonths }, (_, monthIndex) => {
-    if (inputs.financing.type === "cash") return 0;
-    return monthIndex < inputs.financing.tenureMonths ? monthlyPayment : 0;
-  });
-
-  const monthlyNetCashFlowAfterFinancing = Array.from({ length: totalMonths }, (_, monthIndex) =>
-    monthlyRealizedRevenue_[monthIndex] -
-    monthlyVariableCost[monthIndex] -
-    monthlyFixedCost[monthIndex] -
-    monthlyMaintenanceCost[monthIndex] -
-    monthlyEmiOrLease[monthIndex]
-  );
+  const spine = buildMonthlyCashFlowSpine(inputs);
 
   return {
-    monthlyBilledRevenue,
-    monthlyRealizedRevenue: monthlyRealizedRevenue_,
-    monthlyVariableCost,
-    monthlyFixedCost,
-    monthlyMaintenanceCost,
-    monthlyCashReceived,
-    monthlyEmiOrLease,
-    monthlyNetCashFlowAfterFinancing,
+    monthlyBilledRevenue: spine.monthlyBilledRevenue,
+    monthlyRealizedRevenue: spine.monthlyRealizedRevenue,
+    monthlyVariableCost: spine.monthlyVariableCost,
+    monthlyFixedCost: spine.monthlyFixedCost,
+    monthlyMaintenanceCost: spine.monthlyMaintenanceCost,
+    monthlyCashReceived: spine.monthlyCashReceived,
+    monthlyEmiOrLease: spine.monthlyFinancingPayment,
+    monthlyNetCashFlowAfterFinancing:
+      spine.monthlyNetCashFlowAfterFinancing,
+    monthlyMajorReplacementCost: spine.monthlyMajorReplacementCost,
+    initialEquityOutlay: spine.initialEquityOutlay,
+    terminalSalvageValue: spine.terminalSalvageValue,
+    operationStartMonth: spine.operationStartMonth,
+    operationEndMonth: spine.operationEndMonth,
   };
 }

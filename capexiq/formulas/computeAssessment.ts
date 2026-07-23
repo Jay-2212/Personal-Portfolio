@@ -14,10 +14,9 @@ import {
   maintenanceScheduleForYears,
   MaintenanceScheduleEntry,
 } from "./maintenance";
-import { monthlyEmi } from "./emi";
 import { npv } from "./npv";
 import { irr } from "./irr";
-import { roi, paybackPeriod, paybackPeriodFromCashFlows } from "./roi";
+import { roi, paybackPeriodFromCashFlows } from "./roi";
 import { equivalentAnnualCost } from "./eac";
 import { discountedPaybackPeriod } from "./discountedPayback";
 import { annualStraightLineDepreciation } from "./depreciation";
@@ -25,8 +24,7 @@ import {
   investmentOutlookScore,
   InvestmentOutlookResult,
 } from "./investmentOutlookScore";
-import { peakWorkingCapitalGap } from "./workingCapitalPeak";
-import { utilizationFractionForMonth } from "./monthlySeries";
+import { buildMonthlyCashFlowSpine } from "./cashFlowSpine";
 
 export interface AssessmentPayer {
   payerName: string;
@@ -45,6 +43,9 @@ export type AssessmentFinancing =
       downPayment: number;
       interestRate: number;
       tenureMonths: number;
+      processingChargesPct?: number;
+      emiStartMonth?: number;
+      moratoriumPeriodMonths?: number;
     }
   | {
       type: "lease";
@@ -55,6 +56,7 @@ export type AssessmentFinancing =
        *  loan's tenureMonths so Lease and Loan are directly comparable over the same
        *  ownership horizon, rather than the rental running for the entire useful life. */
       tenureMonths: number;
+      paymentStartMonth?: number;
     };
 
 export interface AssessmentMaintenance {
@@ -67,6 +69,8 @@ export interface AssessmentMaintenance {
    *  when non-null. Missing/shorter-than-usefulLifeYears arrays are fine; unset
    *  indices simply keep the computed warranty/cmc/amc schedule. */
   costByYearPct?: (number | null)[];
+  inflationRate?: number;
+  majorReplacementCost?: number;
 }
 
 /** Advanced Group B (SPEC.md §11.1 B / §13.2) — utilization ramp-up, each percentage
@@ -94,6 +98,9 @@ export interface AssessmentInputs {
   discountRate: number;
   salvageValuePercentage: number;
   utilizationRamp?: UtilizationRampUp;
+  launchDelayMonths?: number;
+  preOpeningFixedCosts?: number;
+  workingCapitalBufferAmount?: number;
 }
 
 export interface AssessmentResult {
@@ -121,26 +128,69 @@ export interface AssessmentResult {
   workingCapitalPeakGap: number;
   workingCapitalPeakGapMonth: number;
   investmentOutlook: InvestmentOutlookResult;
+  projectCost: number;
+  initialEquityOutlay: number;
+  capitalizedInterest: number;
+  processingCharges: number;
+  terminalSalvageValue: number;
+  monthlyNetCashFlowsAfterFinancing: number[];
 }
 
-function financingCostForYear(
-  financing: AssessmentFinancing,
-  monthlyPayment: number,
-  yearIndex: number
-): number {
-  if (financing.type === "cash") return 0;
+function sumRange(series: number[], start: number, length: number): number {
+  return series
+    .slice(start, start + length)
+    .reduce((total, value) => total + value, 0);
+}
 
-  const remainingMonths = Math.max(
-    0,
-    financing.tenureMonths - yearIndex * 12
+function annualizeSeries(series: number[]): number[] {
+  return Array.from(
+    { length: Math.ceil(series.length / 12) },
+    (_, yearIndex) => sumRange(series, yearIndex * 12, 12)
   );
-  return monthlyPayment * Math.min(12, remainingMonths);
+}
+
+function annualizedIrrFromMonthly(
+  initialOutlay: number,
+  monthlyCashFlows: number[]
+): number | null {
+  try {
+    const monthlyIrr = irr(initialOutlay, monthlyCashFlows);
+    return ((1 + monthlyIrr / 100) ** 12 - 1) * 100;
+  } catch {
+    return null;
+  }
+}
+
+function peakCollectionGap(
+  realizedRevenue: number[],
+  cashReceived: number[]
+): { peakGap: number; peakMonthIndex: number } {
+  let cumulativeRealized = 0;
+  let cumulativeCashReceived = 0;
+  let peakGap = 0;
+  let peakMonthIndex = 0;
+
+  for (
+    let monthIndex = 0;
+    monthIndex < Math.max(realizedRevenue.length, cashReceived.length);
+    monthIndex += 1
+  ) {
+    cumulativeRealized += realizedRevenue[monthIndex] ?? 0;
+    cumulativeCashReceived += cashReceived[monthIndex] ?? 0;
+    const gap = cumulativeRealized - cumulativeCashReceived;
+    if (gap > peakGap) {
+      peakGap = gap;
+      peakMonthIndex = monthIndex;
+    }
+  }
+
+  return { peakGap, peakMonthIndex };
 }
 
 export function computeAssessment(
   inputs: AssessmentInputs
 ): AssessmentResult {
-  const initialInvestment = inputs.purchaseCost + inputs.installationCost;
+  const projectCost = inputs.purchaseCost + inputs.installationCost;
   const payerMixEntries: PayerMixEntry[] = inputs.payerMix.map((payer) => ({
     payerName: payer.payerName,
     shareOfVolume: payer.shareOfVolume,
@@ -162,14 +212,14 @@ export function computeAssessment(
     billedPerUseWeighted,
     inputs.workingDaysPerMonth
   );
-  const annualVariableCost =
+  const matureAnnualVariableCost =
     inputs.usagePerDay *
     inputs.variableCostPerUse *
     inputs.workingDaysPerMonth *
     12;
   const annualFixedCost = inputs.fixedCostPerMonth * 12;
   const annualOperatingSurplus =
-    monthlyRealized * 12 - annualVariableCost - annualFixedCost;
+    monthlyRealized * 12 - matureAnnualVariableCost - annualFixedCost;
   const contribution = contributionPerUse(
     realizedPerUse,
     inputs.variableCostPerUse
@@ -204,77 +254,63 @@ export function computeAssessment(
     }
   );
 
-  // ISS-19: month-by-month utilization ramp (SPEC.md §13.2). Building the monthly
-  // series first (rather than approximating an annual weighted average) lets both the
-  // per-year cash flows below and the existing monthly working-capital calc share one
-  // source of truth. Without inputs.utilizationRamp, every fraction is 1 and every
-  // consumer below is byte-for-byte identical to the pre-ramp flat computation.
-  const totalMonths = inputs.usefulLifeYears * 12;
-  const monthlyRealizedSeries = Array.from({ length: totalMonths }, (_, monthIndex) =>
-    monthlyRealized * utilizationFractionForMonth(inputs.utilizationRamp, monthIndex)
+  const spine = buildMonthlyCashFlowSpine(inputs);
+  const initialInvestment = spine.initialEquityOutlay;
+  const annualNetCashFlowsAfterFinancing = annualizeSeries(
+    spine.monthlyNetCashFlowAfterFinancing
   );
-  const monthlyVariableCostSeries = Array.from({ length: totalMonths }, (_, monthIndex) =>
-    (annualVariableCost / 12) * utilizationFractionForMonth(inputs.utilizationRamp, monthIndex)
+  const annualNetCashFlowsBeforeFinancing = annualizeSeries(
+    spine.monthlyNetCashFlowAfterFinancing.map(
+      (cashFlow, monthIndex) =>
+        cashFlow + spine.monthlyFinancingPayment[monthIndex]
+    )
   );
-  const sumMonthsInYear = (series: number[], yearIndex: number) =>
-    series
-      .slice(yearIndex * 12, yearIndex * 12 + 12)
-      .reduce((total, value) => total + value, 0);
-  const annualOperatingSurplusByYear = Array.from(
-    { length: inputs.usefulLifeYears },
-    (_, yearIndex) =>
-      sumMonthsInYear(monthlyRealizedSeries, yearIndex) -
-      sumMonthsInYear(monthlyVariableCostSeries, yearIndex) -
-      annualFixedCost
-  );
-  const annualNetCashFlowsBeforeFinancing = maintenanceSchedule.map(
-    (entry, yearIndex) => annualOperatingSurplusByYear[yearIndex] - entry.annualCost
-  );
-
-  const monthlyPayment =
-    inputs.financing.type === "loan"
-      ? monthlyEmi(
-          initialInvestment - inputs.financing.downPayment,
-          inputs.financing.interestRate,
-          inputs.financing.tenureMonths
-        )
-      : inputs.financing.type === "lease"
-        ? inputs.financing.rentalPerMonth
-        : 0;
-  const annualNetCashFlowsAfterFinancing =
-    annualNetCashFlowsBeforeFinancing.map(
-      (cashFlow, yearIndex) =>
-        cashFlow -
-        financingCostForYear(inputs.financing, monthlyPayment, yearIndex)
-    );
-
-  let irrResult: number | null;
-  try {
-    irrResult = irr(initialInvestment, annualNetCashFlowsAfterFinancing);
-  } catch {
-    irrResult = null;
-  }
-
-  const annualCostsByYear = maintenanceSchedule.map(
-    (entry, yearIndex) =>
-      sumMonthsInYear(monthlyVariableCostSeries, yearIndex) +
-      annualFixedCost +
-      entry.annualCost
-  );
-  const collectionProfiles = inputs.payerMix.map((payer) => ({
-    payerName: payer.payerName,
-    shareOfVolume: payer.shareOfVolume,
-    daysToCollect: payer.collectionDelayDays,
-  }));
-  const { peakGap, peakMonthIndex } = peakWorkingCapitalGap(
-    monthlyRealizedSeries,
-    collectionProfiles
-  );
-
-  const discountedPaybackYears = discountedPaybackPeriod(
+  const irrResult = annualizedIrrFromMonthly(
     initialInvestment,
-    annualNetCashFlowsAfterFinancing,
-    inputs.discountRate
+    spine.monthlyNetCashFlowAfterFinancing
+  );
+  const monthlyDiscountRate =
+    ((1 + inputs.discountRate / 100) ** (1 / 12) - 1) * 100;
+  const discountedPaybackMonths = discountedPaybackPeriod(
+    initialInvestment,
+    spine.monthlyNetCashFlowAfterFinancing,
+    monthlyDiscountRate
+  );
+  const discountedPaybackYears =
+    discountedPaybackMonths === null ? null : discountedPaybackMonths / 12;
+  const paybackMonths = paybackPeriodFromCashFlows(
+    initialInvestment,
+    spine.monthlyNetCashFlowAfterFinancing
+  );
+  const monthlyPayment =
+    spine.monthlyFinancingPayment.find((value) => value > 0) ?? 0;
+  const annualCostsByYear = annualizeSeries(
+    spine.monthlyVariableCost.map(
+      (variableCost, monthIndex) =>
+        variableCost +
+        spine.monthlyFixedCost[monthIndex] +
+        spine.monthlyMaintenanceCost[monthIndex] +
+        spine.monthlyMajorReplacementCost[monthIndex] +
+        spine.monthlyFinancingPayment[monthIndex]
+    )
+  );
+  const { peakGap, peakMonthIndex } = peakCollectionGap(
+    spine.monthlyRealizedRevenue,
+    spine.monthlyCashReceived
+  );
+  const firstOperatingYearStart = spine.operationStartMonth;
+  const firstOperatingYearBilledNet =
+    sumRange(spine.monthlyBilledRevenue, firstOperatingYearStart, 12) -
+    sumRange(spine.monthlyVariableCost, firstOperatingYearStart, 12) -
+    sumRange(spine.monthlyFixedCost, firstOperatingYearStart, 12);
+  const firstOperatingYearRealizedNet =
+    sumRange(spine.monthlyRealizedRevenue, firstOperatingYearStart, 12) -
+    sumRange(spine.monthlyVariableCost, firstOperatingYearStart, 12) -
+    sumRange(spine.monthlyFixedCost, firstOperatingYearStart, 12);
+  const firstOperatingYearCashFlow = sumRange(
+    spine.monthlyNetCashFlowAfterFinancing,
+    firstOperatingYearStart,
+    12
   );
 
   return {
@@ -294,24 +330,29 @@ export function computeAssessment(
     annualNetCashFlowsBeforeFinancing,
     annualNetCashFlowsAfterFinancing,
     monthlyEmiOrLease: inputs.financing.type === "cash" ? null : monthlyPayment,
-    npv: npv(inputs.discountRate, initialInvestment, annualNetCashFlowsAfterFinancing),
+    npv: npv(
+      monthlyDiscountRate,
+      initialInvestment,
+      spine.monthlyNetCashFlowAfterFinancing
+    ),
     irr: irrResult,
     roiBilled: roi(
-      monthlyBilled * 12 - annualVariableCost - annualFixedCost,
+      firstOperatingYearBilledNet,
       initialInvestment,
       "billed"
     ),
-    roiRealized: roi(annualOperatingSurplus, initialInvestment, "realized"),
+    roiRealized: roi(
+      firstOperatingYearRealizedNet,
+      initialInvestment,
+      "realized"
+    ),
     roiCashFlow: roi(
-      annualNetCashFlowsAfterFinancing[0] ?? 0,
+      firstOperatingYearCashFlow,
       initialInvestment,
       "cash-flow"
     ),
-    paybackYears: paybackPeriod(initialInvestment, annualOperatingSurplus),
-    paybackYearsFromCashFlows: paybackPeriodFromCashFlows(
-      initialInvestment,
-      annualNetCashFlowsAfterFinancing
-    ),
+    paybackYears: paybackMonths / 12,
+    paybackYearsFromCashFlows: paybackMonths / 12,
     discountedPaybackYears,
     eac: equivalentAnnualCost(
       initialInvestment,
@@ -325,9 +366,9 @@ export function computeAssessment(
       irr: irrResult,
       discountRate: inputs.discountRate,
       npv: npv(
-        inputs.discountRate,
+        monthlyDiscountRate,
         initialInvestment,
-        annualNetCashFlowsAfterFinancing
+        spine.monthlyNetCashFlowAfterFinancing
       ),
       initialInvestment,
       discountedPaybackYears,
@@ -338,5 +379,12 @@ export function computeAssessment(
       usagePerDay: inputs.usagePerDay,
       breakEvenUsagePerDay: breakEven,
     }),
+    projectCost,
+    initialEquityOutlay: initialInvestment,
+    capitalizedInterest: spine.capitalizedInterest,
+    processingCharges: spine.processingCharges,
+    terminalSalvageValue: spine.terminalSalvageValue,
+    monthlyNetCashFlowsAfterFinancing:
+      spine.monthlyNetCashFlowAfterFinancing,
   };
 }

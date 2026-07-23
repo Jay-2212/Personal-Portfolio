@@ -88,6 +88,13 @@ components or export code. The detailed score/EAC/discounted-payback contract is
 | Operating surplus | Revenue less operating cost, before financing, tax, and depreciation. |
 | Cash flow after financing | Cash received less operating cash expense and EMI/lease payment. |
 
+NPV, IRR, ROI, and payback use an equity cash-flow basis. Cash acquisition therefore
+uses the full owner-funded project cost; loan acquisition uses owner-funded down
+payment and fees at time zero plus subsequent debt service; lease acquisition uses
+owner-funded installation and setup costs plus subsequent rentals. The canonical
+monthly timeline and terminal-value rules are defined in
+`financial-model-spec.md`.
+
 For DSO, downstream NPV, IRR, annual cash-flow, and working-capital calculations must
 use the full collection-delayed series. A display may summarize the tail, but must not
 drop valid post-horizon collections from model math.

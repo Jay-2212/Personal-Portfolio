@@ -52,11 +52,22 @@ describe("buildMonthlySeries — reconciliation against computeAssessment's gold
 
   it("every year's summed net cash flow (before financing, since this scenario is cash) matches annualNetCashFlowsBeforeFinancing", () => {
     for (let yearIndex = 0; yearIndex < inputs.usefulLifeYears; yearIndex += 1) {
-      const revenue = sumMonthsInYear(monthly.monthlyRealizedRevenue, yearIndex);
+      const revenue = sumMonthsInYear(monthly.monthlyCashReceived, yearIndex);
       const variableCost = sumMonthsInYear(monthly.monthlyVariableCost, yearIndex);
       const fixedCost = sumMonthsInYear(monthly.monthlyFixedCost, yearIndex);
       const maintenanceCost = sumMonthsInYear(monthly.monthlyMaintenanceCost, yearIndex);
-      const summedNet = revenue - variableCost - fixedCost - maintenanceCost;
+      const replacementCost = sumMonthsInYear(monthly.monthlyMajorReplacementCost, yearIndex);
+      const terminalValue =
+        yearIndex === inputs.usefulLifeYears - 1
+          ? monthly.terminalSalvageValue
+          : 0;
+      const summedNet =
+        revenue -
+        variableCost -
+        fixedCost -
+        maintenanceCost -
+        replacementCost +
+        terminalValue;
       expect(summedNet).toBeCloseTo(result.annualNetCashFlowsBeforeFinancing[yearIndex], 4);
       // Cash financing → monthlyNetCashFlowAfterFinancing should equal the same total.
       expect(sumMonthsInYear(monthly.monthlyNetCashFlowAfterFinancing, yearIndex)).toBeCloseTo(
