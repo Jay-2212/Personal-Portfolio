@@ -66,12 +66,14 @@ to imply a change in their meaning.
 
 Excel contains live formulas tracing from an Assumptions sheet. Word and ZIP reuse the
 canonical assessment result. Exports should be named for the hospital/equipment/date
-to prevent collisions. Chart images in exports are deliberately deferred; do not imply
-that a workbook Charts tab or Word chart image exists.
+to prevent collisions. Excel and Word include cumulative-cash-position and
+usage-versus-break-even snapshots in the same restrained chart palette as Results.
+Captions and exact-value content must preserve meaning without relying on colour, and
+Excel's formula-backed chart source must remain available beside the images.
 
 ## Implementation watch items
 
 - Scenario comparison and one-variable continuous sensitivity are user-facing on Results.
 - Final multi-equipment/multi-band visual QA remains in `agent-build-plan.md`.
 - The exact implemented visual states live in `app/` and `design/tokens.css`; update
-  this spec only for deliberate product decisions, not to narrate CSS history.
+this spec only for deliberate product decisions, not to narrate CSS history.

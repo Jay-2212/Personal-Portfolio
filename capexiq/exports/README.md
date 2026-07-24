@@ -11,8 +11,12 @@ is reimplemented here.
 - `word-generator.ts` — the 12-section Word proposal (`report-templates/
   word-report-template.md`) via `docx`, reusing `app/components/riskNotes.ts` for the
   risk-notes section rather than a second derivation.
+- `chartImages.ts` — deterministic, browser-safe PNG rendering for cumulative cash
+  position and break-even snapshots shared by Excel and Word. It receives canonical
+  result values and contains no financial formulas.
 - `zip-generator.ts` — bundles both via `jszip` per SPEC.md §29.2.
 
-No chart images this phase (deferred, not dropped — see both template docs' Charts
-notes and `ISSUES.md`). All three generators are dynamically imported from
-`app/components/ExportPanel.tsx` on click, never bundled into the initial page load.
+The Excel Charts tab keeps its live formula-backed data alongside the two raster
+snapshots; Word embeds the same images inline with captions and exact-value tables.
+All three generators are dynamically imported from `app/components/ExportPanel.tsx`
+on click, never bundled into the initial page load.

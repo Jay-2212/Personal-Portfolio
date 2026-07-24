@@ -69,6 +69,7 @@ capexiq/
 | Cross-field validation | `app/forms/crossFieldValidation.ts` |
 | Benchmark defaults | `app/forms/equipmentDefaults.ts`, `equipment-data/*.json` |
 | Workbook formula plan / writer | `exports/workbookPlan.ts`, `exports/excel-generator.ts` |
+| Shared export chart renderer | `exports/chartImages.ts` |
 | Word proposal / ZIP package | `exports/word-generator.ts`, `exports/zip-generator.ts` |
 | Regression evidence | `tests/scenarios/`, `tests/formulas/`, `tests/exports/`, `tests/wizard/` |
 
@@ -80,5 +81,6 @@ capexiq/
   folders, so they are intentionally omitted from the source map.
 - `data-requirements.md` is intentionally detailed source provenance, not a quick
   implementation guide. Its `sourceId` values are referenced by `equipment-data/`.
-- Scenario comparison and continuous sensitivity are shipped. Export chart images
-  remain planned; see `HANDOFF.md`, `ISSUES.md`, and `agent-build-plan.md`.
+- Scenario comparison, continuous sensitivity, and Excel/Word chart snapshots are
+  shipped. Remaining release work is tracked in `HANDOFF.md`, `ISSUES.md`, and
+  `agent-build-plan.md`.

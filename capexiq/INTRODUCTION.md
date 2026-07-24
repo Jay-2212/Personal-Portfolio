@@ -34,6 +34,6 @@ owns the decision you need.
 
 The landing page, routed assessment wizard, Advanced workspace, results dashboard,
 canonical scenario/sensitivity analysis, formula engine, draft persistence, validation
-recovery, methodology page, and exports are implemented. Export chart images, final
-multi-equipment visual QA, and production deployment verification remain; see
+recovery, methodology page, and chart-bearing Excel/Word/ZIP exports are implemented.
+Final multi-equipment visual QA and production deployment verification remain; see
 `HANDOFF.md` and `ISSUES.md` for the live status.

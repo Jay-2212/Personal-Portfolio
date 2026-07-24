@@ -5,7 +5,7 @@ entries before 2026-07-13 are in `handoff-archive/2026-Q3.md`.
 
 ## Current state
 
-Last reviewed: 2026-07-24 (scenario and sensitivity analysis).
+Last reviewed: 2026-07-24 (scenario, sensitivity, and chart-bearing exports).
 
 CapexIQ has a working static Next.js application: landing and methodology pages, a
 routed assessment wizard, Basic and Advanced inputs, local draft persistence,
@@ -31,6 +31,12 @@ stress-tests daily usage or weighted billed tariff from -40% to +40%. Its select
 point, nine-point NPV curve, IRR/payback strip, tooltips, and data table all consume the
 same canonical scenario runner.
 
+Excel and Word now carry two deterministic chart snapshots beside their exact-value
+content: cumulative cash position and expected daily usage versus break-even. Excel's
+Charts sheet retains its live formula-backed data table, so the images do not replace
+the auditable model. Both export images consume the same validated input/result
+snapshot as Results.
+
 Advanced Mode has explicit activation semantics: closing it preserves entered
 values but deactivates optional overrides and their validation. Visible launch,
 financing, lifecycle, escalation, and target-IRR fields are consumed; the unused
@@ -53,14 +59,23 @@ Known next work:
 
 - Verify deployment of `main` to the Cloudflare Pages project for
   `capexiq.jaybharti.me` (ISS-28).
-- Add chart images to Excel and Word exports; the automatic tariff insight remains a
-  separately deferred product item.
+- The automatic tariff insight remains a separately deferred product item.
 - Run the remaining multi-equipment/multi-band visual QA and go-live checks in
   `agent-build-plan.md`.
 
 Open/accepted issues belong in `ISSUES.md`; do not recreate an issue list here.
 
 ## Change log
+
+### 2026-07-24 — Chart-bearing Excel and Word exports (Codex run)
+
+**Changed:** added shared, deterministic cumulative-cash-position and
+usage-versus-break-even PNG snapshots to the live-formula Excel Charts sheet and the
+Word proposal. Excel keeps its formula-backed chart source table; Word keeps adjacent
+exact-value content. **Evidence:** targeted export tests, fresh Excel/Word/ZIP
+round-trips, a real Chrome Results/export pass, artifact inspection of the downloaded
+workbook, and LibreOffice/Word visual renders pass; 323 tests, TypeScript check, and
+production build pass.
 
 ### 2026-07-24 — Canonical sensitivity workspace (Codex run)
 
@@ -76,7 +91,7 @@ TypeScript check, and production build pass.
 with a resettable comparison table for usage, weighted tariff, NPV, IRR, payback, and
 outlook. Each case transforms a copied `AssessmentInputs` snapshot and calls
 `computeAssessment()`. **Evidence:** 309 tests, TypeScript check, and production build
-pass. Continuous sensitivity remains the next phase.
+pass.
 
 ### 2026-07-23 — Formatting and regression cleanup, Phase 3 (Codex run)
 

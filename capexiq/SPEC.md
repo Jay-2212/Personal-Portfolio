@@ -3,7 +3,7 @@
 **Product:** CapexIQ — `capexiq.jaybharti.me`
 **Purpose:** India-first decision support for hospital equipment capex.
 **Status:** Core product implemented. This is the current product contract, not the original
-brainstorming history. Last reconciled: 2026-07-22.
+brainstorming history. Last reconciled: 2026-07-24.
 
 ## Product promise and boundaries
 
@@ -122,7 +122,9 @@ definitely profitable.
 The methodology page exposes the prose calculation walkthrough and formula appendix.
 Excel exports contain live formulas linked to an Assumptions sheet so users can trace
 the model; they are checked against the canonical pipeline. Word and ZIP exports reuse
-the same inputs and result.
+the same inputs and result. Excel and Word include export-time snapshots of cumulative
+cash position and expected usage versus break-even; exact values and Excel's live
+formula-backed chart source remain available beside the images.
 
 Use Indian number grouping and `₹`; full values are required in inputs, tables, chart
 labels, and exports. Compact lakh/crore display is allowed only for prominent dashboard
@@ -154,7 +156,6 @@ Do not describe these planned requirements as shipped:
 | Requirement | Current status |
 |---|---|
 | Automatic price-increase insight | Specified in `financial-model-spec.md`; deferred with Phase 9. |
-| Chart images in Excel and Word exports | Deferred; exports include data/formulas, not chart-image sheets. |
 | Final multi-equipment/multi-band visual QA and full go-live QA | Remaining work in `agent-build-plan.md`. |
 | Deployment parity with `main` | Verify separately; ISS-28 tracks the live deployment state. |
 

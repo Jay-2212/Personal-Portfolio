@@ -50,6 +50,24 @@ describe("generateWordProposal", () => {
     expect(xml.length).toBeGreaterThan(0);
   });
 
+  it("embeds cumulative-cash-flow and break-even chart images with accessible descriptions", async () => {
+    const result = computeAssessment(inputs);
+    const buffer = await generateWordProposal(inputs, result, {
+      hospitalName: "Test Hospital",
+      equipmentCategory: "MRI",
+    });
+    const zip = await JSZip.loadAsync(buffer);
+    const media = Object.keys(zip.files).filter((name) =>
+      name.startsWith("word/media/") && !name.endsWith("/")
+    );
+    const xml = await extractDocumentXml(buffer);
+
+    expect(media).toHaveLength(2);
+    expect(xml).toContain("Cumulative cash position by year");
+    expect(xml).toContain("Expected usage versus break-even usage");
+    expect(xml).not.toContain("Chart images are deferred");
+  });
+
   it("includes the exact same NPV/IRR/payback numbers computeAssessment produced — never re-derived", async () => {
     const result = computeAssessment(inputs);
     const buffer = await generateWordProposal(inputs, result, {

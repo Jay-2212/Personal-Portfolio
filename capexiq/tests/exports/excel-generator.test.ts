@@ -74,6 +74,20 @@ describe("generateExcelWorkbook", () => {
     expect(assumptions.getCell("B2").formula).toBeUndefined();
   });
 
+  it("embeds two chart snapshot images while preserving the formula-backed Charts data", async () => {
+    const result = computeAssessment(inputs);
+    const buffer = await generateExcelWorkbook(inputs, result);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(Buffer.from(buffer) as any);
+    const charts = workbook.getWorksheet("Charts")!;
+
+    expect(charts.getImages()).toHaveLength(2);
+    expect(charts.getCell("B2").formula).toContain("Annual Summary");
+    expect(charts.getCell("D2").formula).toContain("Break-even Analysis");
+    expect(charts.getCell("G1").value).toContain("Cumulative cash position");
+    expect(charts.getCell("G18").value).toContain("Expected usage versus break-even");
+  });
+
   it("applies Indian-grouped whole-rupee, one-decimal percentage, and count formats", async () => {
     const result = computeAssessment(inputs);
     const buffer = await generateExcelWorkbook(inputs, result);

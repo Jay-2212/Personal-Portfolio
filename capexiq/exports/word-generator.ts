@@ -4,13 +4,16 @@
 // calls computeAssessment()/buildMonthlySeries() itself and never re-derives a figure
 // a different way than the dashboard already did (CONVENTIONS.md §3), which is how
 // the DoD's "must reflect the exact same numbers shown on the dashboard" is satisfied
-// by construction. No chart images this phase — see the template doc's §8 note
-// (deferred, not dropped, same reasoning as the Excel export's Charts tab).
+// by construction.
 
-import { Document, HeadingLevel, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from "docx";
+import { AlignmentType, Document, HeadingLevel, ImageRun, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } from "docx";
 import type { AssessmentInputs, AssessmentResult } from "../formulas/computeAssessment";
 import { cumulativeCashFlowSeries } from "../formulas/roi";
 import { deriveRiskNotes } from "../app/components/riskNotes";
+import {
+  breakEvenChartPng,
+  cumulativeCashFlowChartPng,
+} from "./chartImages";
 import {
   formatInr,
   formatNumber,
@@ -70,6 +73,11 @@ export async function generateWordProposal(
 ): Promise<Uint8Array> {
   const cashFlowSeries = cumulativeCashFlowSeries(result.initialInvestment, result.annualNetCashFlowsAfterFinancing);
   const outlook = result.investmentOutlook;
+  const cashFlowChart = cumulativeCashFlowChartPng(cashFlowSeries);
+  const breakEvenChart = breakEvenChartPng(
+    inputs.usagePerDay,
+    result.breakEvenUsagePerDay
+  );
 
   const executiveSummary = para(
     `Based on the entered assumptions, the proposed ${context.equipmentCategory} investment shows ` +
@@ -184,10 +192,50 @@ export async function generateWordProposal(
       : [simpleTable(financingSummary(inputs, result))]),
 
     heading("8. Charts"),
-    para(
-      "Chart images are deferred to a fast-follow (see report-templates/word-report-template.md §8); the same " +
-        "figures are captured as data above (§6) and below."
-    ),
+    para("Cumulative cash position by year. Green bars are positive and red bars are negative."),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new ImageRun({
+          type: "png",
+          data: cashFlowChart,
+          transformation: { width: 600, height: 240 },
+          altText: {
+            title: "Cumulative cash position by year",
+            description:
+              "Bar chart of the cumulative annual cash position from the canonical assessment result.",
+            name: "Cumulative cash position chart",
+          },
+        }),
+      ],
+    }),
+    new Paragraph({
+      pageBreakBefore: true,
+      keepNext: true,
+      children: [
+        new TextRun(
+          result.breakEvenUsagePerDay === null
+            ? "Expected usage versus break-even. Break-even is undefined because contribution per use is not positive."
+            : "Expected usage versus break-even. The filled bar is expected usage and the dark marker is break-even usage."
+        ),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new ImageRun({
+          type: "png",
+          data: breakEvenChart,
+          transformation: { width: 600, height: 147 },
+          altText: {
+            title: "Expected usage versus break-even usage",
+            description:
+              "Bullet chart comparing expected daily usage with the canonical break-even usage result.",
+            name: "Break-even usage chart",
+          },
+        }),
+      ],
+    }),
     simpleTable([
       ["Expected usage per day", `${inputs.usagePerDay}`],
       [

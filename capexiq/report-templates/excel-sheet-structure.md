@@ -220,17 +220,15 @@ Year n cost     = IF(override_n<>"",override_n/100*PurchaseCost,IF(n<=WarrantyYe
 
 ## Tab 6 — Charts
 
-**Deferred, not silently dropped (2026-07-13 scoping call, see `ISSUES.md`).** The
-original plan called for two rasterized chart images (cumulative cash flow,
-break-even comparison), matching SPEC.md §29.3's literal "Charts" line item. Given
-this phase's real bar is the live-formula requirement (the Definition of Done is
-about formulas, not images) and no headless Excel/LibreOffice is available in this
-environment to verify an embedded image renders correctly, chart images are deferred
-to a fast-follow rather than shipped half-verified. In their place, this tab is a
-**data table** — the same year-by-year cumulative cash-flow figures and break-even
-comparison numbers the Annual Summary/Break-even tabs already compute — which is
-arguably *more* useful in a spreadsheet a finance person can already re-chart
-themselves, and costs no additional formula-correctness risk.
+The tab keeps its **live formula-backed data table**: year-by-year cumulative cash
+flow and expected/break-even usage. Two raster snapshots sit beside it:
+
+- cumulative cash position, with positive and negative bars distinguished; and
+- expected daily usage versus the break-even marker.
+
+The images are an export-time snapshot of the same canonical result supplied to the
+generator. The table remains the auditable, editable Excel source and continues to
+recalculate when workbook assumptions change.
 
 ---
 
@@ -245,9 +243,8 @@ directly from a small formula-notes content object shared with the Word generato
 
 ## Explicitly out of scope for Phase 8 (per `agent-build-plan.md`)
 
-- **Sensitivity analysis tab** — SPEC.md §29.3 lists it, but `formulas/sensitivity.ts`
-  is still Phase 9 scope (`runScenario()` is a stub the discrete/continuous scenario
-  features haven't been built against yet). Omitted rather than built against an
-  unfinished formula, per Phase 8's own "Depends on: Phase 2" (formulas must exist
-  first).
+- **Sensitivity analysis tab** — the canonical one-variable sensitivity workspace is
+  shipped on Results. A standalone export tab is not part of this chart-image tranche;
+  Excel's two export snapshots focus on the model's cash position and break-even
+  activity while the auditable workbook formulas remain editable.
 - **Assumptions Summary.pdf** — SPEC.md §29.2 marks this "optional later."

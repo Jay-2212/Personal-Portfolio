@@ -4,12 +4,15 @@
 // computeAssessment()/buildMonthlySeries()'s own numbers); this file's only job is a
 // mechanical write of that already-verified plan, so it stays intentionally thin.
 //
-// No native Excel chart objects and no rasterized chart images this phase — see
-// report-templates/excel-sheet-structure.md's Tab 6 note (deferred, not dropped).
-
 import ExcelJS from "exceljs";
 import type { AssessmentInputs, AssessmentResult } from "../formulas/computeAssessment";
 import { buildMonthlySeries } from "../formulas/monthlySeries";
+import { cumulativeCashFlowSeries } from "../formulas/roi";
+import {
+  breakEvenChartPng,
+  bytesToDataUrl,
+  cumulativeCashFlowChartPng,
+} from "./chartImages";
 import { buildWorkbookPlan } from "./workbookPlan";
 
 const INR_NUMBER_FORMAT =
@@ -127,6 +130,66 @@ export async function generateExcelWorkbook(
     sheet.getRow(1).font = { bold: true };
   }
   applyNumberFormats(workbook);
+
+  const charts = workbook.getWorksheet("Charts");
+  if (charts) {
+    const cashFlowPng = cumulativeCashFlowChartPng(
+      cumulativeCashFlowSeries(
+        result.initialInvestment,
+        result.annualNetCashFlowsAfterFinancing
+      )
+    );
+    const breakEvenPng = breakEvenChartPng(
+      inputs.usagePerDay,
+      result.breakEvenUsagePerDay
+    );
+    const cashFlowImageId = workbook.addImage({
+      base64: bytesToDataUrl(cashFlowPng),
+      extension: "png",
+    });
+    const breakEvenImageId = workbook.addImage({
+      base64: bytesToDataUrl(breakEvenPng),
+      extension: "png",
+    });
+
+    charts.getCell("G1").value = "Cumulative cash position — export snapshot";
+    charts.getCell("G18").value = "Expected usage versus break-even — export snapshot";
+    charts.getCell("G1").font = { bold: true, size: 12 };
+    charts.getCell("G18").font = { bold: true, size: 12 };
+    charts.getCell("G16").value =
+      "Green = positive; red = negative. Source table remains live.";
+    charts.getCell("G28").value =
+      result.breakEvenUsagePerDay === null
+        ? "Break-even is undefined because contribution per use is not positive."
+        : "Dark marker = break-even; fill = expected usage.";
+    charts.getCell("G16").font = {
+      italic: true,
+      size: 9,
+      color: { argb: "FF6F675D" },
+    };
+    charts.getCell("G28").font = {
+      italic: true,
+      size: 9,
+      color: { argb: "FF6F675D" },
+    };
+    charts.mergeCells("G1:N1");
+    charts.mergeCells("G16:N16");
+    charts.mergeCells("G18:N18");
+    charts.mergeCells("G28:N28");
+    for (let column = 7; column <= 14; column += 1) {
+      charts.getColumn(column).width = 14;
+    }
+    charts.addImage(cashFlowImageId, {
+      tl: { col: 6, row: 1 },
+      ext: { width: 720, height: 288 },
+      editAs: "oneCell",
+    });
+    charts.addImage(breakEvenImageId, {
+      tl: { col: 6, row: 18 },
+      ext: { width: 720, height: 176 },
+      editAs: "oneCell",
+    });
+  }
 
   const buffer = await workbook.xlsx.writeBuffer();
   return new Uint8Array(buffer);

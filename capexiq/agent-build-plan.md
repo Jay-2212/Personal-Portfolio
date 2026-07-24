@@ -775,14 +775,13 @@ live-formula decision).
       (MRI scenario, `Apex Test Hospital`): all three downloads produced correctly
       MIME-typed, non-trivial-sized blobs (39KB xlsx / 11KB docx / 51KB zip) with zero
       console errors.
-- [ ] **Chart images (Excel "Charts" tab, Word §8) — deferred, not built this phase.**
-      Scoped out 2026-07-14 alongside the harder live-formula requirement, which is the
-      phase's actual DoD; no headless Excel/LibreOffice is available in this
-      environment to verify a rasterized image round-trips correctly, so an
-      unverifiable image felt like the wrong tradeoff against the formula-correctness
-      work. Both `report-templates/excel-sheet-structure.md` Tab 6 and
-      `word-report-template.md` §8 carry this as an explicit note (a data table stands
-      in for now), not a silent gap. Flagged as a fast-follow.
+- [x] **Chart images (Excel "Charts" tab, Word §8, completed 2026-07-24):**
+      `exports/chartImages.ts` renders deterministic cumulative-cash-position and
+      usage-versus-break-even PNG snapshots from the canonical result. Excel embeds
+      both beside its live formula-backed source table; Word embeds the same images
+      with captions and exact-value content. Fresh workbook/document round-trips,
+      LibreOffice/Word renders, and a real Chrome-triggered Excel export were
+      inspected.
 **Definition of Done:** an exported Excel file, opened in Excel/Sheets, shows real
 formulas (not pasted values) in every downstream cell, each one traceable back to the
 Assumptions sheet — verify this by actually opening the file and clicking cells, not by
@@ -844,8 +843,8 @@ route, documented here rather than let the two be confused:**
   (`tests/exports/zip-generator.test.ts`). All three downloads were also live-verified
   in a real browser against a real MRI scenario (see the Do-list `ExportPanel.tsx`
   bullet above) — correctly MIME-typed, non-trivial-sized blobs, zero console errors.
-- **Not done this phase:** chart images (see the Do-list note above) remain deferred.
-  `ISSUES.md` ISS-29 (the flat-billed/ramped-realized asymmetry this phase's own
+- Chart images were completed in the 2026-07-24 follow-up described in the Do-list
+  above. `ISSUES.md` ISS-29 (the flat-billed/ramped-realized asymmetry this phase's own
   monthly-series work surfaced) was **resolved same-day** in a follow-up session —
   Jay decided to ramp billed revenue to match realized; see `HANDOFF.md`'s 2026-07-14
   "Phase 8 follow-up" change-log entry and `ISSUES.md`'s Resolved section.
