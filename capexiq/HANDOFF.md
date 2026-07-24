@@ -5,7 +5,7 @@ entries before 2026-07-13 are in `handoff-archive/2026-Q3.md`.
 
 ## Current state
 
-Last reviewed: 2026-07-24 (scenario comparison).
+Last reviewed: 2026-07-24 (scenario and sensitivity analysis).
 
 CapexIQ has a working static Next.js application: landing and methodology pages, a
 routed assessment wizard, Basic and Advanced inputs, local draft persistence,
@@ -25,6 +25,11 @@ Results now includes a three-case scenario comparison. Lower demand, Current, an
 Higher demand cases use editable relative usage/tariff changes and re-run the exact
 canonical assessment snapshot; they do not replace financing, DSO, launch, maintenance,
 escalation, or terminal-value logic with a simplified side model.
+
+The adjacent sensitivity workspace holds every other assumption constant while the user
+stress-tests daily usage or weighted billed tariff from -40% to +40%. Its selectable
+point, nine-point NPV curve, IRR/payback strip, tooltips, and data table all consume the
+same canonical scenario runner.
 
 Advanced Mode has explicit activation semantics: closing it preserves entered
 values but deactivates optional overrides and their validation. Visible launch,
@@ -48,13 +53,22 @@ Known next work:
 
 - Verify deployment of `main` to the Cloudflare Pages project for
   `capexiq.jaybharti.me` (ISS-28).
-- Complete the planned continuous sensitivity UI and export chart images.
+- Add chart images to Excel and Word exports; the automatic tariff insight remains a
+  separately deferred product item.
 - Run the remaining multi-equipment/multi-band visual QA and go-live checks in
   `agent-build-plan.md`.
 
 Open/accepted issues belong in `ISSUES.md`; do not recreate an issue list here.
 
 ## Change log
+
+### 2026-07-24 — Canonical sensitivity workspace (Codex run)
+
+**Changed:** added a one-variable sensitivity workspace for daily usage and weighted
+billed tariff, with a continuous selected point, deterministic nine-point NPV curve,
+IRR/payback readout, keyboard exact-value tooltips, and accessible data table. All
+points call the canonical scenario/assessment pipeline. **Evidence:** 317 tests,
+TypeScript check, and production build pass.
 
 ### 2026-07-24 — Canonical scenario comparison (Codex run)
 

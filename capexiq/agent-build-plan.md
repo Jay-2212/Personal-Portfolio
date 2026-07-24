@@ -868,11 +868,15 @@ both, don't conflate them:
       demand / Current / Higher demand cases. Relative usage and tariff changes are
       applied to a copied `AssessmentInputs` snapshot and re-run through
       `computeAssessment()`; the current case exactly equals the visible result.
-- [ ] Continuous sensitivity view (implied but never UX-spec'd): pick the 1-2 highest-
+- [x] Continuous sensitivity view (implied but never UX-spec'd): pick the 1-2 highest-
       leverage drivers (usage/day, realization %) and let the user drag a slider to see
       NPV/IRR/payback update live in a small comparison strip next to the main chart —
       reuses Phase 4-G's live-recalculation contract and `formulas/sensitivity.ts`'s
-      existing `runScenario` stub.
+      existing `runScenario` stub. **Built 2026-07-24** for daily usage and weighted
+      billed tariff (the two user-entered commercial drivers shared safely across Basic
+      and Advanced Mode). A -40% to +40% slider evaluates any selected point; a
+      deterministic nine-point NPV curve, exact-value tooltips, and data table use the
+      same canonical `computeAssessment()` path as Results.
 - [ ] **Automatic actionable insights** (added 2026-07-07, approved by Jay — see
       `financial-model-spec.md` §4): a passive, threshold-gated price-increase
       suggestion, distinct from the two user-driven features above — the user never

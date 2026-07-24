@@ -16,3 +16,15 @@ Every evaluated case is a copied `AssessmentInputs` snapshot passed back through
 | Canonical inputs change | Relative case adjustments persist; all scenario results recompute from the new validated snapshot. |
 | Reset cases | Restore the documented -20% / 0% / +20% presets and zero tariff changes. |
 | Assessment becomes invalid | Results retains its last valid canonical snapshot, so scenario values remain coherent with the visible stale result. |
+
+## Sensitivity state
+
+Sensitivity is also local presentation state and never writes to the assessment.
+
+| Event | Transition |
+|---|---|
+| Results mounts | Daily usage is selected at the unchanged 0% point. |
+| Slider changes | Recompute the selected point between -40% and +40%; all non-selected assumptions remain fixed. |
+| Driver changes | Switch between Daily usage and weighted Billed tariff, reset the selected point to 0%, and rebuild the nine-point curve. |
+| Canonical inputs change | Keep the selected driver/percentage and recompute the curve and selected point from the new validated snapshot. |
+| Assessment becomes invalid | Continue using the same last-valid snapshot as the visible Results page. |

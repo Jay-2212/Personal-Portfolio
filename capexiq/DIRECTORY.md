@@ -80,5 +80,5 @@ capexiq/
   folders, so they are intentionally omitted from the source map.
 - `data-requirements.md` is intentionally detailed source provenance, not a quick
   implementation guide. Its `sourceId` values are referenced by `equipment-data/`.
-- Scenario comparison is shipped. Continuous sensitivity UI and export chart images
+- Scenario comparison and continuous sensitivity are shipped. Export chart images
   remain planned; see `HANDOFF.md`, `ISSUES.md`, and `agent-build-plan.md`.

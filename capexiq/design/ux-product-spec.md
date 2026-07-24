@@ -71,7 +71,7 @@ that a workbook Charts tab or Word chart image exists.
 
 ## Implementation watch items
 
-- Scenario comparison is user-facing on Results; continuous sensitivity remains planned.
+- Scenario comparison and one-variable continuous sensitivity are user-facing on Results.
 - Final multi-equipment/multi-band visual QA remains in `agent-build-plan.md`.
 - The exact implemented visual states live in `app/` and `design/tokens.css`; update
   this spec only for deliberate product decisions, not to narrate CSS history.

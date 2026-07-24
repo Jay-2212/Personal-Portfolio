@@ -13,6 +13,7 @@ import { RiskCallout } from "../../components/RiskCallout";
 import { ResultsQuickSettings } from "../../components/ResultsQuickSettings";
 import { ExportPanel } from "../../components/ExportPanel";
 import { ScenarioComparison } from "../../components/ScenarioComparison";
+import { SensitivityAnalysis } from "../../components/SensitivityAnalysis";
 
 const DRIVER_LABELS: Record<string, string> = {
   returnStrength: "the return relative to your cost of capital",
@@ -111,6 +112,8 @@ export default function ResultsPage() {
       />
 
       <ScenarioComparison inputs={inputs} />
+
+      <SensitivityAnalysis inputs={inputs} />
 
       <ResultsQuickSettings />
 

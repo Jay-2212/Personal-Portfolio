@@ -153,7 +153,6 @@ Do not describe these planned requirements as shipped:
 
 | Requirement | Current status |
 |---|---|
-| Continuous sensitivity UI | Planned Phase 9; not implemented. |
 | Automatic price-increase insight | Specified in `financial-model-spec.md`; deferred with Phase 9. |
 | Chart images in Excel and Word exports | Deferred; exports include data/formulas, not chart-image sheets. |
 | Final multi-equipment/multi-band visual QA and full go-live QA | Remaining work in `agent-build-plan.md`. |
@@ -162,7 +161,9 @@ Do not describe these planned requirements as shipped:
 Scenario comparison is shipped on Results as three relative cases: Lower demand,
 Current, and Higher demand. The two alternative cases allow explicit usage and billed
 tariff changes; all cases reuse the canonical assessment pipeline and preserve every
-other entered assumption.
+other entered assumption. The adjacent sensitivity workspace stress-tests daily usage
+or weighted billed tariff one at a time from -40% to +40%, with a selectable point,
+NPV curve, IRR/payback readout, and exact data table.
 
 The results page provides concise metric explanations and the methodology page provides
 full formula transparency. If a requirement is interpreted as an arithmetic expansion
