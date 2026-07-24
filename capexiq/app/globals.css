@@ -1360,6 +1360,35 @@ a { color: var(--accent-interactive); }
 
 .results-disclaimer { margin:18px 2px 0; font-size:11px; color:var(--text-muted); }
 
+/* Results — canonical scenario comparison */
+.scenario-comparison { margin-top:16px; padding:30px; border:1px solid var(--border-subtle); border-radius:22px; background:rgba(255,253,247,.72); }
+.scenario-comparison__heading { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; }
+.scenario-comparison__heading .results-detail__heading { margin:0; }
+.scenario-comparison__reset { display:inline-flex; align-items:center; gap:7px; flex-shrink:0; padding:8px 11px; border:1px solid var(--border-default); border-radius:999px; background:#fffdf7; color:var(--accent-interactive); font:inherit; font-size:12px; cursor:pointer; }
+.scenario-comparison__reset:hover { border-color:var(--accent-interactive); }
+.scenario-comparison__intro { max-width:76ch; margin:14px 0 22px; color:var(--text-secondary); font-size:13.5px; line-height:1.55; }
+.scenario-comparison__controls { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.scenario-comparison__controls > article { display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-width:0; padding:18px; border:1px solid var(--border-subtle); border-radius:16px; background:#fffdf7; }
+.scenario-comparison__controls > article[data-current="true"] { border-color:#b9cec5; background:#edf3ef; }
+.scenario-comparison__controls h3 { margin:0; font-size:14px; }
+.scenario-comparison__controls p { margin:5px 0 0; color:var(--text-secondary); font-size:11.5px; line-height:1.45; }
+.scenario-comparison__inputs { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.scenario-comparison__inputs label > span:first-child { display:block; min-height:28px; color:var(--text-secondary); font-size:10.5px; line-height:1.3; }
+.scenario-comparison__input-wrap { display:flex; align-items:center; margin-top:5px; border:1px solid var(--border-default); border-radius:9px; background:#fffefb; overflow:hidden; }
+.scenario-comparison__input-wrap:focus-within { outline:2px solid var(--accent-interactive); outline-offset:2px; }
+.scenario-comparison__input-wrap input { min-width:0; width:100%; padding:9px 3px 9px 10px; border:0; outline:0; background:transparent; font:inherit; font-family:var(--font-mono); }
+.scenario-comparison__input-wrap > span { padding-right:9px; color:var(--text-muted); font-size:11px; }
+.scenario-comparison__locked { align-self:flex-start; padding:7px 10px; border-radius:999px; background:#fffdf7; color:var(--accent-interactive) !important; font-weight:600; }
+.scenario-comparison__table-wrap { margin-top:16px; overflow-x:auto; border:1px solid var(--border-subtle); border-radius:14px; }
+.scenario-comparison table { width:100%; min-width:650px; border-collapse:collapse; background:#fffdf7; }
+.scenario-comparison th,.scenario-comparison td { padding:11px 14px; border-bottom:1px solid var(--border-subtle); text-align:right; font-size:12px; }
+.scenario-comparison th:first-child { text-align:left; }
+.scenario-comparison thead th { background:#eee7dc; color:var(--text-secondary); font-size:10px; text-transform:uppercase; letter-spacing:.06em; }
+.scenario-comparison tbody th { color:var(--text-secondary); font-weight:500; }
+.scenario-comparison tbody td { font-family:var(--font-mono); }
+.scenario-comparison tbody tr:last-child th,.scenario-comparison tbody tr:last-child td { border-bottom:0; }
+.scenario-comparison__footnote { margin:10px 2px 0; color:var(--text-muted); font-size:11px; }
+
 /* Methodology */
 .methodology-page { max-width:920px; padding:54px 30px 100px; }
 .methodology-page__hero { margin:48px 0 60px; padding:56px; border-radius:26px; background:#e7ded0; }
@@ -1412,6 +1441,10 @@ a { color: var(--accent-interactive); }
   .results-next-step { align-items:flex-start; flex-direction:column; }
   .results-charts { grid-template-columns:1fr; }
   .results-chart-card { padding:20px; }
+  .scenario-comparison { padding:22px 18px; }
+  .scenario-comparison__heading { align-items:stretch; flex-direction:column; }
+  .scenario-comparison__reset { align-self:flex-start; }
+  .scenario-comparison__controls { grid-template-columns:1fr; }
   .risk-callout { padding:20px; flex-direction:column; gap:10px; }
   .methodology-page__hero { padding:34px 24px; }
   .methodology-page__hero h1 { font-size:40px; }

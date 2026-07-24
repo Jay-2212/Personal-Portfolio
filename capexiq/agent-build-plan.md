@@ -862,9 +862,12 @@ SPEC.md §28 only describes *discrete* named-scenario comparison (a table); it n
 describes a *continuous*, slider-driven sensitivity view, even though "Sensitivity
 chart" is named as an output in §11.2/§27. These are two different features — build
 both, don't conflate them:
-- [ ] Discrete scenario comparison (SPEC.md §28, already spec'd): a table comparing
+- [x] Discrete scenario comparison (SPEC.md §28, already spec'd): a table comparing
       named scenarios (Conservative/Base/Optimistic, or user-named — "MRI Option A" vs.
-      "MRI Option B").
+      "MRI Option B"). **Built 2026-07-24** as a Results comparison for editable Lower
+      demand / Current / Higher demand cases. Relative usage and tariff changes are
+      applied to a copied `AssessmentInputs` snapshot and re-run through
+      `computeAssessment()`; the current case exactly equals the visible result.
 - [ ] Continuous sensitivity view (implied but never UX-spec'd): pick the 1-2 highest-
       leverage drivers (usage/day, realization %) and let the user drag a slider to see
       NPV/IRR/payback update live in a small comparison strip next to the main chart —

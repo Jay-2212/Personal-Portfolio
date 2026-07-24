@@ -33,7 +33,7 @@ owns the decision you need.
 ## Current delivery snapshot
 
 The landing page, routed assessment wizard, Advanced workspace, results dashboard,
-formula engine, draft persistence, validation recovery, methodology page, and exports
-are implemented. Scenario comparison/sensitivity UI, export chart images, final
-multi-equipment visual QA, and production deployment verification remain; see
-`HANDOFF.md` and `ISSUES.md` for the live status.
+canonical scenario comparison, formula engine, draft persistence, validation recovery,
+methodology page, and exports are implemented. Continuous sensitivity UI, export chart
+images, final multi-equipment visual QA, and production deployment verification remain;
+see `HANDOFF.md` and `ISSUES.md` for the live status.

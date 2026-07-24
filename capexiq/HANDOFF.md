@@ -5,7 +5,7 @@ entries before 2026-07-13 are in `handoff-archive/2026-Q3.md`.
 
 ## Current state
 
-Last reviewed: 2026-07-23 (cash-flow model Phase 1).
+Last reviewed: 2026-07-24 (scenario comparison).
 
 CapexIQ has a working static Next.js application: landing and methodology pages, a
 routed assessment wizard, Basic and Advanced inputs, local draft persistence,
@@ -21,7 +21,12 @@ and the collection tail. `computeAssessment()`, monthly/annual views, and live E
 formulas now reconcile to that timeline. The exact basis is documented in
 `financial-model-spec.md`.
 
-Advanced Mode now has explicit activation semantics: closing it preserves entered
+Results now includes a three-case scenario comparison. Lower demand, Current, and
+Higher demand cases use editable relative usage/tariff changes and re-run the exact
+canonical assessment snapshot; they do not replace financing, DSO, launch, maintenance,
+escalation, or terminal-value logic with a simplified side model.
+
+Advanced Mode has explicit activation semantics: closing it preserves entered
 values but deactivates optional overrides and their validation. Visible launch,
 financing, lifecycle, escalation, and target-IRR fields are consumed; the unused
 generic inflation control is no longer rendered. Results use canonical mature usage,
@@ -43,13 +48,21 @@ Known next work:
 
 - Verify deployment of `main` to the Cloudflare Pages project for
   `capexiq.jaybharti.me` (ISS-28).
-- Complete planned scenario comparison/sensitivity UI and export chart images.
+- Complete the planned continuous sensitivity UI and export chart images.
 - Run the remaining multi-equipment/multi-band visual QA and go-live checks in
   `agent-build-plan.md`.
 
 Open/accepted issues belong in `ISSUES.md`; do not recreate an issue list here.
 
 ## Change log
+
+### 2026-07-24 — Canonical scenario comparison (Codex run)
+
+**Changed:** added editable Lower demand / Current / Higher demand cases to Results,
+with a resettable comparison table for usage, weighted tariff, NPV, IRR, payback, and
+outlook. Each case transforms a copied `AssessmentInputs` snapshot and calls
+`computeAssessment()`. **Evidence:** 309 tests, TypeScript check, and production build
+pass. Continuous sensitivity remains the next phase.
 
 ### 2026-07-23 — Formatting and regression cleanup, Phase 3 (Codex run)
 
