@@ -12,9 +12,11 @@ interface ActivePoint {
 
 export function SensitivityChart({
   points,
+  selectedPoint,
   driverLabel,
 }: {
   points: SensitivityPoint[];
+  selectedPoint: SensitivityPoint;
   driverLabel: string;
 }) {
   const [activePoint, setActivePoint] = useState<ActivePoint | null>(null);
@@ -31,12 +33,18 @@ export function SensitivityChart({
   const max = rawMax + span * 0.08;
   const plotWidth = width - inset.left - inset.right;
   const plotHeight = height - inset.top - inset.bottom;
-  const coordinates = points.map((point, index) => ({
-    x:
-      inset.left +
-      (points.length === 1 ? plotWidth / 2 : (index / (points.length - 1)) * plotWidth),
+  const minChange = points[0].changePercentage;
+  const maxChange = points[points.length - 1].changePercentage;
+  const coordinateFor = (point: SensitivityPoint) => ({
+    x: inset.left +
+      (minChange === maxChange
+        ? plotWidth / 2
+        : ((point.changePercentage - minChange) / (maxChange - minChange)) *
+          plotWidth),
     y: inset.top + ((max - point.assessment.result.npv) / (max - min)) * plotHeight,
-  }));
+  });
+  const coordinates = points.map(coordinateFor);
+  const selectedCoordinate = coordinateFor(selectedPoint);
   const path = coordinates
     .map(({ x, y }, index) => `${index === 0 ? "M" : "L"} ${x} ${y}`)
     .join(" ");
@@ -75,10 +83,9 @@ export function SensitivityChart({
               <g key={point.changePercentage}>
                 <circle
                   className="sensitivity-chart__point"
-                  data-current={point.changePercentage === 0}
                   cx={coordinate.x}
                   cy={coordinate.y}
-                  r={point.changePercentage === 0 ? 6 : 5}
+                  r={5}
                   tabIndex={0}
                   role="img"
                   aria-label={`${point.changePercentage > 0 ? "+" : ""}${point.changePercentage}%: ${formatInr(point.assessment.result.npv)} NPV`}
@@ -119,6 +126,15 @@ export function SensitivityChart({
               </g>
             );
           })}
+          <circle
+            className="sensitivity-chart__selection"
+            data-selected-change={selectedPoint.changePercentage}
+            cx={selectedCoordinate.x}
+            cy={selectedCoordinate.y}
+            r={6}
+            role="img"
+            aria-label={`Selected ${selectedPoint.changePercentage > 0 ? "+" : ""}${selectedPoint.changePercentage}%: ${formatInr(selectedPoint.assessment.result.npv)} NPV`}
+          />
         </svg>
         {active && activePoint && (
           <div

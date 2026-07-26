@@ -5,7 +5,7 @@ entries before 2026-07-13 are in `handoff-archive/2026-Q3.md`.
 
 ## Current state
 
-Last reviewed: 2026-07-24 (scenario, sensitivity, and chart-bearing exports).
+Last reviewed: 2026-07-26 (results-chart and Advanced payer-table fixes).
 
 CapexIQ has a working static Next.js application: landing and methodology pages, a
 routed assessment wizard, Basic and Advanced inputs, local draft persistence,
@@ -66,6 +66,16 @@ Known next work:
 Open/accepted issues belong in `ISSUES.md`; do not recreate an issue list here.
 
 ## Change log
+
+### 2026-07-26 — Results visualization and payer-table fixes (Codex run)
+
+**Changed:** bound the sensitivity curve's selected marker to the exact slider point
+without reshaping the precomputed curve; separated expected demand from the break-even
+threshold with proportional, labelled markers; and made the Advanced payer table a
+real horizontal scrollport that reveals focused off-screen fields. **Verified:** the
+MRI 31/day versus 2.1/day case renders demand far into the safe region; the 3.1-year
+payback and cumulative chart reconcile to the same monthly spine; 327 tests,
+TypeScript, production build, and 1280×720 browser QA pass.
 
 ### 2026-07-24 — Chart-bearing Excel and Word exports (Codex run)
 

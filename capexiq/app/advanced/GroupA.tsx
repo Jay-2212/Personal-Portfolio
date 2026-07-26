@@ -20,6 +20,12 @@ function CompactNumber({ path, label }: { path: string; label: string }) {
         className="payer-table__input"
         data-invalid={field.error !== null}
         onChange={(event) => field.setValue(event.target.value === "" ? null : Number(event.target.value))}
+        onFocus={(event) =>
+          event.currentTarget.scrollIntoView({
+            block: "nearest",
+            inline: "nearest",
+          })
+        }
       />
       {field.error && <small role="alert" className="payer-table__cell-error">{field.error}</small>}
     </div>

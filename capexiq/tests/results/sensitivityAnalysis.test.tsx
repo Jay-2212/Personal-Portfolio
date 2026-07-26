@@ -49,14 +49,52 @@ describe("SensitivityAnalysis", () => {
   });
 
   it("updates the selected canonical result as the slider moves", () => {
-    render(<SensitivityAnalysis inputs={inputs} />);
+    const { container } = render(<SensitivityAnalysis inputs={inputs} />);
+    const curveBefore = container
+      .querySelector(".sensitivity-chart__line")
+      ?.getAttribute("d");
 
     fireEvent.change(screen.getByLabelText("Daily usage change"), {
-      target: { value: "-25" },
+      target: { value: "27" },
     });
 
-    expect(screen.getByText("-25%")).toBeInTheDocument();
-    expect(screen.getByText("10.0 → 7.5")).toBeInTheDocument();
+    expect(screen.getByText("+27%")).toBeInTheDocument();
+    expect(screen.getByText("10.0 → 12.7")).toBeInTheDocument();
+    expect(
+      container.querySelector(".sensitivity-chart__line")?.getAttribute("d")
+    ).toBe(curveBefore);
+    expect(
+      Number(
+        container
+          .querySelector(".sensitivity-chart__selection")
+          ?.getAttribute("cx")
+      )
+    ).toBeCloseTo(490.35, 6);
+    const curvePoints = container.querySelectorAll(".sensitivity-chart__point");
+    const selectedY = Number(
+      container
+        .querySelector(".sensitivity-chart__selection")
+        ?.getAttribute("cy")
+    );
+    const plus20Y = Number(curvePoints[6].getAttribute("cy"));
+    const plus30Y = Number(curvePoints[7].getAttribute("cy"));
+    expect(selectedY).toBeGreaterThan(plus30Y);
+    expect(selectedY).toBeLessThan(plus20Y);
+  });
+
+  it("moves the selected chart marker to the slider's exact x-position", () => {
+    const { container } = render(<SensitivityAnalysis inputs={inputs} />);
+    const slider = screen.getByLabelText("Daily usage change");
+    const selectedMarker = () =>
+      container.querySelector(".sensitivity-chart__selection");
+
+    expect(Number(selectedMarker()?.getAttribute("cx"))).toBeCloseTo(300, 6);
+
+    fireEvent.change(slider, { target: { value: "-20" } });
+    expect(Number(selectedMarker()?.getAttribute("cx"))).toBeCloseTo(159, 6);
+
+    fireEvent.change(slider, { target: { value: "40" } });
+    expect(Number(selectedMarker()?.getAttribute("cx"))).toBeCloseTo(582, 6);
   });
 
   it("switches drivers and resets the selected point to current", () => {

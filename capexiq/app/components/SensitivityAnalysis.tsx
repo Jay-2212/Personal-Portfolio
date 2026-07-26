@@ -74,7 +74,11 @@ export function SensitivityAnalysis({ inputs }: { inputs: AssessmentInputs }) {
 
       <div className="sensitivity-analysis__workspace">
         <div className="sensitivity-analysis__chart-card">
-          <SensitivityChart points={series} driverLabel={copy.label} />
+          <SensitivityChart
+            points={series}
+            selectedPoint={selected}
+            driverLabel={copy.label}
+          />
         </div>
         <div className="sensitivity-analysis__control-card">
           <label htmlFor="sensitivity-change">

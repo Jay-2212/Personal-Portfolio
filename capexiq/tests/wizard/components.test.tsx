@@ -11,6 +11,7 @@ import { NumberField } from "../../app/components/NumberField";
 import { SliderField } from "../../app/components/SliderField";
 import { StepNav } from "../../app/components/StepNav";
 import { CurrencyUnitField } from "../../app/components/CurrencyUnitField";
+import { GroupA } from "../../app/advanced/GroupA";
 import PreStepPage from "../../app/(assessment)/assess/page";
 
 vi.mock("next/navigation", () => ({
@@ -278,5 +279,30 @@ describe("ISS-25 — red validation state is gated by touch/attempt, not shown o
     // ATTEMPT_STEP reveals purchaseCost's error but must not have written to
     // `touched` — warrantyYears' Typical pill must survive.
     expect(screen.getByText("Typical")).toBeInTheDocument();
+  });
+});
+
+describe("Advanced payer table", () => {
+  it("scrolls a focused off-screen field into the nearest visible area", () => {
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    render(
+      <WizardProvider>
+        <GroupA />
+      </WizardProvider>
+    );
+
+    fireEvent.focus(
+      screen.getByLabelText("Private cash collection delay in days")
+    );
+
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      block: "nearest",
+      inline: "nearest",
+    });
   });
 });

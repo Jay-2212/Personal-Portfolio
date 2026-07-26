@@ -27,18 +27,44 @@ describe("BreakEvenBar", () => {
     expect(screen.getByText(/11\.0/)).toBeInTheDocument();
   });
 
-  it("shows a hover tooltip with the exact value on the usage fill and hides it again on mouse-leave", () => {
+  it("shows a hover tooltip with the exact value on the usage marker and hides it again on mouse-leave", () => {
     const { container } = render(<BreakEvenBar usagePerDay={5} breakEvenUsagePerDay={11} />);
 
     expect(container.querySelector(".chart-tooltip")).not.toBeInTheDocument();
 
-    const fill = container.querySelector(".break-even-bar__fill")!;
-    fireEvent.mouseEnter(fill);
+    const usageMarker = container.querySelector(".break-even-bar__usage-marker")!;
+    fireEvent.mouseEnter(usageMarker);
     expect(screen.getByText("Expected usage")).toBeInTheDocument();
     expect(screen.getByText("5.0 / day")).toBeInTheDocument();
 
-    fireEvent.mouseLeave(fill);
+    fireEvent.mouseLeave(usageMarker);
     expect(container.querySelector(".chart-tooltip")).not.toBeInTheDocument();
+  });
+
+  it("places expected demand far into the safe side when it greatly exceeds break-even", () => {
+    const { container } = render(<BreakEvenBar usagePerDay={31} breakEvenUsagePerDay={2.1} />);
+
+    const thresholdLeft = Number.parseFloat(
+      container.querySelector<HTMLElement>(".break-even-bar__threshold")!.style.left
+    );
+    const usageLeft = Number.parseFloat(
+      container.querySelector<HTMLElement>(".break-even-bar__usage-marker")!.style.left
+    );
+
+    expect(thresholdLeft).toBeCloseTo(6.16, 1);
+    expect(usageLeft).toBeCloseTo(90.91, 1);
+  });
+
+  it("places expected demand at the threshold when the values match", () => {
+    const { container } = render(<BreakEvenBar usagePerDay={2.1} breakEvenUsagePerDay={2.1} />);
+    const thresholdLeft = container
+      .querySelector(".break-even-bar__threshold")
+      ?.getAttribute("style");
+    const usageLeft = container
+      .querySelector(".break-even-bar__usage-marker")
+      ?.getAttribute("style");
+
+    expect(usageLeft).toBe(thresholdLeft);
   });
 
   it("shows the break-even tooltip on keyboard focus of the threshold marker", () => {
