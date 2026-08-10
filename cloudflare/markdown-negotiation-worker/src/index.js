@@ -1,4 +1,7 @@
 const MARKDOWN_PATHS = new Set(["/", "/index.html"]);
+const API_CATALOG_PATH = "/.well-known/api-catalog";
+const API_CATALOG_CONTENT_TYPE = 'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"';
+const API_CATALOG_LINK = '<https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"';
 
 export function acceptsMarkdown(acceptHeader = "") {
   return acceptHeader.split(",").some((range) => {
@@ -25,8 +28,28 @@ function withAcceptInVary(varyHeader) {
 
 export async function handleRequest(request, fetchImpl = fetch) {
   const url = new URL(request.url);
-  const methodCanNegotiate = request.method === "GET" || request.method === "HEAD";
-  const shouldNegotiate = methodCanNegotiate && MARKDOWN_PATHS.has(url.pathname)
+  const methodCanRead = request.method === "GET" || request.method === "HEAD";
+
+  if (methodCanRead && url.pathname === API_CATALOG_PATH) {
+    try {
+      const catalogResponse = await fetchImpl(request);
+      if (!catalogResponse.ok) return catalogResponse;
+
+      const headers = new Headers(catalogResponse.headers);
+      headers.set("Content-Type", API_CATALOG_CONTENT_TYPE);
+      headers.set("Link", API_CATALOG_LINK);
+
+      return new Response(request.method === "HEAD" ? null : catalogResponse.body, {
+        status: catalogResponse.status,
+        statusText: catalogResponse.statusText,
+        headers
+      });
+    } catch {
+      return fetchImpl(request);
+    }
+  }
+
+  const shouldNegotiate = methodCanRead && MARKDOWN_PATHS.has(url.pathname)
     && acceptsMarkdown(request.headers.get("Accept") ?? "");
 
   if (!shouldNegotiate) return fetchImpl(request);
