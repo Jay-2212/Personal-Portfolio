@@ -1,0 +1,12 @@
+{
+  "$schema": "../../capexiq/node_modules/wrangler/config-schema.json",
+  "name": "jaybharti-markdown-negotiation",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-10",
+  "account_id": "b61f01a19dd1aeb2fba1bafeb0282872",
+  "workers_dev": false,
+  "route": {
+    "pattern": "jaybharti.me/*",
+    "zone_name": "jaybharti.me"
+  }
+}
