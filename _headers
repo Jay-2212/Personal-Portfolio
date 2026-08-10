@@ -1,13 +1,12 @@
 /
-  Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", </.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json", </.well-known/mcp/server-card.json>; rel="mcp-server-card"; type="application/json"
+  Link: <https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", <https://jaybharti.me/>; rel="service-doc"; type="text/html", <https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
   Content-Language: en
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 /index.html
-  Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", </.well-known/agent-skills/index.json>; rel="agent-skills"; type="application/json", </.well-known/mcp/server-card.json>; rel="mcp-server-card"; type="application/json"
-  Link: <https://jaybharti.me/>; rel="canonical"
+  Link: <https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", <https://jaybharti.me/>; rel="service-doc"; type="text/html", <https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
   Content-Language: en
