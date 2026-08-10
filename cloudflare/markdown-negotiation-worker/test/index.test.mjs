@@ -10,7 +10,14 @@ function request(path = "/", init = {}) {
   return new Request(`https://jaybharti.me${path}`, init);
 }
 
-test("passes normal browser requests through unchanged", async () => {
+const HOMEPAGE_LINKS = [
+  '<https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
+  '<https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json"',
+  '<https://jaybharti.me/>; rel="service-doc"; type="text/html"',
+  '<https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown"'
+].join(", ");
+
+test("adds discovery links without changing the normal homepage HTML response", async () => {
   const original = response("<html>site</html>", { "Content-Type": "text/html; charset=utf-8" });
   const calls = [];
   const result = await handleRequest(request("/"), async (outgoing) => {
@@ -18,7 +25,11 @@ test("passes normal browser requests through unchanged", async () => {
     return original;
   });
 
-  assert.equal(result, original);
+  assert.notEqual(result, original);
+  assert.equal(result.status, 200);
+  assert.equal(await result.text(), "<html>site</html>");
+  assert.equal(result.headers.get("Content-Type"), "text/html; charset=utf-8");
+  assert.equal(result.headers.get("Link"), HOMEPAGE_LINKS);
   assert.deepEqual(calls, ["https://jaybharti.me/"]);
 });
 
@@ -39,6 +50,7 @@ test("returns index.md for an explicit Markdown request", async () => {
 
   assert.equal(await result.text(), "# Jay Bharti\n");
   assert.equal(result.headers.get("Content-Type"), "text/markdown; charset=utf-8");
+  assert.equal(result.headers.get("Link"), HOMEPAGE_LINKS);
   assert.equal(result.headers.get("Vary"), "Accept-Encoding, Accept");
   assert.equal(result.headers.get("x-markdown-tokens"), "4");
   assert.deepEqual(calls, ["https://jaybharti.me/index.md"]);
@@ -57,6 +69,7 @@ test("accepts Markdown in a mixed Accept header and on index.html", async () => 
   );
 
   assert.equal(result.headers.get("Content-Type"), "text/markdown; charset=utf-8");
+  assert.equal(result.headers.get("Link"), HOMEPAGE_LINKS);
   assert.deepEqual(calls, ["https://jaybharti.me/index.md"]);
 });
 
@@ -86,7 +99,9 @@ test("does not negotiate Markdown when its quality is zero", async () => {
     }
   );
 
-  assert.equal(result, original);
+  assert.notEqual(result, original);
+  assert.equal(await result.text(), "<html>site</html>");
+  assert.equal(result.headers.get("Link"), HOMEPAGE_LINKS);
   assert.deepEqual(calls, ["https://jaybharti.me/"]);
 });
 
@@ -118,8 +133,22 @@ test("falls back to the original request when index.md cannot be fetched", async
     }
   );
 
-  assert.equal(result, original);
+  assert.notEqual(result, original);
+  assert.equal(await result.text(), "<html>fallback</html>");
+  assert.equal(result.headers.get("Link"), HOMEPAGE_LINKS);
   assert.deepEqual(calls, ["https://jaybharti.me/index.md", "https://jaybharti.me/"]);
+});
+
+test("adds the same discovery links to an HTML homepage HEAD response without a body", async () => {
+  const result = await handleRequest(
+    request("/", { method: "HEAD" }),
+    async () => response("<html>site</html>", { "Content-Type": "text/html; charset=utf-8" })
+  );
+
+  assert.equal(result.status, 200);
+  assert.equal(await result.text(), "");
+  assert.equal(result.headers.get("Content-Type"), "text/html; charset=utf-8");
+  assert.equal(result.headers.get("Link"), HOMEPAGE_LINKS);
 });
 
 test("sets the RFC 9727 media type and Link header for the API catalog", async () => {
