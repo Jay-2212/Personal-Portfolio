@@ -121,3 +121,38 @@ test("falls back to the original request when index.md cannot be fetched", async
   assert.equal(result, original);
   assert.deepEqual(calls, ["https://jaybharti.me/index.md", "https://jaybharti.me/"]);
 });
+
+test("sets the RFC 9727 media type and Link header for the API catalog", async () => {
+  const catalog = response('{"linkset":[]}', { "Content-Type": "application/octet-stream" });
+  const calls = [];
+  const result = await handleRequest(
+    request("/.well-known/api-catalog"),
+    async (outgoing) => {
+      calls.push(outgoing.url);
+      return catalog;
+    }
+  );
+
+  assert.equal(result.status, 200);
+  assert.equal(
+    result.headers.get("Content-Type"),
+    'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"'
+  );
+  assert.equal(
+    result.headers.get("Link"),
+    '<https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"'
+  );
+  assert.equal(await result.text(), '{"linkset":[]}');
+  assert.deepEqual(calls, ["https://jaybharti.me/.well-known/api-catalog"]);
+});
+
+test("returns no body for an API catalog HEAD request while preserving status", async () => {
+  const result = await handleRequest(
+    request("/.well-known/api-catalog", { method: "HEAD" }),
+    async () => response('{"linkset":[]}', { "Content-Type": "application/octet-stream" })
+  );
+
+  assert.equal(result.status, 200);
+  assert.equal(await result.text(), "");
+  assert.equal(result.headers.get("Content-Type"), 'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"');
+});
