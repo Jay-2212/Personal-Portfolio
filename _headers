@@ -14,7 +14,7 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 /.well-known/api-catalog
-  Content-Type: application/linkset+json; charset=utf-8
+  Content-Type: application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
 

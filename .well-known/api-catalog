@@ -1,15 +1,17 @@
 {
-  "$schema": "https://schemas.cloudflare.com/api-catalog/v1",
-  "services": [
+  "linkset": [
     {
-      "name": "jaybharti-portfolio",
-      "description": "Public read-only endpoints for Jay Bharti's portfolio profile",
-      "baseURL": "https://jaybharti.me",
-      "endpoints": [
+      "anchor": "https://jaybharti.me/",
+      "service-desc": [
         {
-          "path": "/",
-          "methods": ["GET"],
-          "description": "Landing page. Supports HTML and Markdown negotiation."
+          "href": "https://jaybharti.me/.well-known/portfolio-api.json",
+          "type": "application/vnd.oai.openapi+json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://jaybharti.me/",
+          "type": "text/html"
         }
       ]
     }

@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Jay Bharti Portfolio Profile API",
+    "description": "Public, read-only access to Jay Bharti's portfolio profile.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "https://jaybharti.me" }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "getPortfolioProfile",
+        "summary": "Read the portfolio profile",
+        "description": "Returns the browser page by default or the same profile as Markdown when the client explicitly requests text/markdown.",
+        "responses": {
+          "200": {
+            "description": "The portfolio profile.",
+            "content": {
+              "text/html": { "schema": { "type": "string" } },
+              "text/markdown": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}
