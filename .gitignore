@@ -1,0 +1,9 @@
+.DS_Store
+node_modules/
+.next/
+.wrangler/
+capexiq/node_modules/
+capexiq/.next/
+capexiq/.wrangler/
+capexiq/tsconfig.tsbuildinfo
+capexiq/
