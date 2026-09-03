@@ -306,4 +306,66 @@
     }
   });
 
+  // --- Case Study Reader Modal ---
+  const caseStudyModal = document.getElementById('caseStudyModal');
+  const caseStudyClose = document.getElementById('caseStudyClose');
+  const caseStudyBody = document.getElementById('caseStudyBody');
+  const tmplQualtech = document.getElementById('tmpl-qualtech');
+  const tmplCapexiq = document.getElementById('tmpl-capexiq');
+
+  function openCaseStudy(caseName) {
+    if (!caseStudyModal || !caseStudyBody) return;
+
+    let tmpl = null;
+    if (caseName === 'qualtech' && tmplQualtech) {
+      tmpl = tmplQualtech;
+    } else if (caseName === 'capexiq' && tmplCapexiq) {
+      tmpl = tmplCapexiq;
+    }
+
+    if (!tmpl) return;
+
+    caseStudyBody.innerHTML = '';
+    caseStudyBody.appendChild(tmpl.content.cloneNode(true));
+
+    document.body.classList.add('body-modal-open');
+    caseStudyModal.showModal();
+    caseStudyBody.scrollTop = 0;
+  }
+
+  function closeCaseStudy() {
+    if (!caseStudyModal) return;
+    caseStudyModal.close();
+    document.body.classList.remove('body-modal-open');
+  }
+
+  document.querySelectorAll('.case-study-trigger-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const caseName = btn.getAttribute('data-case');
+      if (caseName) {
+        openCaseStudy(caseName);
+      }
+    });
+  });
+
+  if (caseStudyClose) {
+    caseStudyClose.addEventListener('click', () => {
+      closeCaseStudy();
+    });
+  }
+
+  if (caseStudyModal) {
+    caseStudyModal.addEventListener('close', () => {
+      document.body.classList.remove('body-modal-open');
+    });
+
+    caseStudyModal.addEventListener('click', (event) => {
+      if (event.target === caseStudyModal) {
+        closeCaseStudy();
+      }
+    });
+  }
+
 })();
+

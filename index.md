@@ -4,7 +4,7 @@ description: Agentic resume and capabilities overview focusing on Healthcare, Te
 ---
 
 # Jay Bharti
-**Healthcare × Technology × Impact**
+**Words, wit, and a little wind**
 
 Welcome to my agent-readable portfolio! I am a Healthcare Administration specialist, developer, and data analyst focusing on systems optimization, process improvement, and agentic integrations.
 
