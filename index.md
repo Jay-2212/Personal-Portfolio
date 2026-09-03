@@ -14,7 +14,7 @@ Welcome to my agent-readable portfolio! I am a Healthcare Administration special
 - **Location**: Manipal, India
 - **Contact**: jaybharti3000@gmail.com
 - **LinkedIn**: https://www.linkedin.com/in/jay-bharti
-- **Twitter/X**: https://x.com/Ventus2217
+- **Twitter/X**: https://x.com/jay2217b
 - **Access Rights**: Full AI crawling, training, real-time retrieval (RAG), indexing, and input rights are granted.
 
 ## Core Expertise
