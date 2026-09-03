@@ -7,3 +7,7 @@ capexiq/.next/
 capexiq/.wrangler/
 capexiq/tsconfig.tsbuildinfo
 capexiq/
+.agents/
+PROJECT.md
+TEST_INFRA.md
+TEST_READY.md

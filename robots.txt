@@ -1,34 +1,35 @@
-# As a condition of accessing this website, you agree to abide by the
-# following content signals:
-# (a) If a content-signal = yes, you may collect content for the corresponding use.
-# (b) If the website operator does not include a content signal, permissions are not granted.
-# The content signals and their meanings are:
-# search: building a search index and providing search results with citations.
-# ai-input: inputting content into LLMs (RAG, real-time grounding).
-# ai-train: training or fine-tuning models.
+# robots.txt for https://jaybharti.me
+# Conforms to RFC 9309 (Robots Exclusion Protocol)
 
 User-agent: *
-Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
+# OpenAI Crawlers
 User-agent: GPTBot
-Content-Signal: search=yes, ai-input=yes, ai-train=yes
-Allow: /
-
-User-agent: ClaudeBot
-Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
 User-agent: OAI-SearchBot
-Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
+# Anthropic Crawler
+User-agent: ClaudeBot
+Allow: /
+
+# Perplexity AI Crawler
+User-agent: PerplexityBot
+Allow: /
+
+# Google Generative AI Crawler
 User-agent: Google-Extended
-Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
+# Apple Intelligence Crawler
 User-agent: Applebot-Extended
-Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
+# Microsoft Bing & Copilot Crawler
+User-agent: Bingbot
+Allow: /
+
+# Sitemap discovery
 Sitemap: https://jaybharti.me/sitemap.xml

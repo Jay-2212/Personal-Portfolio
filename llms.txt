@@ -1,23 +1,36 @@
 # Jay Bharti Portfolio
 
-> Canonical guide for AI systems crawling and citing https://jaybharti.me/.
+> Canonical guide for AI systems, generative search engines, and automated agents crawling and citing https://jaybharti.me/.
+
+Jay Bharti is a Healthcare Administration specialist (MHA, MAHE, 8.88 CGPA), developer, and researcher. National Winner of the 2025 QualTech® Prize for eliminating 95% of blood bank plasma bag breakage at sub-zero storage. Bridges hospital operations with agentic AI systems, Model Context Protocol (MCP), and WebMCP.
 
 ## Language
 - English
 
-## Canonical Content
-- [Home](https://jaybharti.me/): Main portfolio page with experience, projects, and contact details.
-- [Agent-readable profile](https://jaybharti.me/index.md): Structured markdown profile for AI retrieval and citation.
-- [mac-orchestrator](https://jaybharti.me/mac-orchestrator): A self-hosted MCP server giving AI agents UI and terminal control of macOS.
-- [Meridian](https://jaybharti.me/meridian): A self-hosted RAG backend that indexes a Mac's files into Cloudflare D1 and Vectorize, answers questions over Telegram, and shares its index with mac-orchestrator.
-- [Sitemap](https://jaybharti.me/sitemap.xml): URL discovery map.
-- [Resume](https://jaybharti.me/resume/Resume_Jay_Bharti.pdf): Current resume PDF.
+## Canonical Resources
+- [Home](https://jaybharti.me/): Interactive portfolio with experience, projects, and contact details.
+- [Agent-Readable Profile](https://jaybharti.me/index.md): Structured markdown profile optimized for RAG and citation with Princeton GEO answer blocks.
+- [Resume](https://jaybharti.me/resume/Resume_Jay_Bharti.pdf): Official curriculum vitae.
+- [Sitemap](https://jaybharti.me/sitemap.xml): Complete URL discovery map.
 
+## Core Projects
+- [CapexIQ](https://capexiq.jaybharti.me): Browser-first healthcare capital expenditure decision support tool for Indian hospitals evaluating ROI, payback, NPV, IRR, and break-even for CT, MRI, and Cath Lab purchases. Features conversational WebMCP assistance and 338+ automated Vitest tests. Repo: [GitHub](https://github.com/Jay-2212/Personal-Portfolio/tree/main/capexiq).
+- [Mac Orchestrator](https://jaybharti.me/mac-orchestrator): Streamlined Model Context Protocol (MCP) server giving AI agents direct control over macOS via mouse, keyboard, terminal, and screen OCR across 20 lean tools. Repo: [GitHub](https://github.com/Jay-2212/mac-orchestrator).
+- [Meridian](https://jaybharti.me/meridian): Self-hosted RAG backend on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search loops over Telegram, sharing its vector index with Mac Orchestrator. Repo: [GitHub](https://github.com/Jay-2212/meridian).
+- [Sensum](https://github.com/Jay-2212/IME): Native Android voice keyboard powered by Groq's Whisper API for near-instant speech transcription and system-wide injection.
+- [Blood Bank Quality Improvement](https://jaybharti.me/#experience): National QualTech Prize-winning DMAIC project engineered at MAHE reducing sub-zero plasma bag breakage by 95% and saving ₹2.6L annually.
 
-## AI Access Policy
-- Full access is granted for crawling, indexing, retrieval (RAG), and model input/training.
-- Attribution is requested through direct citation of canonical URLs from this file.
+## AI Access & Licensing Policy
+- Full crawling, indexing, retrieval (RAG), and model input/training rights are explicitly granted.
+- Attribution is requested through direct canonical citation of URLs listed in this file.
 
-## Contact
-- [Email](mailto:jaybharti3000@gmail.com)
-- [LinkedIn](https://www.linkedin.com/in/jay-bharti)
+## Contact & Authority Profiles
+- Email: [jaybharti3000@gmail.com](mailto:jaybharti3000@gmail.com)
+- LinkedIn: [https://www.linkedin.com/in/jay-bharti](https://www.linkedin.com/in/jay-bharti)
+- Twitter/X: [https://x.com/jay2217b](https://x.com/jay2217b)
+- GitHub: [https://github.com/Jay-2212](https://github.com/Jay-2212)
+
+## Optional Discovery Endpoints
+- [API Catalog](https://jaybharti.me/.well-known/api-catalog): RFC 9727 linkset catalog.
+- [OpenAPI Specification](https://jaybharti.me/.well-known/portfolio-api.json): Machine-readable portfolio API schema.
+- [Webmanifest](https://jaybharti.me/site.webmanifest): Application metadata manifest.

@@ -1,32 +1,84 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+
 /
-  Link: <https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", <https://jaybharti.me/>; rel="service-doc"; type="text/html", <https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown"
+  Link: <https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", <https://jaybharti.me/>; rel="service-doc"; type="text/html", <https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown", <https://jaybharti.me/index.md>; rel="alternate"; type="text/markdown"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
   Content-Language: en
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 
 /index.html
-  Link: <https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", <https://jaybharti.me/>; rel="service-doc"; type="text/html", <https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown"
+  Link: <https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", <https://jaybharti.me/>; rel="service-doc"; type="text/html", <https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown", <https://jaybharti.me/index.md>; rel="alternate"; type="text/markdown"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
   Content-Language: en
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/index.md
+  Content-Type: text/markdown; charset=utf-8
+  Vary: Accept
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
 /.well-known/api-catalog
   Content-Type: application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/.well-known/portfolio-api.json
+  Content-Type: application/vnd.oai.openapi+json; charset=utf-8
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
 /.well-known/agent-skills/index.json
   Content-Type: application/json; charset=utf-8
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
 /.well-known/mcp/server-card.json
   Content-Type: application/json; charset=utf-8
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
-/llms.txt
-  Content-Type: text/plain; charset=utf-8
+/photos/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/resume/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+  Access-Control-Allow-Origin: *
+
+/index.css
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Access-Control-Allow-Origin: *
+
+/index.js
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
   Access-Control-Allow-Origin: *

@@ -2,24 +2,41 @@ const MARKDOWN_PATHS = new Set(["/", "/index.html"]);
 const API_CATALOG_PATH = "/.well-known/api-catalog";
 const API_CATALOG_CONTENT_TYPE = 'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"';
 const API_CATALOG_LINK = '<https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"';
-const HOMEPAGE_LINKS = [
+const HOMEPAGE_LINK_ENTRIES = [
   '<https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"',
   '<https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json"',
   '<https://jaybharti.me/>; rel="service-doc"; type="text/html"',
   '<https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown"'
-].join(", ");
+];
+const HOMEPAGE_LINKS = HOMEPAGE_LINK_ENTRIES.join(", ");
 
 export function acceptsMarkdown(acceptHeader = "") {
-  return acceptHeader.split(",").some((range) => {
+  if (!acceptHeader || typeof acceptHeader !== "string") return false;
+
+  let markdownQ = -1;
+  let htmlQ = -1;
+
+  for (const range of acceptHeader.split(",")) {
     const [mediaType, ...parameters] = range.split(";");
-    if (mediaType.trim().toLowerCase() !== "text/markdown") return false;
+    const cleanType = mediaType.trim().toLowerCase();
+    let q = 1.0;
 
-    const quality = parameters
-      .map((parameter) => parameter.trim().toLowerCase())
-      .find((parameter) => parameter.startsWith("q="));
+    for (const param of parameters) {
+      const match = param.trim().match(/^q\s*=\s*(.*)$/i);
+      if (match) {
+        const parsed = Number(match[1].trim());
+        q = (isNaN(parsed) || parsed <= 0) ? 0 : Math.min(parsed, 1.0);
+      }
+    }
 
-    return quality === undefined || Number(quality.slice(2)) > 0;
-  });
+    if (cleanType === "text/markdown") {
+      if (q > markdownQ) markdownQ = q;
+    } else if (cleanType === "text/html" || cleanType === "application/xhtml+xml") {
+      if (q > htmlQ) htmlQ = q;
+    }
+  }
+
+  return markdownQ > 0 && markdownQ >= htmlQ;
 }
 
 function withAcceptInVary(varyHeader) {
@@ -40,7 +57,26 @@ function withHomepageLinks(request, response) {
 
   const headers = new Headers(response.headers);
   const existingLink = headers.get("Link");
-  headers.set("Link", existingLink ? `${existingLink}, ${HOMEPAGE_LINKS}` : HOMEPAGE_LINKS);
+
+  if (!existingLink) {
+    headers.set("Link", HOMEPAGE_LINKS);
+  } else {
+    const existingParts = existingLink.split(/,\s*(?=<)/);
+    const existingRels = new Set();
+    for (const part of existingParts) {
+      const match = part.match(/rel="([^"]+)"/);
+      if (match) existingRels.add(match[1]);
+    }
+
+    const missingEntries = HOMEPAGE_LINK_ENTRIES.filter((entry) => {
+      const match = entry.match(/rel="([^"]+)"/);
+      return match && !existingRels.has(match[1]);
+    });
+
+    if (missingEntries.length > 0) {
+      headers.set("Link", `${existingLink}, ${missingEntries.join(", ")}`);
+    }
+  }
 
   const body = request.method === "HEAD" || [204, 205, 304].includes(response.status)
     ? null

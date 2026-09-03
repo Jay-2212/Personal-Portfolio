@@ -18,6 +18,8 @@
   <meta name="keywords" content="Jay Bharti, healthcare administration, MHA, data analytics, process improvement, Lean Six Sigma, MAHE, Manipal, portfolio">
   <meta name="author" content="Jay Bharti">
   <link rel="canonical" href="https://jaybharti.me/">
+  <meta name="google-site-verification" content="LEn5-plOf4tU3QB5vtX9lMIhQpWTiAekB1kqT9sBdIc">
+  <link rel="describedby" href="https://jaybharti.me/index.md" type="text/markdown">
 
   <!-- Open Graph -->
   <meta property="og:title" content="Jay Bharti — Words, wit, and a little wind">
@@ -94,31 +96,172 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Jay Bharti",
-    "alternateName": ["Jay Bharti Portfolio", "JB Portfolio"],
-    "url": "https://jaybharti.me/"
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Jay Bharti",
-    "url": "https://jaybharti.me",
-    "image": "https://jaybharti.me/photos/main-photo-800w.jpg",
-    "description": "Healthcare Administration graduate specializing in data analytics, process improvement, and strategic operations. National award-winning quality improvement leader.",
-    "jobTitle": "Healthcare Administration Graduate",
-    "email": "jaybharti3000@gmail.com",
-    "alumniOf": [
-      { "@type": "CollegeOrUniversity", "name": "Manipal Academy of Higher Education", "url": "https://manipal.edu" },
-      { "@type": "CollegeOrUniversity", "name": "Manipal University Jaipur", "url": "https://jaipur.manipal.edu" }
-    ],
-    "knowsAbout": ["Healthcare Administration", "Data Analytics", "Lean Six Sigma", "Process Improvement", "Python", "R", "Hospital Operations"],
-    "award": ["QualTech Prize National Winner"],
-    "sameAs": [
-      "https://www.linkedin.com/in/jay-bharti",
-      "https://x.com/jay2217b"
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://jaybharti.me/#website",
+        "name": "Jay Bharti",
+        "alternateName": ["Jay Bharti Portfolio", "JB Portfolio"],
+        "url": "https://jaybharti.me/",
+        "description": "Professional portfolio of Jay Bharti covering Healthcare Administration, process improvement, and agentic AI systems.",
+        "author": {
+          "@id": "https://jaybharti.me/#person"
+        }
+      },
+      {
+        "@type": "ProfilePage",
+        "@id": "https://jaybharti.me/#profilepage",
+        "url": "https://jaybharti.me/",
+        "name": "Jay Bharti — Personal Portfolio",
+        "isPartOf": {
+          "@id": "https://jaybharti.me/#website"
+        },
+        "mainEntity": {
+          "@id": "https://jaybharti.me/#person"
+        },
+        "dateCreated": "2024-08-01T00:00:00Z",
+        "dateModified": "2026-09-03T00:00:00Z",
+        "description": "Professional portfolio, generative engine profile, and research of Jay Bharti in Healthcare Administration, Operations, and AI systems."
+      },
+      {
+        "@type": "Person",
+        "@id": "https://jaybharti.me/#person",
+        "name": "Jay Bharti",
+        "url": "https://jaybharti.me",
+        "image": "https://jaybharti.me/photos/main-photo-800w.jpg",
+        "jobTitle": "Healthcare Administration Specialist & AI Developer",
+        "email": "mailto:jaybharti3000@gmail.com",
+        "description": "Healthcare Administration graduate and AI developer specializing in hospital operations, Lean Six Sigma (DMAIC), and agentic system architecture. National Winner of the 2025 QualTech Prize for eliminating 95% of plasma bag breakage in sub-zero storage.",
+        "alumniOf": [
+          {
+            "@type": "CollegeOrUniversity",
+            "name": "Prasanna School of Public Health, Manipal Academy of Higher Education",
+            "url": "https://manipal.edu/psph.html"
+          },
+          {
+            "@type": "CollegeOrUniversity",
+            "name": "Manipal University Jaipur",
+            "url": "https://jaipur.manipal.edu"
+          }
+        ],
+        "knowsAbout": [
+          "Healthcare Administration",
+          "Hospital Operations",
+          "Lean Six Sigma",
+          "DMAIC Methodology",
+          "Data Analytics",
+          "Biostatistics",
+          "Model Context Protocol (MCP)",
+          "RAG-based AI Systems",
+          "Python",
+          "R",
+          "Power BI"
+        ],
+        "award": [
+          "National Winner — QualTech Prize Education (Qimpro Foundation, 2025)",
+          "Best Student Award (Manipal University Jaipur, 2023)"
+        ],
+        "hasCredential": [
+          {
+            "@type": "EducationalOccupationalCredential",
+            "name": "Lean Six Sigma Yellow Belt",
+            "recognizedBy": {
+              "@type": "Organization",
+              "name": "Annexas Europe"
+            }
+          },
+          {
+            "@type": "EducationalOccupationalCredential",
+            "name": "Supply Chain Management",
+            "recognizedBy": {
+              "@type": "CollegeOrUniversity",
+              "name": "Rutgers University"
+            }
+          }
+        ],
+        "hasOccupation": {
+          "@type": "Occupation",
+          "name": "Healthcare Operations & AI Systems Specialist",
+          "occupationalCategory": "11-9111.00",
+          "skills": "Lean Six Sigma, DMAIC, Hospital Operations, RAG AI, WebMCP, Biostatistics",
+          "experienceRequirements": {
+            "@type": "OccupationalExperienceRequirements",
+            "monthsOfExperience": 24,
+            "description": "Demonstrated technical and operational leadership in hospital quality improvement, sub-zero blood bank packaging design, and full-stack RAG/MCP development."
+          }
+        },
+        "sameAs": [
+          "https://www.linkedin.com/in/jay-bharti",
+          "https://x.com/jay2217b",
+          "https://github.com/Jay-2212"
+        ]
+      },
+      {
+        "@type": ["SoftwareApplication", "WebApplication"],
+        "@id": "https://capexiq.jaybharti.me/#app",
+        "name": "CapexIQ",
+        "operatingSystem": "Web Browser",
+        "applicationCategory": "BusinessApplication",
+        "description": "A browser-first capital expenditure decision-support tool for Indian hospitals evaluating ROI, payback period, NPV, IRR, and break-even utilization for high-value medical equipment, featuring WebMCP conversational assistance.",
+        "url": "https://capexiq.jaybharti.me",
+        "codeRepository": "https://github.com/Jay-2212/Personal-Portfolio/tree/main/capexiq",
+        "author": {
+          "@id": "https://jaybharti.me/#person"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://jaybharti.me/mac-orchestrator/#app",
+        "name": "Mac Orchestrator",
+        "operatingSystem": "macOS",
+        "applicationCategory": "DeveloperApplication",
+        "description": "A streamlined Model Context Protocol (MCP) server providing AI agents with 20 lean tools for direct macOS system control via mouse, keyboard, terminal, and OCR.",
+        "url": "https://jaybharti.me/mac-orchestrator",
+        "codeRepository": "https://github.com/Jay-2212/mac-orchestrator",
+        "author": {
+          "@id": "https://jaybharti.me/#person"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://jaybharti.me/meridian/#app",
+        "name": "Meridian",
+        "operatingSystem": "Cloudflare Workers",
+        "applicationCategory": "DeveloperApplication",
+        "description": "A self-hosted RAG backend built on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search queries over Telegram.",
+        "url": "https://jaybharti.me/meridian",
+        "codeRepository": "https://github.com/Jay-2212/meridian",
+        "author": {
+          "@id": "https://jaybharti.me/#person"
+        }
+      },
+      {
+        "@type": ["SoftwareApplication", "MobileApplication"],
+        "@id": "https://jaybharti.me/#sensum",
+        "name": "Sensum",
+        "operatingSystem": "Android",
+        "applicationCategory": "UtilitiesApplication",
+        "description": "A native Android voice keyboard utilizing Groq's Whisper API for near-instant transcription and system-wide text injection.",
+        "codeRepository": "https://github.com/Jay-2212/IME",
+        "author": {
+          "@id": "https://jaybharti.me/#person"
+        }
+      },
+      {
+        "@type": "CreativeWork",
+        "@id": "https://jaybharti.me/#qualtech-project",
+        "name": "Anti-Frost Blood Bank Cassette Box & DMAIC Process Improvement",
+        "award": "National Winner — QualTech® Prize Education (Qimpro Foundation, 2025)",
+        "description": "Engineered anti-frost reusable packaging and lean workflow protocol that reduced plasma bag breakage by 95% and saved ₹2.6L annually at sub-zero storage (-50°C).",
+        "author": {
+          "@id": "https://jaybharti.me/#person"
+        }
+      }
     ]
   }
   </script>
