@@ -2,13 +2,15 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Permitted-Cross-Domain-Policies: none
 
 /
   Link: <https://jaybharti.me/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://jaybharti.me/.well-known/portfolio-api.json>; rel="service-desc"; type="application/vnd.oai.openapi+json", <https://jaybharti.me/>; rel="service-doc"; type="text/html", <https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown", <https://jaybharti.me/index.md>; rel="alternate"; type="text/markdown"
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
   Content-Language: en
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 
 /index.html
@@ -16,7 +18,7 @@
   Access-Control-Allow-Origin: *
   Access-Control-Allow-Headers: Content-Type, Authorization, signature, signature-agent, signature-input
   Content-Language: en
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
 
 /index.md
