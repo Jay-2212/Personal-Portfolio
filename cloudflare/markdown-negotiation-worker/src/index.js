@@ -9,6 +9,7 @@ const HOMEPAGE_LINK_ENTRIES = [
   '<https://jaybharti.me/index.md>; rel="describedby"; type="text/markdown"'
 ];
 const HOMEPAGE_LINKS = HOMEPAGE_LINK_ENTRIES.join(", ");
+const PAGES_ORIGIN = "https://jaybharti-portfolio.pages.dev";
 
 export function acceptsMarkdown(acceptHeader = "") {
   if (!acceptHeader || typeof acceptHeader !== "string") return false;
@@ -89,6 +90,12 @@ function withHomepageLinks(request, response) {
   });
 }
 
+function fetchPagesOrigin(request) {
+  const incoming = new URL(request.url);
+  const originUrl = new URL(`${incoming.pathname}${incoming.search}`, PAGES_ORIGIN);
+  return fetch(new Request(originUrl.toString(), request));
+}
+
 export async function handleRequest(request, fetchImpl = fetch) {
   const url = new URL(request.url);
   const methodCanRead = request.method === "GET" || request.method === "HEAD";
@@ -140,6 +147,6 @@ export async function handleRequest(request, fetchImpl = fetch) {
 
 export default {
   fetch(request) {
-    return handleRequest(request);
+    return handleRequest(request, fetchPagesOrigin);
   }
 };
