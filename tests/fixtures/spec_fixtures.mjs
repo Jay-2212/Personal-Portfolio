@@ -78,50 +78,29 @@ Sitemap: https://jaybharti.me/sitemap.xml
 
 export const SPEC_SITEMAP_URLS = [
   { loc: "https://jaybharti.me/", priority: "1.0", changefreq: "monthly" },
-  { loc: "https://jaybharti.me/mac-orchestrator", priority: "0.9", changefreq: "monthly" },
-  { loc: "https://jaybharti.me/meridian", priority: "0.9", changefreq: "monthly" },
-  { loc: "https://jaybharti.me/littlebird", priority: "0.8", changefreq: "monthly" },
-  { loc: "https://jaybharti.me/index.md", priority: "0.8", changefreq: "monthly" },
-  { loc: "https://jaybharti.me/llms.txt", priority: "0.8", changefreq: "monthly" }
+  { loc: "https://jaybharti.me/mac-orchestrator/", priority: "0.9", changefreq: "monthly" },
+  { loc: "https://jaybharti.me/meridian/", priority: "0.9", changefreq: "monthly" }
 ];
 
 export const SPEC_SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://jaybharti.me/</loc>
-    <lastmod>2026-09-03</lastmod>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://jaybharti.me/mac-orchestrator</loc>
-    <lastmod>2026-09-03</lastmod>
+    <loc>https://jaybharti.me/mac-orchestrator/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://jaybharti.me/meridian</loc>
-    <lastmod>2026-09-03</lastmod>
+    <loc>https://jaybharti.me/meridian/</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://jaybharti.me/littlebird</loc>
-    <lastmod>2026-09-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://jaybharti.me/index.md</loc>
-    <lastmod>2026-09-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://jaybharti.me/llms.txt</loc>
-    <lastmod>2026-09-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
 </urlset>`;
 
@@ -252,7 +231,7 @@ export const SPEC_JSON_LD = {
       "operatingSystem": "macOS",
       "applicationCategory": "DeveloperApplication",
       "description": "A streamlined Model Context Protocol (MCP) server providing AI agents with 20 lean tools for direct macOS system control via mouse, keyboard, terminal, and OCR.",
-      "url": "https://jaybharti.me/mac-orchestrator",
+      "url": "https://jaybharti.me/mac-orchestrator/",
       "codeRepository": "https://github.com/Jay-2212/mac-orchestrator",
       "author": {
         "@id": "https://jaybharti.me/#person"
@@ -265,7 +244,7 @@ export const SPEC_JSON_LD = {
       "operatingSystem": "Cloudflare Workers",
       "applicationCategory": "DeveloperApplication",
       "description": "A self-hosted RAG backend built on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search queries over Telegram.",
-      "url": "https://jaybharti.me/meridian",
+      "url": "https://jaybharti.me/meridian/",
       "codeRepository": "https://github.com/Jay-2212/meridian",
       "author": {
         "@id": "https://jaybharti.me/#person"
@@ -399,8 +378,8 @@ Jay Bharti is a Healthcare Administration specialist (MHA, MAHE, 8.88 CGPA), dev
 
 ## Core Projects
 - [CapexIQ](https://capexiq.jaybharti.me): Browser-first healthcare capital expenditure decision support tool for Indian hospitals evaluating ROI, payback, NPV, IRR, and break-even for CT, MRI, and Cath Lab purchases. Features conversational WebMCP assistance and 338+ automated Vitest tests. Repo: [GitHub](https://github.com/Jay-2212/Personal-Portfolio/tree/main/capexiq).
-- [Mac Orchestrator](https://jaybharti.me/mac-orchestrator): Streamlined Model Context Protocol (MCP) server giving AI agents direct control over macOS via mouse, keyboard, terminal, and screen OCR across 20 lean tools. Repo: [GitHub](https://github.com/Jay-2212/mac-orchestrator).
-- [Meridian](https://jaybharti.me/meridian): Self-hosted RAG backend on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search loops over Telegram, sharing its vector index with Mac Orchestrator. Repo: [GitHub](https://github.com/Jay-2212/meridian).
+- [Mac Orchestrator](https://jaybharti.me/mac-orchestrator/): Streamlined Model Context Protocol (MCP) server giving AI agents direct control over macOS via mouse, keyboard, terminal, and screen OCR across 20 lean tools. Repo: [GitHub](https://github.com/Jay-2212/mac-orchestrator).
+- [Meridian](https://jaybharti.me/meridian/): Self-hosted RAG backend on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search loops over Telegram, sharing its vector index with Mac Orchestrator. Repo: [GitHub](https://github.com/Jay-2212/meridian).
 - [Sensum](https://github.com/Jay-2212/IME): Native Android voice keyboard powered by Groq's Whisper API for near-instant speech transcription and system-wide injection.
 - [Blood Bank Quality Improvement](https://jaybharti.me/#experience): National QualTech Prize-winning DMAIC project engineered at MAHE reducing sub-zero plasma bag breakage by 95% and saving ₹2.6L annually.
 
@@ -471,9 +450,8 @@ fi
 
 URLS=(
   "https://\${HOST}/"
-  "https://\${HOST}/mac-orchestrator"
-  "https://\${HOST}/meridian"
-  "https://\${HOST}/littlebird"
+  "https://\${HOST}/mac-orchestrator/"
+  "https://\${HOST}/meridian/"
   "https://\${HOST}/index.md"
   "https://\${HOST}/llms.txt"
 )

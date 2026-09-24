@@ -140,8 +140,8 @@ describe("F3 Boundary: llms.txt Structure and Syntax (Tier 2)", () => {
   test("F3.B4: Core project URLs must not use insecure http:// protocol", () => {
     const urls = [
       "https://capexiq.jaybharti.me",
-      "https://jaybharti.me/mac-orchestrator",
-      "https://jaybharti.me/meridian"
+      "https://jaybharti.me/mac-orchestrator/",
+      "https://jaybharti.me/meridian/"
     ];
     for (const u of urls) {
       assert.ok(u.startsWith("https://"), `${u} must use https://`);

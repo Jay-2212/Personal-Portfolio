@@ -76,9 +76,8 @@ fi
 if [[ ${#CUSTOM_URLS[@]} -eq 0 ]]; then
   URL_LIST=(
     "https://${HOST}/"
-    "https://${HOST}/mac-orchestrator"
-    "https://${HOST}/meridian"
-    "https://${HOST}/littlebird"
+    "https://${HOST}/mac-orchestrator/"
+    "https://${HOST}/meridian/"
     "https://${HOST}/index.md"
     "https://${HOST}/llms.txt"
     "https://${HOST}/sitemap.xml"

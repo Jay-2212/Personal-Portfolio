@@ -15,8 +15,8 @@ Jay Bharti is a Healthcare Administration specialist (MHA, MAHE, 8.88 CGPA), dev
 
 ## Core Projects
 - [CapexIQ](https://capexiq.jaybharti.me): Browser-first healthcare capital expenditure decision support tool for Indian hospitals evaluating ROI, payback, NPV, IRR, and break-even for CT, MRI, and Cath Lab purchases. Features conversational WebMCP assistance and 338+ automated Vitest tests. Repo: [GitHub](https://github.com/Jay-2212/Personal-Portfolio/tree/main/capexiq).
-- [Mac Orchestrator](https://jaybharti.me/mac-orchestrator): Streamlined Model Context Protocol (MCP) server giving AI agents direct control over macOS via mouse, keyboard, terminal, and screen OCR across 20 lean tools. Repo: [GitHub](https://github.com/Jay-2212/mac-orchestrator).
-- [Meridian](https://jaybharti.me/meridian): Self-hosted RAG backend on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search loops over Telegram, sharing its vector index with Mac Orchestrator. Repo: [GitHub](https://github.com/Jay-2212/meridian).
+- [Mac Orchestrator](https://jaybharti.me/mac-orchestrator/): Streamlined Model Context Protocol (MCP) server giving AI agents direct control over macOS via mouse, keyboard, terminal, and screen OCR across 20 lean tools. Repo: [GitHub](https://github.com/Jay-2212/mac-orchestrator).
+- [Meridian](https://jaybharti.me/meridian/): Self-hosted RAG backend on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search loops over Telegram, sharing its vector index with Mac Orchestrator. Repo: [GitHub](https://github.com/Jay-2212/meridian).
 - [Sensum](https://github.com/Jay-2212/IME): Native Android voice keyboard powered by Groq's Whisper API for near-instant speech transcription and system-wide injection.
 - [Blood Bank Quality Improvement](https://jaybharti.me/#experience): National QualTech Prize-winning DMAIC project engineered at MAHE reducing sub-zero plasma bag breakage by 95% and saving ₹2.6L annually.
 

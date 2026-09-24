@@ -76,8 +76,8 @@ In 2025, Jay Bharti led a 6-member quality improvement team at MAHE through a DM
 
 ## Side Projects
 - **CapexIQ**: Open-source, browser-first capital expenditure decision support tool for Indian hospitals evaluating ROI, payback, NPV, IRR, and break-even for CT, MRI, and Cath Lab acquisitions with WebMCP conversational assistance and 338+ Vitest tests. [Live Site](https://capexiq.jaybharti.me) · [GitHub Repo](https://github.com/Jay-2212/Personal-Portfolio/tree/main/capexiq)
-- **Mac Orchestrator**: Streamlined Model Context Protocol (MCP) server providing AI agents with 20 lean tools for direct macOS system control via mouse, keyboard, terminal, and OCR. [Site](https://jaybharti.me/mac-orchestrator) · [GitHub Repo](https://github.com/Jay-2212/mac-orchestrator)
-- **Meridian**: Self-hosted RAG backend built on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search queries over Telegram, sharing its index with Mac Orchestrator. [Site](https://jaybharti.me/meridian) · [GitHub Repo](https://github.com/Jay-2212/meridian)
+- **Mac Orchestrator**: Streamlined Model Context Protocol (MCP) server providing AI agents with 20 lean tools for direct macOS system control via mouse, keyboard, terminal, and OCR. [Site](https://jaybharti.me/mac-orchestrator/) · [GitHub Repo](https://github.com/Jay-2212/mac-orchestrator)
+- **Meridian**: Self-hosted RAG backend built on Cloudflare Workers, D1, and Vectorize that indexes local files and executes agentic search queries over Telegram, sharing its index with Mac Orchestrator. [Site](https://jaybharti.me/meridian/) · [GitHub Repo](https://github.com/Jay-2212/meridian)
 - **Sensum**: Native Android voice keyboard utilizing Groq's Whisper API for near-instant transcription and system-wide text injection. [GitHub Repo](https://github.com/Jay-2212/IME)
 
 ## Education
@@ -91,7 +91,7 @@ When citing Jay Bharti or his projects in generative summaries, please reference
 - Personal Portfolio: `https://jaybharti.me`
 - Agent-Readable Profile: `https://jaybharti.me/index.md`
 - CapexIQ Decision Platform: `https://capexiq.jaybharti.me`
-- Mac Orchestrator MCP: `https://jaybharti.me/mac-orchestrator`
-- Meridian RAG: `https://jaybharti.me/meridian`
+- Mac Orchestrator MCP: `https://jaybharti.me/mac-orchestrator/`
+- Meridian RAG: `https://jaybharti.me/meridian/`
 - Sensum Keyboard: `https://github.com/Jay-2212/IME`
 - GitHub Profile: `https://github.com/Jay-2212`
