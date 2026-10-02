@@ -224,6 +224,8 @@
     const currentImg = activeCarouselImages[activeImageIndex];
     if (!currentImg) return;
     
+    lightboxImg.width = currentImg.naturalWidth || Number(currentImg.getAttribute('width')) || 1024;
+    lightboxImg.height = currentImg.naturalHeight || Number(currentImg.getAttribute('height')) || 768;
     lightboxImg.src = currentImg.src;
     lightboxImg.alt = currentImg.alt;
     lightboxCaption.textContent = currentImg.alt || '';
@@ -368,4 +370,3 @@
   }
 
 })();
-

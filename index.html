@@ -44,7 +44,7 @@
   <!-- Font preconnect & load (non-blocking, replaces CSS @import) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&amp;family=Inter:wght@300;400;500&amp;family=JetBrains+Mono:wght@400&amp;display=swap">
 
   <!-- Critical CSS inlined for above-the-fold rendering -->
   <style>
@@ -112,7 +112,7 @@
         "@type": "ProfilePage",
         "@id": "https://jaybharti.me/#profilepage",
         "url": "https://jaybharti.me/",
-        "name": "Jay Bharti — Personal Portfolio",
+        "name": "Jay Bharti",
         "isPartOf": {
           "@id": "https://jaybharti.me/#website"
         },
@@ -267,6 +267,7 @@
   </script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
 
   <!-- Navigation -->
   <nav class="nav" id="nav">
@@ -298,7 +299,7 @@
     </div>
   </nav>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <!-- Hero -->
     <section class="hero" id="hero">
       <div class="hero-content">
@@ -331,10 +332,10 @@
     <section class="section about" id="about">
       <div class="container">
         <div class="section-marker reveal" aria-hidden="true"><span class="concentric-dot"></span></div>
-        <h2 class="section-title reveal">About</h2>
+        <h2 class="section-title reveal">Who is Jay Bharti?</h2>
         <div class="about-grid">
           <div class="about-text reveal">
-            <p>I've always wanted to answer this question in interviews when they ask me, "Tell me something about yourself." I've always wanted to say that I'm not sure where to begin. I am so much more than my resume. I am so much more than the degrees I have and the qualifications I've earned, the organizations and groups that I've been part of, and the certificates I may have collected. I did those things because I was told to. I did them because I was supposed to.</p>
+            <p>I've always wanted to answer this question in interviews. They ask me, "Tell me something about yourself." I've always wanted to say that I'm not sure where to begin. I am so much more than my resume. I am so much more than the degrees I have and the qualifications I've earned. I am so much more than the organizations and groups that I've been part of, and the certificates I may have collected. I did those things because I was told to. I did them because I was supposed to.</p>
             <p>Who I am lies in the breaks I've taken between those things. Who I am lies in the free time I get. Who I am lies in the moments when I close the notebook and leave the classroom—when I'm alone. That's where the answer to who I am lies.</p>
             <p>This website will fail to tell you who I am, because I don't think anybody can. I don't think it's possible to know a person completely unless you immerse yourself in them fully. This website will tell you what I answer to those questions in interviews: My name, where I'm from, and all the degrees I have. But that's not who I am.</p>
             <p>If I were to tell you who I am in three words, I would probably say:</p>
@@ -371,7 +372,7 @@
     <section class="section" id="experience">
       <div class="container">
         <div class="section-marker reveal" aria-hidden="true"><span class="concentric-dot"></span></div>
-        <h2 class="section-title reveal">Experience & Projects</h2>
+        <h2 class="section-title reveal">What experience does Jay have?</h2>
         <div class="timeline">
           <div class="timeline-item reveal">
             <div class="timeline-dot"></div>
@@ -431,7 +432,7 @@
       <div class="container">
         <div class="section-marker reveal" aria-hidden="true"><span class="concentric-dot"></span></div>
         <h2 class="section-title reveal">Side Projects</h2>
-        <p class="section-intro reveal">Outside of work and academia, I build things for the fun of it. Sometimes to solve my own problems. Sometimes just to see if I can.</p>
+        <p class="section-intro reveal">Outside of work and academia, I build things for the fun of it. Sometimes to solve my own problems. Sometimes just to see if I can. I've built 6 side projects so far.</p>
         <div class="projects-list">
 
           <!-- CapexIQ -->
@@ -463,7 +464,7 @@
                 <h3 class="project-name">CapexIQ</h3>
                 <div class="project-type">Web · Decision Support</div>
               </div>
-              <p class="project-desc">A decision-support tool for Indian hospitals evaluating whether a high-value equipment purchase — MRI, CT, Cath Lab, dialysis unit, ultrasound — is financially viable. Turns a quote and operating assumptions into ROI, payback, NPV, IRR, break-even usage, and cash-flow timing, with export-ready Excel and Word proposals. Simple enough for an administrator, detailed enough for a CFO.</p>
+              <p class="project-desc">A decision-support tool for Indian hospitals. It helps teams decide whether high-value equipment is financially viable. Options include MRI, CT, Cath Lab, dialysis units, and ultrasound. It turns a quote and operating assumptions into ROI, payback, NPV, IRR, break-even use, and cash-flow timing. It also creates export-ready Excel and Word proposals. It is simple enough for an administrator and detailed enough for a CFO. The project has 338+ automated tests.</p>
               <div class="project-tags">
                 <span class="project-tag">Next.js</span>
                 <span class="project-tag">TypeScript</span>
@@ -516,7 +517,7 @@
                 <h3 class="project-name">Study Block</h3>
                 <div class="project-type">macOS · Focus App</div>
               </div>
-              <p class="project-desc">I built Study Block to keep my study sessions on track. It combines focus presets, a floating timer, site blocking, gentle app nudges, and local streaks - firm enough to create friction without taking control away from me.</p>
+              <p class="project-desc">I built Study Block to keep my study sessions on track. It combines 5 focus features: focus presets, a floating timer, site blocking, gentle app nudges, and local streaks. The app is firm enough to create friction without taking control away from me.</p>
               <div class="project-tags">
                 <span class="project-tag">Swift</span>
                 <span class="project-tag">SwiftUI</span>
@@ -565,7 +566,7 @@
                 <h3 class="project-name">Sensum</h3>
                 <div class="project-type">Android · Voice Keyboard</div>
               </div>
-              <p class="project-desc">I built my own voice keyboard for Android because I was tired of the default options. Sensum uses Groq's Whisper API to transcribe speech near-instantly and inject it anywhere. It proved to me that shipping a polished native Android app in 2026 is completely within reach — no CS degree required.</p>
+              <p class="project-desc">I built my own voice keyboard for Android because I was tired of the default options. Sensum uses Groq's Whisper API to transcribe speech near-instantly and inject it anywhere. It proved that a polished native Android app is within reach in 2026. No CS degree is required.</p>
               <div class="project-tags">
                 <span class="project-tag">Kotlin</span>
                 <span class="project-tag">Android</span>
@@ -634,7 +635,7 @@
                 <h3 class="project-name">VARC Practice</h3>
                 <div class="project-type">Web · Exam Prep</div>
               </div>
-              <p class="project-desc">A comprehensive practice website featuring a mock interface that represents the CAT (Common Admission Test) exam. It is extensively similar to the actual CAT interface, helping students get used to the environment while practicing Reading Comprehension and Verbal Ability questions. It features high-quality data curated from RC99, GMAT 700, and CAT 700, along with a built-in timer, interactive analytics, and a fully featured dark mode—offering students their first-ever dark mode CAT practice experience.</p>
+              <p class="project-desc">A practice website with a mock interface for the CAT (Common Admission Test). It helps students get used to the exam while they practice Reading Comprehension and Verbal Ability. It features high-quality data from RC99, GMAT 700, and CAT 700. It includes a built-in timer, interactive analytics, and a full dark mode. It offers students their first-ever CAT practice experience with dark mode. This portfolio shows 7 screenshots of the landing, practice, test, review, and results pages.</p>
               <div class="project-tags">
                 <span class="project-tag">HTML</span>
                 <span class="project-tag">CSS</span>
@@ -716,7 +717,7 @@ mac-orchestrator     <span class="code-comment">// vector_search()</span></code>
                 <h3 class="project-name">Meridian</h3>
                 <div class="project-type">Cloudflare Workers · RAG Backend</div>
               </div>
-              <p class="project-desc">A self-hosted RAG backend that indexes my Mac's files into Cloudflare D1 and Vectorize, then answers questions about them over Telegram through a durable, 7-step agentic search loop. It shares its backend with Mac Orchestrator: the same local indexer writes the index that the bot and Mac Orchestrator's own search tool both read from.</p>
+              <p class="project-desc">A self-hosted RAG backend that indexes my Mac's files into Cloudflare D1 and Vectorize. It answers questions over Telegram through a durable, 7-step agentic search loop. It shares its backend with Mac Orchestrator. The same local indexer writes the index that the bot and Mac Orchestrator's search tool both read from.</p>
               <div class="project-tags">
                 <span class="project-tag">Cloudflare Workers</span>
                 <span class="project-tag">D1 & Vectorize</span>
@@ -745,7 +746,7 @@ mac-orchestrator     <span class="code-comment">// vector_search()</span></code>
     <section class="section" id="education">
       <div class="container">
         <div class="section-marker reveal" aria-hidden="true"><span class="concentric-dot"></span></div>
-        <h2 class="section-title reveal">Education</h2>
+        <h2 class="section-title reveal">Where did Jay study?</h2>
         <div class="education-grid">
           <div class="edu-card reveal">
             <h3 class="edu-degree">Master of Hospital Administration</h3>
@@ -778,7 +779,7 @@ mac-orchestrator     <span class="code-comment">// vector_search()</span></code>
         <h2 class="section-title reveal">Skills & Certifications</h2>
         <div class="skills-grid">
           <div class="skill-category reveal">
-            <h3>Operations & Management</h3>
+            <h3>Operations & Management (4 skills)</h3>
             <ul class="skill-list">
               <li>Lean Six Sigma</li>
               <li>Process Improvement</li>
@@ -787,7 +788,7 @@ mac-orchestrator     <span class="code-comment">// vector_search()</span></code>
             </ul>
           </div>
           <div class="skill-category reveal">
-            <h3>Data & Technology</h3>
+            <h3>Data & Technology (5 skills)</h3>
             <ul class="skill-list">
               <li>Python</li>
               <li>R</li>
@@ -797,7 +798,7 @@ mac-orchestrator     <span class="code-comment">// vector_search()</span></code>
             </ul>
           </div>
           <div class="skill-category reveal">
-            <h3>Research & Science</h3>
+            <h3>Research & Science (4 skills)</h3>
             <ul class="skill-list">
               <li>Biostatistics</li>
               <li>Molecular Dynamics</li>
@@ -839,7 +840,7 @@ mac-orchestrator     <span class="code-comment">// vector_search()</span></code>
             <div class="award-icon"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></div>
             <h3 class="award-title">National Winner — QualTech® Prize Education</h3>
             <p class="award-org"><a href="https://qimpro.com" target="_blank" rel="noopener noreferrer">Qimpro Foundation</a> · September 2025</p>
-            <p class="award-desc">Recognized for innovative process improvement solution achieving 95% reduction in plasma bag breakage and ₹2.6L annual cost savings at <a href="https://caho.in" target="_blank" rel="noopener noreferrer">SAKCON</a>, Hyderabad.</p>
+            <p class="award-desc">The award recognized an innovative process improvement solution. It achieved a 95% reduction in plasma bag breakage and ₹2.6L in annual savings at <a href="https://caho.in" target="_blank" rel="noopener noreferrer">SAKCON</a>, Hyderabad.</p>
             <button class="case-study-trigger-btn" data-case="qualtech" aria-haspopup="dialog" style="margin-top: 12px;">
               <span>Read Case Study</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -882,6 +883,10 @@ mac-orchestrator     <span class="code-comment">// vector_search()</span></code>
   <footer class="footer">
     <div class="container">
       <p>© 2026 Jay Bharti</p>
+      <nav class="footer-links" aria-label="Legal">
+        <a href="/privacy/">Privacy Policy</a>
+        <a href="/terms/">Terms</a>
+      </nav>
     </div>
   </footer>
 
@@ -894,7 +899,7 @@ mac-orchestrator     <span class="code-comment">// vector_search()</span></code>
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
     <div class="lightbox-content">
-      <img src="" alt="" class="lightbox-img">
+      <img alt="" class="lightbox-img" loading="lazy" decoding="async" width="1024" height="768">
       <div class="lightbox-caption"></div>
     </div>
     <button class="lightbox-arrow lightbox-arrow--right" aria-label="Next image">

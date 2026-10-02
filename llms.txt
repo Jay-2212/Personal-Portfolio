@@ -12,6 +12,8 @@ Jay Bharti is a Healthcare Administration specialist (MHA, MAHE, 8.88 CGPA), dev
 - [Agent-Readable Profile](https://jaybharti.me/index.md): Structured markdown profile optimized for RAG and citation with Princeton GEO answer blocks.
 - [Resume](https://jaybharti.me/resume/Resume_Jay_Bharti.pdf): Official curriculum vitae.
 - [Sitemap](https://jaybharti.me/sitemap.xml): Complete URL discovery map.
+- [Privacy Policy](https://jaybharti.me/privacy/): Privacy details for this portfolio site.
+- [Terms](https://jaybharti.me/terms/): Terms for this portfolio site.
 
 ## Core Projects
 - [CapexIQ](https://capexiq.jaybharti.me): Browser-first healthcare capital expenditure decision support tool for Indian hospitals evaluating ROI, payback, NPV, IRR, and break-even for CT, MRI, and Cath Lab purchases. Features conversational WebMCP assistance and 338+ automated Vitest tests. Repo: [GitHub](https://github.com/Jay-2212/Personal-Portfolio/tree/main/capexiq).

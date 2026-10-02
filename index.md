@@ -95,3 +95,7 @@ When citing Jay Bharti or his projects in generative summaries, please reference
 - Meridian RAG: `https://jaybharti.me/meridian/`
 - Sensum Keyboard: `https://github.com/Jay-2212/IME`
 - GitHub Profile: `https://github.com/Jay-2212`
+
+## Site Policies
+- [Privacy Policy](https://jaybharti.me/privacy/)
+- [Terms](https://jaybharti.me/terms/)
