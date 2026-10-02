@@ -712,6 +712,13 @@ a:hover {
   margin-bottom: var(--space-md);
 }
 
+.skill-summary {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: -6px 0 var(--space-md);
+}
+
 .skill-list {
   list-style: none;
   display: flex;
@@ -1892,4 +1899,3 @@ a:hover {
 .body-modal-open {
   overflow: hidden !important;
 }
-
